@@ -6,13 +6,13 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\Core\Contracts\Media\MediaContract;
 use Capell\Core\Models\Page;
+use Capell\MigrationAssistant\Actions\StoreImportedMediaAction;
 use Capell\MigrationAssistant\Models\ImportSession;
 use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Data\ResolvedWordPressMediaEndpointData;
 use Capell\WordPressImporter\Exceptions\WordPressMediaSizeLimitExceeded;
 use Closure;
 use Illuminate\Http\Client\Factory as HttpFactory;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -223,15 +223,24 @@ final class ImportWordPressMediaForPagesAction
                 return null;
             }
 
-            $uploadedFile = new UploadedFile(
-                path: $temporaryPath,
-                originalName: $this->fileName($mediaUrl),
-                mimeType: $detectedMime,
-                error: null,
-                test: true,
-            );
+            $stream = fopen($temporaryPath, 'rb');
+            throw_unless(is_resource($stream), RuntimeException::class, 'Failed to read downloaded WordPress media.');
 
-            return $page->addMediaFromUploadedFile($uploadedFile, self::COLLECTION);
+            try {
+                $checksum = hash_file('sha256', $temporaryPath);
+                throw_unless(is_string($checksum), RuntimeException::class, 'Failed to checksum downloaded WordPress media.');
+
+                return (new StoreImportedMediaAction)->handle(
+                    $stream,
+                    $this->fileName($mediaUrl),
+                    'sha256-' . $checksum,
+                    File::size($temporaryPath),
+                    $page,
+                    self::COLLECTION,
+                );
+            } finally {
+                fclose($stream);
+            }
         } catch (WordPressMediaSizeLimitExceeded $exception) {
             $this->logOversizedMedia($mediaUrl, $exception->bytes);
 

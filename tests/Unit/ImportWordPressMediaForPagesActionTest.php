@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Capell\Core\Models\Media;
 use Capell\Core\Models\Page;
 use Capell\WordPressImporter\Actions\ImportWordPressMediaForPagesAction;
 use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
@@ -10,6 +11,8 @@ use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Mockery\MockInterface;
 
 it('does not request imported WordPress media from private hosts', function (): void {
@@ -180,4 +183,68 @@ it('rejects non-image bytes even when the response claims an image MIME type', f
         'WordPress media import rejected non-image content.',
         Mockery::on(fn (array $context): bool => ($context['detected_mime'] ?? null) === 'unknown'),
     );
+});
+
+function wordPressImportedPngBytes(): string
+{
+    $bytes = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAADElEQVQImWNgYGAAAAAEAAGjChXjAAAAAElFTkSuQmCC', true);
+    throw_unless(is_string($bytes), RuntimeException::class);
+
+    return $bytes;
+}
+
+it('stores imported WordPress image bytes with a canonical extension', function (string $suffix): void {
+    Queue::fake();
+    $disk = Storage::fake('public');
+    $url = 'https://media.example.test/image.' . $suffix;
+    $bytes = wordPressImportedPngBytes();
+    Http::fake([$url => Http::response($bytes, 200, ['Content-Type' => 'text/html'])]);
+    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+        'media.example.test' => ['93.184.216.34'],
+    ]));
+    $page = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => [$url]]]]);
+
+    expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(1);
+    $media = Media::query()->sole();
+    expect($media->file_name)->toBe('image.png')
+        ->and($media->mime_type)->toBe('image/png')
+        ->and($disk->get($media->getPathRelativeToRoot()))->toBe($bytes)
+        ->and($page->fresh()?->getAttribute('meta')['wordpress']['imported_media'][0]['media_url'])
+        ->toEndWith('/image.png');
+})->with(['html', 'php']);
+
+it('refuses active WordPress media payloads before storing or attaching them', function (string $kind): void {
+    Queue::fake();
+    $disk = Storage::fake('public');
+    $bytes = match ($kind) {
+        'SVG' => '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+        'HTML' => '<html><script>alert(1)</script></html>',
+        'PNG with appended HTML' => wordPressImportedPngBytes() . '<html><script>alert(1)</script></html>',
+        default => throw new InvalidArgumentException('Unknown payload.'),
+    };
+    $url = 'https://media.example.test/image.png';
+    Http::fake([$url => Http::response($bytes, 200, ['Content-Type' => 'image/png'])]);
+    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+        'media.example.test' => ['93.184.216.34'],
+    ]));
+    $page = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => [$url]]]]);
+
+    expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(0)
+        ->and(Media::query()->count())->toBe(0)
+        ->and($disk->allFiles())->toBe([])
+        ->and($page->fresh()?->getAttribute('meta')['wordpress'])->not->toHaveKey('imported_media');
+})->with(['SVG', 'HTML', 'PNG with appended HTML']);
+
+it('refuses a WordPress media destination in executable application paths', function (): void {
+    config()->set('media-library.disk_name', 'unsafe-wordpress');
+    config()->set('filesystems.disks.unsafe-wordpress', ['driver' => 'local', 'root' => public_path('wordpress-media')]);
+    $url = 'https://media.example.test/image.png';
+    Http::fake([$url => Http::response(wordPressImportedPngBytes(), 200)]);
+    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+        'media.example.test' => ['93.184.216.34'],
+    ]));
+    $page = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => [$url]]]]);
+
+    expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(0)
+        ->and(Media::query()->count())->toBe(0);
 });
