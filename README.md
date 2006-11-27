@@ -45,16 +45,62 @@ Screenshot contract: `docs/screenshots.json`.
 
 ## Technical Shape
 
-- Service providers: `Capell\WordPressImporter\Providers\WordPressImporterServiceProvider`.
-- Config files: `packages/wordpress-importer/config/wordpress-importer.php`.
-- Extension contracts: `WordPressMediaHostResolver`.
-- Listeners: `CreateWordPressRedirectsForCompletingImport`, `ImportWordPressMediaForCompletingImport`.
-- Actions: `ApplyWordPressPreviewIdempotencyAction`, `BuildWordPressImportPreviewAction`, `CreateWordPressPermalinkRedirectsAction`, `ExecuteWordPressSpoolSessionAction`, `ExecuteWordPressWxrImportAction`, `ImportWordPressMediaForPagesAction`, `ReadWordPressWxrAction`, `ReauthorizeWordPressWxrSessionAction`, `ResolveWordPressImportedPageIdsAction`, `ResolveWordPressParentPagesAction`, `SpoolWordPressWxrAction`.
-- Data objects: `ResolvedWordPressMediaEndpointData`, `WordPressImportPreviewData`, `WordPressPermalinkRedirectReportData`, `WordPressWxrReadData`, `WordPressWxrSpoolData`.
-- Command signatures: `wordpress-importer:import`.
-- Console command classes: `ImportWordPressWxrCommand`.
-- Manifest contributions: `console-command: Capell\WordPressImporter\Manifest\WordPressImporterConsoleCommandContribution`, `health-check: Capell\WordPressImporter\Health\WordpressImporterHealthCheck`.
-- Health checks: `Capell\WordPressImporter\Health\WordpressImporterHealthCheck`.
+### Service providers
+
+- `Capell\WordPressImporter\Providers\WordPressImporterServiceProvider`
+
+### Config files
+
+- `packages/wordpress-importer/config/wordpress-importer.php`
+
+### Extension contracts
+
+- `WordPressMediaHostResolver`
+
+### Listeners
+
+- `CreateWordPressRedirectsForCompletingImport`
+- `ImportWordPressMediaForCompletingImport`
+
+### Actions
+
+- `ApplyWordPressPreviewIdempotencyAction`
+- `BuildWordPressImportPreviewAction`
+- `CreateWordPressPermalinkRedirectsAction`
+- `ExecuteWordPressSpoolSessionAction`
+- `ExecuteWordPressWxrImportAction`
+- `ImportWordPressMediaForPagesAction`
+- `ReadWordPressWxrAction`
+- `ReauthorizeWordPressWxrSessionAction`
+- `ResolveWordPressImportedPageIdsAction`
+- `ResolveWordPressParentPagesAction`
+- `SpoolWordPressWxrAction`
+
+### Data objects
+
+- `ResolvedWordPressMediaEndpointData`
+- `WordPressImportPreviewData`
+- `WordPressPermalinkRedirectReportData`
+- `WordPressWxrReadData`
+- `WordPressWxrSpoolData`
+
+### Command signatures
+
+- `wordpress-importer:import`
+
+### Console command classes
+
+- `ImportWordPressWxrCommand`
+
+### Manifest contributions
+
+- `console-command: Capell\WordPressImporter\Manifest\WordPressImporterConsoleCommandContribution`
+- `health-check: Capell\WordPressImporter\Health\WordpressImporterHealthCheck`
+
+### Health checks
+
+- `Capell\WordPressImporter\Health\WordpressImporterHealthCheck`
+
 
 ## Data Model
 
@@ -65,7 +111,7 @@ This package has no schema impact. It extends Capell through `console-command` c
 - Required packages: `capell-app/admin`, `capell-app/core`, `capell-app/migration-assistant`.
 - Admin navigation: no admin page or resource contribution is declared.
 - Admin/editor extensions: none declared.
-- Permissions: none declared in `capell.json`.
+- Permissions: no package permission declarations or Shield gates detected; host access rules still apply.
 - Public routes: none declared.
 - Database changes: no package migrations declared.
 - Config: `config/wordpress-importer.php`.
@@ -88,8 +134,7 @@ This package has no schema impact. It extends Capell through `console-command` c
 ## Quick Start
 
 1. Install the package: `composer require capell-app/wordpress-importer`.
-2. Review `config/wordpress-importer.php` before enabling the package.
-3. Open a verified package admin surface and confirm WordPress Importer is available.
+2. Open a verified package admin surface and confirm WordPress Importer is available.
 
 ## Next Steps
 

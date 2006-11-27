@@ -58,7 +58,9 @@ final class ImportWordPressWxrCommand extends Command
 
         $this->components->info((string) __('capell-wordpress-importer::commands.import.read_summary', [
             'count' => $result->count(),
-            'filename' => $result->metadata['filename'] ?? basename((string) $importPreview->path),
+            'filename' => is_scalar($result->metadata['filename'] ?? null)
+                ? (string) $result->metadata['filename']
+                : basename((string) $importPreview->path),
         ]));
 
         foreach ($preview->errors as $error) {
