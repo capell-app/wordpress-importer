@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Actions;
 
+use Capell\MigrationAssistant\Actions\ClaimImportSessionForExecutionAction;
 use Capell\MigrationAssistant\Actions\Imports\AuthorizeExternalPageImportTargetAction;
 use Capell\MigrationAssistant\Contracts\PageImportTargetResolver;
 use Capell\MigrationAssistant\Data\ExternalPageImportTargetData;
@@ -85,11 +86,16 @@ final class ExecuteWordPressWxrImportAction
 
             return new ExternalPageImportExecutionResult($session->refresh(), $report);
         } catch (Throwable $throwable) {
-            $session->forceFill([
-                'status' => ImportSessionStatus::Failed,
-                'failure_reason' => $throwable->getMessage(),
-            ])->save();
-            event(new ImportFailed($session, $throwable->getMessage()));
+            $failedSession = ClaimImportSessionForExecutionAction::run(
+                $session,
+                ImportSessionStatus::Failed,
+                [ImportSessionStatus::Running],
+                $throwable->getMessage(),
+            );
+
+            if ($failedSession instanceof ImportSession) {
+                event(new ImportFailed($failedSession, $throwable->getMessage()));
+            }
 
             throw $throwable;
         }

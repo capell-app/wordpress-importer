@@ -219,7 +219,6 @@ final class WxrReader implements PathAwareImportSourceReader
             columns: self::WXR_COLUMNS,
             rows: $rows,
             metadata: [
-                'filename' => basename($path),
                 ...$metadata,
                 'post_count' => count($rows),
             ],

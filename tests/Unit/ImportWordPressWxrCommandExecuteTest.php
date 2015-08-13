@@ -10,6 +10,7 @@ use Capell\Core\Models\Site;
 use Capell\MigrationAssistant\Actions\RetryImportSessionAction;
 use Capell\MigrationAssistant\Data\ExternalPageImportTargetData;
 use Capell\MigrationAssistant\Enums\ImportSessionStatus;
+use Capell\MigrationAssistant\Events\ImportCompleted;
 use Capell\MigrationAssistant\Jobs\ExecuteImportPlanJob;
 use Capell\MigrationAssistant\Models\ImportSession;
 use Capell\MigrationAssistant\Services\Import\MediaIngestService;
@@ -25,6 +26,7 @@ use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
@@ -147,6 +149,38 @@ XML);
         '--execute' => true,
     ]);
 })->throws(RuntimeException::class);
+
+it('preserves completed WordPress imports when completion listeners fail', function (): void {
+    Storage::fake('local');
+    $layout = Layout::factory()->create();
+    $type = Blueprint::factory()->page()->create();
+    $site = Site::factory()->create();
+    $path = 'imports/completed.wxr';
+    Storage::disk('local')->put($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Completed import</title><wp:wxr_version>1.2</wp:wxr_version>
+        <item>
+            <title>Completed page</title><wp:post_id>201</wp:post_id>
+            <wp:post_name>completed-page</wp:post_name><wp:post_type>page</wp:post_type>
+        </item>
+    </channel>
+</rss>
+XML);
+    Event::listen(ImportCompleted::class, static function (): never {
+        throw new RuntimeException('Completion listener failed');
+    });
+
+    expect(fn () => ExecuteWordPressWxrImportAction::run(Storage::disk('local')->path($path), wordpressImportTarget($site, $layout, $type)))
+        ->toThrow(RuntimeException::class, 'Completion listener failed');
+
+    $session = ImportSession::query()->sole();
+    expect($session->status)->toBe(ImportSessionStatus::Completed)
+        ->and($session->failure_reason)->toBeNull()
+        ->and($session->rollbackReports()->count())->toBe(1)
+        ->and($session->result_summary['pages_created'] ?? null)->toBe(1);
+});
 
 it('imports parent relationships across spool chunk boundaries', function (): void {
     config()->set('wordpress-importer.spool.chunk_rows', 1);
