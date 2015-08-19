@@ -71,8 +71,18 @@ final class ApplyWordPressPreviewIdempotencyAction
         return array_values(Page::query()
             ->withoutGlobalScopes()
             ->whereIn('meta->wordpress->source_identity', $sourceIdentities)
-            ->pluck('meta->wordpress->source_identity')
-            ->filter(fn (mixed $sourceIdentity): bool => is_string($sourceIdentity) && $sourceIdentity !== '')
+            ->toBase()
+            ->pluck('meta')
+            ->map(static function (mixed $meta): mixed {
+                $decoded = is_string($meta) ? json_decode($meta, true) : $meta;
+
+                if (! is_array($decoded) || ! is_array($decoded['wordpress'] ?? null)) {
+                    return null;
+                }
+
+                return $decoded['wordpress']['source_identity'] ?? null;
+            })
+            ->filter(static fn (mixed $sourceIdentity): bool => is_string($sourceIdentity) && $sourceIdentity !== '')
             ->unique()
             ->all());
     }
