@@ -140,6 +140,7 @@ This package has no schema impact. It extends Capell through `console-command` c
 
 - [Package docs](docs/README.md)
 - [Overview](docs/overview.md)
+- [Worked extension examples](docs/extension-contracts.md)
 - [Admin guide](docs/admin-guide.md)
 - Configuration files: [`config/wordpress-importer.php`](config/wordpress-importer.php).
 - [Troubleshooting](#troubleshooting)
