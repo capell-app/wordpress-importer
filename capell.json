@@ -1,4 +1,5 @@
 {
+    "manifest-version": 2,
     "name": "capell-app/wordpress-importer",
     "kind": "package",
     "capell-version": "^4.0",
@@ -6,15 +7,49 @@
     "tier": "premium",
     "bundle": "operations",
     "description": "WordPress Importer adds WordPress WXR XML parsing to the Capell MigrationAssistant workflow.",
-    "contexts": ["admin", "console"],
-    "requires": [
-        "capell-app/admin",
-        "capell-app/core",
-        "capell-app/migration-assistant"
+    "surfaces": [
+        "admin",
+        "console"
     ],
+    "dependencies": {
+        "requires": [
+            "capell-app/admin",
+            "capell-app/core",
+            "capell-app/migration-assistant"
+        ],
+        "optional": [],
+        "conflicts": []
+    },
+    "lifecycle": {
+        "activation": "manual",
+        "defaultStatus": "available",
+        "requiresInstallCommand": false
+    },
     "providers": {
-        "shared": [
+        "metadata": [],
+        "install": [],
+        "runtime": [
             "Capell\\WordPressImporter\\Providers\\WordPressImporterServiceProvider"
-        ]
-    }
+        ],
+        "admin": [],
+        "frontend": []
+    },
+    "database": {
+        "migrations": false,
+        "settings": false,
+        "requiredTables": []
+    },
+    "commands": {
+        "install": null,
+        "setup": null,
+        "setupParams": [],
+        "demo": null,
+        "demoParams": [],
+        "health": null
+    },
+    "settings": [],
+    "permissions": [],
+    "capabilities": [],
+    "assets": [],
+    "healthChecks": []
 }
