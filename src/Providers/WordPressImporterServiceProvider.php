@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Providers;
 
-use Capell\Core\Facades\CapellCore;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\MigrationAssistant\Support\ImportSourceRegistry;
 use Capell\WordPressImporter\Services\WxrReader;
@@ -23,14 +22,6 @@ class WordPressImporterServiceProvider extends AbstractPackageServiceProvider
 
     public function packageRegistered(): void
     {
-        CapellCore::registerPackage(
-            static::$packageName,
-            serviceProviderClass: static::class,
-            path: realpath(__DIR__ . '/../..'),
-            version: CapellCore::getInstalledPrettyVersion(static::$packageName),
-            description: fn (): string => 'WordPress Importer registers a WXR XML reader with the Capell Migration AIOrchestrator.',
-        );
-
         $this->app->afterResolving(
             ImportSourceRegistry::class,
             static function (ImportSourceRegistry $registry): void {
