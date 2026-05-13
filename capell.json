@@ -13,10 +13,7 @@
         "bundle": "operations"
     },
     "namespace": "Capell\\WordPressImporter",
-    "surfaces": [
-        "admin",
-        "console"
-    ],
+    "surfaces": ["admin", "console"],
     "dependencies": {
         "requires": [
             "capell-app/admin",
@@ -76,10 +73,6 @@
     "marketplace": {
         "summary": "WordPress Importer adds WordPress WXR XML parsing to the Capell MigrationAssistant workflow.",
         "screenshots": [],
-        "categories": [
-            "admin",
-            "console",
-            "operations"
-        ]
+        "categories": ["admin", "console", "operations"]
     }
 }
