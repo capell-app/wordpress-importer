@@ -53,7 +53,7 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 
 - Requires `capell-app/migration-assistant`, `capell-app/core`, `capell-app/admin`, and `ext-simplexml`.
 - Registers a WordPress WXR source reader with MigrationAssistant.
-- Does not add migrations; MigrationAssistant owns import sessions and rollback dashboard-dashboard_reports.
+- Does not add migrations; MigrationAssistant owns import sessions and rollback reports.
 
 ## Install And Setup
 

@@ -13,4 +13,4 @@ The reader extracts WordPress posts and pages into a neutral import row shape th
 
 ## Boundary
 
-This package only owns WordPress WXR parsing and source registration. MigrationAssistant owns field mapping, previews, validation, execution, import sessions, notifications, and rollback dashboard-dashboard_reports.
+This package only owns WordPress WXR parsing and source registration. MigrationAssistant owns field mapping, previews, validation, execution, import sessions, notifications, and rollback reports.
