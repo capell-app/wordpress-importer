@@ -1,5 +1,45 @@
 {
     "package": "wordpress-importer",
     "composerName": "capell-app/wordpress-importer",
-    "screenshots": []
+    "generatedFor": "deployment-screenshot-runner",
+    "requiresInstalledPackage": true,
+    "outputDirectory": "public/docs/screenshots/packages/wordpress-importer",
+    "entries": [
+        {
+            "id": "wordpress-wxr-source-selection",
+            "title": "Migration Assistant import flow with WordPress WXR available as an import source.",
+            "package": "wordpress-importer",
+            "surface": "admin",
+            "targetType": "admin-route",
+            "target": "/admin/recovery-center/import-pages",
+            "required": true,
+            "notes": "Install Migration Assistant first, then WordPress Importer. Capture the source selection state where the WXR reader is visible.",
+            "useCase": "An operator sees WordPress WXR as an available source in the Migration Assistant import flow.",
+            "screenshotPath": "public/docs/screenshots/packages/wordpress-importer/wordpress-wxr-source-selection.png"
+        },
+        {
+            "id": "wordpress-wxr-preview",
+            "title": "Parsed WordPress WXR rows previewed in Migration Assistant.",
+            "package": "wordpress-importer",
+            "surface": "admin",
+            "targetType": "admin-workflow",
+            "target": "/admin/recovery-center/import-pages",
+            "required": true,
+            "notes": "Use a small WXR fixture with at least one post and one page to show extracted title, slug, status, date, categories, tags, and author fields.",
+            "useCase": "An operator previews parsed WXR posts/pages with title, slug, status, date, categories, tags, and author fields.",
+            "screenshotPath": "public/docs/screenshots/packages/wordpress-importer/wordpress-wxr-preview.png"
+        },
+        {
+            "id": "wordpress-import-session",
+            "title": "Import session detail for a WordPress WXR import.",
+            "package": "wordpress-importer",
+            "surface": "admin",
+            "targetType": "admin-resource",
+            "target": "/admin/import-sessions/{record}",
+            "required": false,
+            "notes": "Migration Assistant owns the page; include this screenshot when a demo import session can be created.",
+            "useCase": "An operator reviews the Migration Assistant import session created for a WordPress WXR import.",
+            "screenshotPath": "public/docs/screenshots/packages/wordpress-importer/wordpress-import-session.png"
+        }
+    ]
 }
