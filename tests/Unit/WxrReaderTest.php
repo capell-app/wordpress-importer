@@ -70,3 +70,21 @@ XML);
         ->and($result->rows[0]['attachments'])->toBe([['url' => 'https://example.test/about-hero.jpg', 'title' => 'About']])
         ->and($result->rows[1]['parent_id'])->toBe('10');
 });
+
+it('rejects WordPress WXR imports with doctype declarations', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-');
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE rss [
+    <!ENTITY laugh "laugh">
+]>
+<rss version="2.0">
+    <channel>
+        <title>&laugh;</title>
+        <item><title>About</title><wp:post_type xmlns:wp="http://wordpress.org/export/1.2/">page</wp:post_type></item>
+    </channel>
+</rss>
+XML);
+
+    (new WxrReader)->read($path);
+})->throws(RuntimeException::class, 'DOCTYPE');
