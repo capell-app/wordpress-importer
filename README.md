@@ -1,6 +1,6 @@
-# Wordpress Importer
+# WordPress Importer
 
-WordPress WXR import source for the Capell Migration AIOrchestrator.
+WordPress WXR import source for Capell Migration Assistant.
 
 ## At A Glance
 
@@ -12,7 +12,9 @@ WordPress WXR import source for the Capell Migration AIOrchestrator.
 
 ## What It Adds
 
-- WordPress WXR import source for the Capell Migration AIOrchestrator.
+- Parses WordPress WXR XML through `ext-simplexml`.
+- Registers the source reader with Migration Assistant.
+- Leaves import sessions, execution, media ingest, and rollback reporting to Migration Assistant.
 
 ## Built With
 
@@ -58,6 +60,7 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 ## Install And Setup
 
 - Install with `composer require capell-app/wordpress-importer` in the host Capell application.
+- Install `capell-app/migration-assistant` first; this package registers a source reader for that workflow.
 - In this repository, verify package changes with `vendor/bin/pest`; do not use `php artisan`.
 
 ## Docs
