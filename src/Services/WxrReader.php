@@ -24,9 +24,6 @@ final class WxrReader implements ImportSourceReader
         }
 
         $xml = SafeXmlLoader::loadFile($path, LIBXML_NOCDATA | LIBXML_NONET);
-        if (! $xml instanceof SimpleXMLElement) {
-            throw new RuntimeException(sprintf('WordPress export [%s] could not be parsed.', $path));
-        }
 
         $channel = $xml->channel;
         throw_if(! $channel instanceof SimpleXMLElement || (! property_exists($channel, 'item') || $channel->item === null), RuntimeException::class, 'WordPress export must contain a channel with item entries.');
