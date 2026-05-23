@@ -10,6 +10,18 @@ WordPress WXR import source for Capell Migration Assistant.
 - Capell dependencies: `capell-app/admin`, `capell-app/core`, `capell-app/migration-assistant`
 - Third-party dependencies: `ext-simplexml`, `spatie/laravel-package-tools`
 
+## Why It Helps Your Capell Workflow
+
+- Adds WordPress WXR XML parsing as a source for the Migration Assistant workflow.
+- Helps owners migrate WordPress content through Capell preview, validation, mapping, execution, and rollback reporting instead of a one-off importer.
+- Gives developers a focused source package that keeps WordPress-specific parsing out of the core migration workflow.
+
+## Best Used With
+
+- [Migration Assistant](../migration-assistant/README.md)
+- [Media Library](../media-library/README.md)
+- [Blog](../blog/README.md)
+
 ## What It Adds
 
 - Parses WordPress WXR XML through `ext-simplexml`.
@@ -65,6 +77,7 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 
 ## Docs
 
+- [docs index](docs/README.md)
 - [credits-and-acknowledgements.md](docs/credits-and-acknowledgements.md)
 - [overview.md](docs/overview.md)
 
