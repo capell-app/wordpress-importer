@@ -20,7 +20,7 @@
             "capell-app/core",
             "capell-app/migration-assistant"
         ],
-        "optional": [],
+        "supports": [],
         "conflicts": []
     },
     "providers": {
@@ -80,7 +80,13 @@
     },
     "marketplace": {
         "summary": "WordPress Importer adds WordPress WXR XML parsing to the Capell MigrationAssistant workflow.",
-        "screenshots": [],
+        "screenshots": [
+            {
+                "path": "docs/assets/marketplace/extension-card.jpg",
+                "alt": "Wordpress Importer extension preview image",
+                "caption": "Wordpress Importer extension preview"
+            }
+        ],
         "categories": ["admin", "console", "operations"]
     }
 }

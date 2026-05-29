@@ -6,6 +6,7 @@ namespace Capell\WordPressImporter\Services;
 
 use Capell\MigrationAssistant\Contracts\ImportSourceReader;
 use Capell\MigrationAssistant\Data\ExternalImportReadResult;
+use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
 use RuntimeException;
 use SimpleXMLElement;
 
@@ -22,10 +23,7 @@ final class WxrReader implements ImportSourceReader
             throw new RuntimeException(sprintf('WordPress export [%s] is not readable.', $path));
         }
 
-        $xml = simplexml_load_file($path, SimpleXMLElement::class, LIBXML_NOCDATA | LIBXML_NONET);
-        if (! $xml instanceof SimpleXMLElement) {
-            throw new RuntimeException(sprintf('WordPress export [%s] could not be parsed.', $path));
-        }
+        $xml = SafeXmlLoader::loadFile($path, LIBXML_NOCDATA | LIBXML_NONET);
 
         $channel = $xml->channel;
         throw_if(! $channel instanceof SimpleXMLElement || (! property_exists($channel, 'item') || $channel->item === null), RuntimeException::class, 'WordPress export must contain a channel with item entries.');
