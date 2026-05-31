@@ -71,6 +71,27 @@ XML);
         ->and($result->rows[1]['parent_id'])->toBe('10');
 });
 
+it('delegates non WordPress XML imports to the generic migration-assistant XML reader', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'capell-xml-');
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<catalog>
+    <book>
+        <title>One</title>
+    </book>
+    <book>
+        <title>Two</title>
+    </book>
+</catalog>
+XML);
+
+    $result = resolve(ImportSourceRegistry::class)->readerFor('catalog.xml')->read($path);
+
+    expect($result->sourceType)->toBe('xml')
+        ->and($result->rows)->toHaveCount(2)
+        ->and($result->rows[0]['title'])->toBe('One');
+});
+
 it('rejects WordPress WXR imports with doctype declarations', function (): void {
     $path = tempnam(sys_get_temp_dir(), 'capell-wxr-');
     file_put_contents($path, <<<'XML'
