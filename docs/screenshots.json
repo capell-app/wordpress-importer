@@ -3,7 +3,7 @@
     "composerName": "capell-app/wordpress-importer",
     "generatedFor": "deployment-screenshot-runner",
     "requiresInstalledPackage": true,
-    "outputDirectory": "public/docs/screenshots/packages/wordpress-importer",
+    "outputDirectory": "packages/wordpress-importer/docs/screenshots",
     "entries": [
         {
             "id": "wordpress-wxr-source-selection",
@@ -15,7 +15,7 @@
             "required": true,
             "notes": "Install Migration Assistant first, then WordPress Importer. Capture the source selection state where the WXR reader is visible.",
             "useCase": "An operator sees WordPress WXR as an available source in the Migration Assistant import flow.",
-            "screenshotPath": "public/docs/screenshots/packages/wordpress-importer/wordpress-wxr-source-selection.png"
+            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-wxr-source-selection.png"
         },
         {
             "id": "wordpress-wxr-preview",
@@ -27,7 +27,7 @@
             "required": true,
             "notes": "Use a small WXR fixture with at least one post and one page to show extracted title, slug, status, date, categories, tags, and author fields.",
             "useCase": "An operator previews parsed WXR posts/pages with title, slug, status, date, categories, tags, and author fields.",
-            "screenshotPath": "public/docs/screenshots/packages/wordpress-importer/wordpress-wxr-preview.png"
+            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-wxr-preview.png"
         },
         {
             "id": "wordpress-import-session",
@@ -39,7 +39,7 @@
             "required": false,
             "notes": "Migration Assistant owns the page; include this screenshot when a demo import session can be created.",
             "useCase": "An operator reviews the Migration Assistant import session created for a WordPress WXR import.",
-            "screenshotPath": "public/docs/screenshots/packages/wordpress-importer/wordpress-import-session.png"
+            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-session.png"
         }
     ]
 }

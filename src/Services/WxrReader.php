@@ -6,6 +6,7 @@ namespace Capell\WordPressImporter\Services;
 
 use Capell\MigrationAssistant\Contracts\ImportSourceReader;
 use Capell\MigrationAssistant\Data\ExternalImportReadResult;
+use Capell\MigrationAssistant\Services\Import\XmlReader;
 use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
 use RuntimeException;
 use SimpleXMLElement;
@@ -26,6 +27,11 @@ final class WxrReader implements ImportSourceReader
         $xml = SafeXmlLoader::loadFile($path, LIBXML_NOCDATA | LIBXML_NONET);
 
         $channel = $xml->channel;
+
+        if (! $this->isWordPressExport($channel)) {
+            return (new XmlReader)->read($path);
+        }
+
         throw_if(! $channel instanceof SimpleXMLElement || (! property_exists($channel, 'item') || $channel->item === null), RuntimeException::class, 'WordPress export must contain a channel with item entries.');
 
         $rows = [];
@@ -51,6 +57,21 @@ final class WxrReader implements ImportSourceReader
             ],
             suggestedTarget: 'page',
         );
+    }
+
+    private function isWordPressExport(mixed $channel): bool
+    {
+        if (! $channel instanceof SimpleXMLElement) {
+            return false;
+        }
+
+        $namespaces = $channel->getNamespaces(true);
+
+        if (! array_key_exists('wp', $namespaces)) {
+            return false;
+        }
+
+        return trim((string) $channel->children('wp', true)->wxr_version) !== '';
     }
 
     /**
