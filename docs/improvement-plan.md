@@ -1,18 +1,19 @@
 # WordPress Importer — Improvement & Growth Plan
+
 > Package: capell-app/wordpress-importer · Kind: package · Tier: premium · Product group: Capell Operations · Bundle: operations · Status: Draft
 
 ## 1. Snapshot
 
 WordPress Importer is a thin adapter: it registers one `WxrReader` (`src/Services/WxrReader.php`) into Migration Assistant's `ImportSourceRegistry` (prepended ahead of MA's own `XmlReader`) so `.xml` uploads are sniffed for a WordPress WXR namespace and parsed into MA's neutral `ExternalImportReadResult` row shape. The entire package is three PHP files — the reader, a Spatie-package-tools service provider (`src/Providers/WordPressImporterServiceProvider.php`), and a near-empty health-check class (`src/Health/WordpressImporterHealthCheck.php`). It declares **no migrations, no settings, no permissions, no Filament resources, no commands** (`capell.json` `database`/`commands`/`settings`/`permissions` all empty); surfaces are `["admin","console"]` but it contributes no admin UI or console command of its own — those surfaces are entirely Migration Assistant's. Relationship to migration-assistant: hard `requires` dependency; WordPress Importer is a pure **consumer/extension** of MA contracts (`ImportSourceReader`, `ExternalImportReadResult`, `SafeXmlLoader`, `XmlReader`) and owns none of the import session, preview, execution, or rollback machinery.
 
-Current marketplace summary (verbatim): *"WordPress Importer adds WordPress WXR XML parsing to the Capell MigrationAssistant workflow."* Screenshot count in `capell.json.marketplace.screenshots`: **1** (`docs/assets/marketplace/extension-card.jpg`). Mismatch: `docs/screenshots.json` references **3 different** PNG paths (`docs/screenshots/wordpress-wxr-source-selection.png`, `…-preview.png`, `wordpress-import-session.png`) that **do not exist on disk**; the only real assets are `extension-card.jpg`, `hero-desktop.jpg`, `hero-mobile.jpg`.
+Current marketplace summary (verbatim): _"WordPress Importer adds WordPress WXR XML parsing to the Capell MigrationAssistant workflow."_ Screenshot count in `capell.json.marketplace.screenshots`: **1** (`docs/assets/marketplace/extension-card.jpg`). Mismatch: `docs/screenshots.json` references **3 different** PNG paths (`docs/screenshots/wordpress-wxr-source-selection.png`, `…-preview.png`, `wordpress-import-session.png`) that **do not exist on disk**; the only real assets are `extension-card.jpg`, `hero-desktop.jpg`, `hero-mobile.jpg`.
 
 ## 2. Improvements (existing functionality)
 
-1. **Make `supports()` discriminate WXR instead of claiming all XML** — why: `WxrReader::supports()` returns true for *every* `.xml` file and is `prepend:true`, so it shadows MA's generic `XmlReader` for all XML imports, then re-delegates non-WP files by constructing `new XmlReader` inside `read()` (`src/Services/WxrReader.php:16-33`). This couples the package to MA's concrete reader and double-parses the file (once here to sniff, once in the delegate). Move the WP-vs-generic decision out of `read()` or have the registry pass the parsed doc through — `src/Services/WxrReader.php` — M.
-2. **Stop double-loading the file** — why: `read()` calls `SafeXmlLoader::loadFile($path,...)`, and on the non-WP branch calls `(new XmlReader)->read($path)` which loads the file *again* (`src/Services/WxrReader.php:27,32`). For a 50MB WXR (the `SafeXmlLoader::DEFAULT_MAX_BYTES` cap) that is two full DOM builds. Parse once, branch on the in-memory `SimpleXMLElement` — `src/Services/WxrReader.php` — S.
+1. **Make `supports()` discriminate WXR instead of claiming all XML** — why: `WxrReader::supports()` returns true for _every_ `.xml` file and is `prepend:true`, so it shadows MA's generic `XmlReader` for all XML imports, then re-delegates non-WP files by constructing `new XmlReader` inside `read()` (`src/Services/WxrReader.php:16-33`). This couples the package to MA's concrete reader and double-parses the file (once here to sniff, once in the delegate). Move the WP-vs-generic decision out of `read()` or have the registry pass the parsed doc through — `src/Services/WxrReader.php` — M.
+2. **Stop double-loading the file** — why: `read()` calls `SafeXmlLoader::loadFile($path,...)`, and on the non-WP branch calls `(new XmlReader)->read($path)` which loads the file _again_ (`src/Services/WxrReader.php:27,32`). For a 50MB WXR (the `SafeXmlLoader::DEFAULT_MAX_BYTES` cap) that is two full DOM builds. Parse once, branch on the in-memory `SimpleXMLElement` — `src/Services/WxrReader.php` — S.
 3. **Surface CDATA/excerpt edge cases as columns consistently** — why: `columnsFor()` derives columns from the union of row keys (`src/Services/WxrReader.php:147-150`), but every row always has the same fixed keys from `rowFromItem()`, so the union logic is dead complexity; a static column list would be clearer and cheaper — `src/Services/WxrReader.php` — S.
-4. **Health check is a stub that asserts nothing** — why: `WordpressImporterHealthCheck` implements only `compatibleCapellApiVersion()` returning `'^4.0'` (`src/Health/WordpressImporterHealthCheck.php`), yet `capell.json` advertises it as `severity: critical` with label *"surfaces, providers, and install health are discoverable by Diagnostics."* It cannot detect a failed reader registration, a missing `ext-simplexml`, or MA contract drift. Add real probes (registry contains a `WxrReader`; `ext-simplexml` loaded) — `src/Health/WordpressImporterHealthCheck.php` — M.
+4. **Health check is a stub that asserts nothing** — why: `WordpressImporterHealthCheck` implements only `compatibleCapellApiVersion()` returning `'^4.0'` (`src/Health/WordpressImporterHealthCheck.php`), yet `capell.json` advertises it as `severity: critical` with label _"surfaces, providers, and install health are discoverable by Diagnostics."_ It cannot detect a failed reader registration, a missing `ext-simplexml`, or MA contract drift. Add real probes (registry contains a `WxrReader`; `ext-simplexml` loaded) — `src/Health/WordpressImporterHealthCheck.php` — M.
 5. **Pin PHP to 8.4 to match Capell baseline** — why: `composer.json` requires `php: ^8.3` while the Capell skill mandates PHP 8.4-compatible code; align to avoid shipping on an unsupported runtime — `composer.json:7` — S.
 6. **README "Built With" omits the hard `ext-simplexml` requirement from its dependency narrative while listing it elsewhere** — minor doc consistency; ensure the parser dependency is stated once authoritatively — `README.md` / `composer.json:8` — S.
 
@@ -21,7 +22,7 @@ Current marketplace summary (verbatim): *"WordPress Importer adds WordPress WXR 
 The package advertises capabilities `wordpress-importer`, `wordpress-importer-admin`, `wordpress-importer-console` (`capell.json`), but in practice delivers only WXR-to-row parsing. Against WordPress-import norms:
 
 - **Extracted fields are dead-ended downstream (the headline gap).** `WxrReader::rowFromItem()` extracts `categories`, `tags`, `author_login`, `attachments`, `link`, and `post_id` (`src/Services/WxrReader.php:87-102`), but MA's `FieldMapper::defaultTargetPath()` only maps `post_title→name`, `post_content→meta.content`, `post_excerpt→meta.excerpt`, `post_name→meta.slug`, `post_status→meta.status`, `post_date→visible_from` (migration-assistant `src/Services/Import/FieldMapper.php:44-52`). Everything else falls into `meta.imported.*` and a repo-wide grep for `'categories'`/`'tags'`/`'attachments'`/`'author_login'` finds **zero** consumers in migration-assistant. Categories/tags/author/media are parsed and then discarded. Differentiator: a WordPress-aware mapping + taxonomy/author resolution.
-- **No execution path for external reader rows at all.** `ExternalImportReadResult` rows are only consumed by `ExternalImportPreviewBuilder::build()` (preview), which emits `action:'create'` descriptors but is wired to nothing that writes Pages — `StartPageImportAction` operates on `$package->payload` (a zip package), not external rows (migration-assistant `src/Actions/Imports/StartPageImportAction.php:51`). So a WXR import can be *previewed* but there is no evidence it can be *executed into Pages*. This is the single biggest functional gap and must be confirmed with MA owners.
+- **No execution path for external reader rows at all.** `ExternalImportReadResult` rows are only consumed by `ExternalImportPreviewBuilder::build()` (preview), which emits `action:'create'` descriptors but is wired to nothing that writes Pages — `StartPageImportAction` operates on `$package->payload` (a zip package), not external rows (migration-assistant `src/Actions/Imports/StartPageImportAction.php:51`). So a WXR import can be _previewed_ but there is no evidence it can be _executed into Pages_. This is the single biggest functional gap and must be confirmed with MA owners.
 - **Media import not performed.** Only the first `wp:attachment_url` is captured as a `{url,title}` reference (`src/Services/WxrReader.php:130-141`); nothing downloads it into Spatie media or rewrites in-content image URLs. Table-stakes for WP migration.
 - **Gutenberg blocks / shortcodes passed through verbatim.** `post_content` is stored raw (`src/Services/WxrReader.php:93`); `<!-- wp:* -->` block comments and `[shortcode]` markup land untouched in `meta.content`. No converter to Capell components/blocks. Major differentiator.
 - **No redirect preservation.** WXR `link` is extracted but unused; no integration with `url-manager` to map old WP permalinks → new Capell URLs. High-value for SEO retention.
@@ -46,19 +47,21 @@ The package advertises capabilities `wordpress-importer`, `wordpress-importer-ad
 
 ## 5. Marketplace & Selling
 
-**Critique.** Current `summary` and composer `description` are functionally identical and developer-jargon ("WXR XML parsing to the Capell MigrationAssistant workflow") — they describe a mechanism, not an outcome, and bury the buyer benefit (escape WordPress). Composer description even leaks an apparent find-replace artefact: *"Migration AIOrchestrator"* (`composer.json:3`, also in `docs/overview.md` and credits) — "AIOrchestrator" is a different package and is wrong here. Fix that string everywhere.
+**Critique.** Current `summary` and composer `description` are functionally identical and developer-jargon ("WXR XML parsing to the Capell MigrationAssistant workflow") — they describe a mechanism, not an outcome, and bury the buyer benefit (escape WordPress). Composer description even leaks an apparent find-replace artefact: _"Migration AIOrchestrator"_ (`composer.json:3`, also in `docs/overview.md` and credits) — "AIOrchestrator" is a different package and is wrong here. Fix that string everywhere.
 
 **Improved 1-sentence summary:**
+
 > Migrate your WordPress site into Capell — import posts, pages, and media from a standard WXR export, preview every change, and roll back safely.
 
 **Improved 3–4 sentence description:**
+
 > WordPress Importer turns a standard WordPress WXR export into a guided Capell migration. It reads your posts and pages, maps WordPress fields onto Capell's page schema, and hands them to Migration Assistant for preview, validation, mapping, and one-click rollback — so you see exactly what will change before anything is written. Built to extend rather than replace, it slots into the Operations bundle alongside Migration Assistant and pairs with URL Manager to preserve your old permalinks and SEO equity. The fastest, lowest-risk path off WordPress and onto Capell.
 
 (Note: the description should only promise media import / URL preservation **after** §3 gaps are closed; today it would overstate.)
 
 **Screenshot/media gaps.** Reconcile `docs/screenshots.json` (3 missing PNGs) with `capell.json` (1 JPG). Produce the three real screenshots the JSON already names: WXR source selection, parsed preview, import session — these are the exact funnel-proof images a buyer wants. Add the existing `hero-desktop.jpg`/`hero-mobile.jpg` to the manifest (they exist but aren't referenced in `capell.json.marketplace`).
 
-**Pricing/tier/bundle positioning.** Tier `premium`, bundle `operations`, license `paid`/`first-party`/priority support (`capell.json.commercial`). WordPress import is a **top-of-funnel acquisition driver** — it is often the reason a prospect evaluates Capell at all. Consider positioning the *parser* as a low-friction lead-in (even bundling read/preview free) and monetising the *execution + media + redirect* layer as the premium hook, maximising trial-to-paid conversion. Keep it inside the Operations bundle so it cross-sells the bundle.
+**Pricing/tier/bundle positioning.** Tier `premium`, bundle `operations`, license `paid`/`first-party`/priority support (`capell.json.commercial`). WordPress import is a **top-of-funnel acquisition driver** — it is often the reason a prospect evaluates Capell at all. Consider positioning the _parser_ as a low-friction lead-in (even bundling read/preview free) and monetising the _execution + media + redirect_ layer as the premium hook, maximising trial-to-paid conversion. Keep it inside the Operations bundle so it cross-sells the bundle.
 
 **Cross-sell (deps + Extension Suites).** Hard dep on **migration-assistant** (the engine — always co-sold). Natural attach: **url-manager** (preserve WP permalinks → redirects; today `link` is parsed but unused — the integration is half-built), **seo-suite** (redirect opportunity reports already consume `suggestedTargetUrl`), **media-library** (download `wp:attachment_url` into Spatie media). Frame as a "WordPress Migration Suite."
 
@@ -68,21 +71,21 @@ The package advertises capabilities `wordpress-importer`, `wordpress-importer-ad
 
 ## 6. Prioritized Roadmap
 
-| Item | Bucket | Effort | Impact | Section ref |
-| --- | --- | --- | --- | --- |
-| Confirm/build an execution path from external WXR rows → Pages (with MA owners) | Now | L | Critical | §3 |
-| Map WP categories/tags/author/media instead of dumping to `meta.imported.*` | Now | M | High | §2.1, §3 |
-| Fix `WxrReader::supports()` to detect WXR and parse the file only once | Now | M | High | §2.1, §2.2 |
-| Reconcile screenshots (`screenshots.json` ↔ `capell.json`) and add real images | Now | S | High | §4, §5 |
-| Fix "Migration AIOrchestrator" copy artefact in description/docs | Now | S | Med | §5 |
-| Implement real health-check probes (registry + ext-simplexml) | Now | M | Med | §2.4, §4 |
-| Pin PHP to ^8.4; refresh keywords; rewrite marketplace summary/description | Now | S | Med | §2.5, §5 |
-| Media import: download `wp:attachment_url` into Spatie media + rewrite content URLs | Next | L | High | §3 |
-| Permalink → redirect preservation via url-manager integration | Next | M | High | §3, §5 |
-| Per-item error isolation + idempotent re-import (de-dup on `post_id`/slug) | Next | M | Med | §4 |
-| Streaming `XMLReader` parser for exports > 50MB | Next | L | Med | §4 |
-| Headless `wordpress-importer:import` console command (justify console surface) | Next | M | Med | §3, §4 |
-| Add Feature/Integration test: end-to-end WXR → Page outcome | Next | M | High | §4 |
-| Gutenberg block + shortcode → Capell component conversion | Later | L | High (differentiator) | §3, §5 |
-| Custom post types, comments, nav-menu import (configurable) | Later | L | Med | §3 |
-| Downscope or implement the `admin`/`console` capabilities to remove manifest mismatch | Later | S | Med | §4 |
+| Item                                                                                  | Bucket | Effort | Impact                | Section ref |
+| ------------------------------------------------------------------------------------- | ------ | ------ | --------------------- | ----------- |
+| Confirm/build an execution path from external WXR rows → Pages (with MA owners)       | Now    | L      | Critical              | §3          |
+| Map WP categories/tags/author/media instead of dumping to `meta.imported.*`           | Now    | M      | High                  | §2.1, §3    |
+| Fix `WxrReader::supports()` to detect WXR and parse the file only once                | Now    | M      | High                  | §2.1, §2.2  |
+| Reconcile screenshots (`screenshots.json` ↔ `capell.json`) and add real images        | Now    | S      | High                  | §4, §5      |
+| Fix "Migration AIOrchestrator" copy artefact in description/docs                      | Now    | S      | Med                   | §5          |
+| Implement real health-check probes (registry + ext-simplexml)                         | Now    | M      | Med                   | §2.4, §4    |
+| Pin PHP to ^8.4; refresh keywords; rewrite marketplace summary/description            | Now    | S      | Med                   | §2.5, §5    |
+| Media import: download `wp:attachment_url` into Spatie media + rewrite content URLs   | Next   | L      | High                  | §3          |
+| Permalink → redirect preservation via url-manager integration                         | Next   | M      | High                  | §3, §5      |
+| Per-item error isolation + idempotent re-import (de-dup on `post_id`/slug)            | Next   | M      | Med                   | §4          |
+| Streaming `XMLReader` parser for exports > 50MB                                       | Next   | L      | Med                   | §4          |
+| Headless `wordpress-importer:import` console command (justify console surface)        | Next   | M      | Med                   | §3, §4      |
+| Add Feature/Integration test: end-to-end WXR → Page outcome                           | Next   | M      | High                  | §4          |
+| Gutenberg block + shortcode → Capell component conversion                             | Later  | L      | High (differentiator) | §3, §5      |
+| Custom post types, comments, nav-menu import (configurable)                           | Later  | L      | Med                   | §3          |
+| Downscope or implement the `admin`/`console` capabilities to remove manifest mismatch | Later  | S      | Med                   | §4          |
