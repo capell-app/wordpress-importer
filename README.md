@@ -24,7 +24,7 @@ WordPress WXR import source for Capell Migration Assistant.
 
 ## What It Adds
 
-- Parses WordPress WXR XML through `ext-simplexml` without double-loading non-WordPress XML files.
+- Parses WordPress WXR XML through `ext-simplexml`; extension-only registry checks still select the reader for `.xml`, while direct path-aware probes can stream-sniff WXR files.
 - Registers the source reader with Migration Assistant.
 - Preserves source identity, old permalinks, taxonomy labels, author logins, media URL references, Gutenberg markers, and shortcode names in the preview payload.
 - Adds `wordpress-importer:import {path} --json` for headless preview generation and scripted migration audits.
@@ -68,9 +68,9 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 ## Install Impact
 
 - Requires `capell-app/migration-assistant`, `capell-app/core`, `capell-app/admin`, and `ext-simplexml`.
-- Registers a WordPress WXR source reader with MigrationAssistant.
+- Registers a WordPress WXR source reader with Migration Assistant.
 - Registers the `wordpress-importer:import` console command for preview-only WXR parsing.
-- Does not add migrations; MigrationAssistant owns import sessions and rollback reports.
+- Does not add migrations; Migration Assistant owns import sessions and rollback reports.
 
 ## Install And Setup
 

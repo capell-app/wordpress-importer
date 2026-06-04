@@ -6,9 +6,29 @@ use Capell\MigrationAssistant\Support\ImportSourceRegistry;
 use Capell\WordPressImporter\Services\WxrReader;
 use Illuminate\Support\Facades\Artisan;
 
-it('registers the WordPress WXR reader with migration-assistant', function (): void {
-    expect(resolve(ImportSourceRegistry::class)->readerFor('export.xml'))
+it('registers the WordPress WXR reader ahead of migration-assistant XML readers', function (): void {
+    $readers = resolve(ImportSourceRegistry::class)->readers();
+
+    expect($readers[0] ?? null)
+        ->toBeInstanceOf(WxrReader::class)
+        ->and(resolve(ImportSourceRegistry::class)->readerFor('export.xml'))
         ->toBeInstanceOf(WxrReader::class);
+});
+
+it('supports readable WordPress WXR XML files', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-support-') . '.xml';
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Example WordPress Site</title>
+        <wp:wxr_version>1.2</wp:wxr_version>
+    </channel>
+</rss>
+XML);
+
+    expect((new WxrReader)->supports($path))->toBeTrue()
+        ->and((new WxrReader)->supports('xml'))->toBeTrue();
 });
 
 it('reads WordPress WXR posts and pages into migration-assistant rows', function (): void {
@@ -90,8 +110,8 @@ XML);
         ->and($result->rows[1]['shortcodes'])->toBe(['gallery']);
 });
 
-it('delegates non WordPress XML imports to the generic migration-assistant XML reader', function (): void {
-    $path = tempnam(sys_get_temp_dir(), 'capell-xml-');
+it('does not claim generic XML paths during direct path-aware probes', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'capell-xml-') . '.xml';
     file_put_contents($path, <<<'XML'
 <?xml version="1.0" encoding="UTF-8" ?>
 <catalog>
@@ -104,9 +124,12 @@ it('delegates non WordPress XML imports to the generic migration-assistant XML r
 </catalog>
 XML);
 
-    $result = resolve(ImportSourceRegistry::class)->readerFor('catalog.xml')->read($path);
+    $reader = resolve(ImportSourceRegistry::class)->readerFor($path);
+    $result = $reader->read($path);
 
-    expect($result->sourceType)->toBe('xml')
+    expect((new WxrReader)->supports($path))->toBeFalse()
+        ->and($reader)->toBeInstanceOf(WxrReader::class)
+        ->and($result->sourceType)->toBe('xml')
         ->and($result->rows)->toHaveCount(2)
         ->and($result->rows[0]['title'])->toBe('One');
 });

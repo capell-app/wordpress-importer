@@ -9,6 +9,8 @@ use Capell\MigrationAssistant\Data\ExternalImportReadResult;
 use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
 use RuntimeException;
 use SimpleXMLElement;
+use Throwable;
+use XMLReader;
 
 final class WxrReader implements ImportSourceReader
 {
@@ -38,7 +40,19 @@ final class WxrReader implements ImportSourceReader
 
     public function supports(string $extension): bool
     {
-        return strtolower($extension) === 'xml';
+        if (strtolower($extension) === 'xml') {
+            return true;
+        }
+
+        if (strtolower(pathinfo($extension, PATHINFO_EXTENSION)) !== 'xml') {
+            return false;
+        }
+
+        if (! is_readable($extension) || is_dir($extension)) {
+            return false;
+        }
+
+        return $this->isWordPressExportPath($extension);
     }
 
     public function read(string $path): ExternalImportReadResult
@@ -99,6 +113,54 @@ final class WxrReader implements ImportSourceReader
         }
 
         return trim((string) $channel->children('wp', true)->wxr_version) !== '';
+    }
+
+    private function isWordPressExportPath(string $path): bool
+    {
+        if (class_exists(XMLReader::class)) {
+            return $this->streamHasWxrVersion($path);
+        }
+
+        try {
+            return $this->isWordPressExport(SafeXmlLoader::loadFile($path, LIBXML_NOCDATA | LIBXML_NONET)->channel);
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    private function streamHasWxrVersion(string $path): bool
+    {
+        $reader = new XMLReader;
+        $previousXmlErrorHandling = libxml_use_internal_errors(true);
+
+        try {
+            if (! $reader->open($path, null, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING)) {
+                return false;
+            }
+
+            while ($reader->read()) {
+                if ($reader->nodeType === XMLReader::DOC_TYPE) {
+                    return false;
+                }
+
+                if (
+                    $reader->nodeType === XMLReader::ELEMENT
+                    && $reader->localName === 'wxr_version'
+                    && str_starts_with($reader->namespaceURI, 'http://wordpress.org/export/')
+                    && trim($reader->readString()) !== ''
+                ) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (Throwable) {
+            return false;
+        } finally {
+            $reader->close();
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousXmlErrorHandling);
+        }
     }
 
     /**

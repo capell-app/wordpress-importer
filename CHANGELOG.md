@@ -4,13 +4,20 @@ All notable changes to `capell-app/wordpress-importer` will be documented in thi
 
 ## Unreleased
 
+### 2026-06-04
+
+#### Fixed
+
+- Restricted `WxrReader::supports()` to real WXR XML paths so the prepended reader no longer claims generic XML inputs.
+- Corrected remaining Migration Assistant naming copy.
+
 ### 2026-06-03
 
 #### Changed
 
 - Rewrote the marketplace summary, package description, and `composer.json` description to lead with the guided WordPress migration value proposition.
 - Promoted the existing desktop and mobile marketplace hero images alongside the extension card.
-- Corrected stale Migration AIOrchestrator copy to reference Migration Assistant.
+- Corrected stale non-Migration Assistant copy to reference Migration Assistant.
 - Added static WXR preview columns for source identity, old permalinks, media references, Gutenberg markers, and shortcode names.
 - Added `wordpress-importer:import` for headless Migration Assistant preview generation.
 - Expanded package keywords, docs, and marketplace screenshots to match the supported WordPress WXR workflow.
