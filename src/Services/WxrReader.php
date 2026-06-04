@@ -6,13 +6,36 @@ namespace Capell\WordPressImporter\Services;
 
 use Capell\MigrationAssistant\Contracts\ImportSourceReader;
 use Capell\MigrationAssistant\Data\ExternalImportReadResult;
-use Capell\MigrationAssistant\Services\Import\XmlReader;
 use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
 use RuntimeException;
 use SimpleXMLElement;
 
 final class WxrReader implements ImportSourceReader
 {
+    /** @var list<string> */
+    private const array WXR_COLUMNS = [
+        'source_identity',
+        'post_id',
+        'post_type',
+        'post_title',
+        'post_name',
+        'old_permalink',
+        'link',
+        'post_content',
+        'post_excerpt',
+        'post_status',
+        'post_date',
+        'parent_id',
+        'author_login',
+        'categories',
+        'tags',
+        'attachments',
+        'media_urls',
+        'featured_media_url',
+        'contains_gutenberg_blocks',
+        'shortcodes',
+    ];
+
     public function supports(string $extension): bool
     {
         return strtolower($extension) === 'xml';
@@ -29,12 +52,14 @@ final class WxrReader implements ImportSourceReader
         $channel = $xml->channel;
 
         if (! $this->isWordPressExport($channel)) {
-            return (new XmlReader)->read($path);
+            return $this->genericXmlResult($xml, $path);
         }
 
         throw_if(! $channel instanceof SimpleXMLElement || (! property_exists($channel, 'item') || $channel->item === null), RuntimeException::class, 'WordPress export must contain a channel with item entries.');
 
+        $attachmentsByParent = $this->attachmentsByParent($channel);
         $rows = [];
+
         foreach ($channel->item as $item) {
             $wp = $item->children('wp', true);
             $postType = trim((string) $wp->post_type);
@@ -43,17 +68,19 @@ final class WxrReader implements ImportSourceReader
                 continue;
             }
 
-            $rows[] = $this->rowFromItem($item);
+            $rows[] = $this->rowFromItem($item, $attachmentsByParent);
         }
 
         return new ExternalImportReadResult(
             sourceType: 'wordpress-wxr',
-            columns: $this->columnsFor($rows),
+            columns: self::WXR_COLUMNS,
             rows: $rows,
             metadata: [
                 'filename' => basename($path),
                 'site_title' => trim((string) $channel->title),
                 'wxr_version' => trim((string) $channel->children('wp', true)->wxr_version),
+                'post_count' => count($rows),
+                'attachment_count' => array_sum(array_map('count', $attachmentsByParent)),
             ],
             suggestedTarget: 'page',
         );
@@ -75,22 +102,35 @@ final class WxrReader implements ImportSourceReader
     }
 
     /**
+     * @param  array<string, list<array{url: string, title: string}>>  $attachmentsByParent
      * @return array<string, mixed>
      */
-    private function rowFromItem(SimpleXMLElement $item): array
+    private function rowFromItem(SimpleXMLElement $item, array $attachmentsByParent): array
     {
         $wp = $item->children('wp', true);
         $content = $item->children('content', true);
         $dc = $item->children('dc', true);
         $excerpt = $item->children('excerpt', true);
+        $postId = trim((string) $wp->post_id);
+        $postContent = trim((string) $content->encoded);
+        $attachments = array_values(array_merge(
+            $this->inlineAttachments($wp, trim((string) $item->title)),
+            $attachmentsByParent[$postId] ?? [],
+        ));
+        $mediaUrls = array_values(array_unique(array_map(
+            static fn (array $attachment): string => $attachment['url'],
+            $attachments,
+        )));
 
         return [
-            'post_id' => trim((string) $wp->post_id),
+            'source_identity' => 'wordpress:' . $postId,
+            'post_id' => $postId,
             'post_type' => trim((string) $wp->post_type),
             'post_title' => trim((string) $item->title),
             'post_name' => trim((string) $wp->post_name),
+            'old_permalink' => trim((string) $item->link),
             'link' => trim((string) $item->link),
-            'post_content' => trim((string) $content->encoded),
+            'post_content' => $postContent,
             'post_excerpt' => trim((string) $excerpt->encoded),
             'post_status' => trim((string) $wp->status),
             'post_date' => trim((string) $wp->post_date),
@@ -98,7 +138,11 @@ final class WxrReader implements ImportSourceReader
             'author_login' => trim((string) $dc->creator),
             'categories' => $this->terms($item, 'category'),
             'tags' => $this->terms($item, 'post_tag'),
-            'attachments' => $this->attachments($wp, trim((string) $item->title)),
+            'attachments' => $attachments,
+            'media_urls' => $mediaUrls,
+            'featured_media_url' => $mediaUrls[0] ?? null,
+            'contains_gutenberg_blocks' => str_contains($postContent, '<!-- wp:'),
+            'shortcodes' => $this->shortcodes($postContent),
         ];
     }
 
@@ -127,7 +171,7 @@ final class WxrReader implements ImportSourceReader
     /**
      * @return list<array{url: string, title: string}>
      */
-    private function attachments(SimpleXMLElement $wp, string $title): array
+    private function inlineAttachments(SimpleXMLElement $wp, string $title): array
     {
         $url = trim((string) $wp->attachment_url);
         if ($url === '') {
@@ -141,11 +185,105 @@ final class WxrReader implements ImportSourceReader
     }
 
     /**
-     * @param  list<array<string, mixed>>  $rows
+     * @return array<string, list<array{url: string, title: string}>>
+     */
+    private function attachmentsByParent(SimpleXMLElement $channel): array
+    {
+        $attachments = [];
+
+        foreach ($channel->item as $item) {
+            $wp = $item->children('wp', true);
+
+            if (trim((string) $wp->post_type) !== 'attachment') {
+                continue;
+            }
+
+            $parentId = trim((string) $wp->post_parent);
+            $attachment = $this->inlineAttachments($wp, trim((string) $item->title));
+
+            if ($parentId === '' || $attachment === []) {
+                continue;
+            }
+
+            $attachments[$parentId] = array_values(array_merge($attachments[$parentId] ?? [], $attachment));
+        }
+
+        return $attachments;
+    }
+
+    /**
      * @return list<string>
      */
-    private function columnsFor(array $rows): array
+    private function shortcodes(string $content): array
     {
-        return array_values(array_unique(array_merge(...array_map(array_keys(...), $rows !== [] ? $rows : [[]]))));
+        preg_match_all('/\[(?!\/)([a-zA-Z][a-zA-Z0-9_-]*)\b[^\]]*\]/', $content, $matches);
+
+        return array_values(array_unique($matches[1]));
+    }
+
+    private function genericXmlResult(SimpleXMLElement $xml, string $path): ExternalImportReadResult
+    {
+        $items = $this->itemElements($xml);
+        $rows = array_map(fn (SimpleXMLElement $item): array => $this->flatten($item), $items);
+        $columns = array_values(array_unique(array_merge(...array_map(array_keys(...), $rows !== [] ? $rows : [[]]))));
+
+        return new ExternalImportReadResult(
+            sourceType: 'xml',
+            columns: $columns,
+            rows: $rows,
+            metadata: [
+                'filename' => basename($path),
+                'root' => $xml->getName(),
+            ],
+        );
+    }
+
+    /**
+     * @return list<SimpleXMLElement>
+     */
+    private function itemElements(SimpleXMLElement $xml): array
+    {
+        $children = [];
+        foreach ($xml->children() as $child) {
+            $children[] = $child;
+        }
+
+        if ($children === []) {
+            return [$xml];
+        }
+
+        $firstChildName = $children[0]->getName();
+        $sameNamedChildren = array_values(array_filter(
+            $children,
+            static fn (SimpleXMLElement $child): bool => $child->getName() === $firstChildName,
+        ));
+
+        return count($sameNamedChildren) > 1 ? $sameNamedChildren : $children;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function flatten(SimpleXMLElement $element, string $prefix = ''): array
+    {
+        $row = [];
+
+        foreach ($element->children() as $child) {
+            $key = $prefix === '' ? $child->getName() : $prefix . '.' . $child->getName();
+
+            if ($child->children()->count() > 0) {
+                $row = array_merge($row, $this->flatten($child, $key));
+
+                continue;
+            }
+
+            $row[$key] = trim((string) $child);
+        }
+
+        if ($row === []) {
+            $row[$prefix === '' ? $element->getName() : $prefix] = trim((string) $element);
+        }
+
+        return $row;
     }
 }

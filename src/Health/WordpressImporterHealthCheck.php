@@ -44,14 +44,14 @@ final class WordpressImporterHealthCheck implements ChecksExtensionHealth
         $extensionLoaded = extension_loaded('simplexml');
 
         return new DoctorCheckResultData(
-            label: 'WordPress WXR XML parser',
+            label: (string) __('capell-wordpress-importer::health.simplexml.label'),
             passed: $extensionLoaded,
             message: $extensionLoaded
-                ? 'The SimpleXML extension required for WordPress WXR parsing is loaded.'
-                : 'The SimpleXML extension required for WordPress WXR parsing is not loaded.',
+                ? (string) __('capell-wordpress-importer::health.simplexml.passed')
+                : (string) __('capell-wordpress-importer::health.simplexml.failed'),
             remediation: $extensionLoaded
                 ? null
-                : 'Install and enable the PHP SimpleXML extension before importing WordPress WXR exports.',
+                : (string) __('capell-wordpress-importer::health.simplexml.remediation'),
         );
     }
 
@@ -60,30 +60,32 @@ final class WordpressImporterHealthCheck implements ChecksExtensionHealth
         $registered = $this->hasRegisteredWxrReader();
 
         return new DoctorCheckResultData(
-            label: 'WordPress WXR source reader',
+            label: (string) __('capell-wordpress-importer::health.reader.label'),
             passed: $registered,
             message: $registered
-                ? 'The WordPress WXR reader is registered with Migration Assistant for XML imports.'
-                : 'The WordPress WXR reader is not registered with Migration Assistant.',
+                ? (string) __('capell-wordpress-importer::health.reader.passed')
+                : (string) __('capell-wordpress-importer::health.reader.failed'),
             remediation: $registered
                 ? null
-                : 'Ensure WordPressImporterServiceProvider is loaded after Migration Assistant and registers the WxrReader.',
+                : (string) __('capell-wordpress-importer::health.reader.remediation'),
         );
     }
 
     public function readerContractCheck(): DoctorCheckResultData
     {
-        $implementsContract = is_subclass_of(WxrReader::class, ImportSourceReader::class);
+        $implementedContracts = class_implements(WxrReader::class);
+        $implementsContract = is_array($implementedContracts)
+            && in_array(ImportSourceReader::class, $implementedContracts, true);
 
         return new DoctorCheckResultData(
-            label: 'Migration Assistant reader contract',
+            label: (string) __('capell-wordpress-importer::health.contract.label'),
             passed: $implementsContract,
             message: $implementsContract
-                ? 'The WordPress WXR reader implements the Migration Assistant source-reader contract.'
-                : 'The WordPress WXR reader no longer implements the Migration Assistant source-reader contract.',
+                ? (string) __('capell-wordpress-importer::health.contract.passed')
+                : (string) __('capell-wordpress-importer::health.contract.failed'),
             remediation: $implementsContract
                 ? null
-                : 'Update WxrReader to implement the current Migration Assistant ImportSourceReader contract.',
+                : (string) __('capell-wordpress-importer::health.contract.remediation'),
         );
     }
 

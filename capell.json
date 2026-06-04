@@ -6,7 +6,7 @@
     "kind": "package",
     "capellApiVersion": "^4.0",
     "version": "4.x-dev",
-    "description": "Migrate your WordPress site into Capell — import posts, pages, and media from a standard WXR export, preview every change, and roll back safely.",
+    "description": "Preview WordPress WXR posts and pages in Capell Migration Assistant with permalink, taxonomy, author, media-reference, Gutenberg, and shortcode metadata preserved.",
     "product": {
         "group": "Capell Operations",
         "tier": "premium",
@@ -42,14 +42,19 @@
         "install": null,
         "setup": null,
         "demo": null,
-        "doctor": null
+        "doctor": null,
+        "import": "wordpress-importer:import"
     },
     "settings": [],
     "permissions": [],
     "capabilities": [
-        "wordpress-importer",
-        "wordpress-importer-admin",
-        "wordpress-importer-console"
+        "wordpress-wxr-reader",
+        "wordpress-wxr-preview",
+        "wordpress-wxr-media-references",
+        "wordpress-permalink-metadata",
+        "wordpress-gutenberg-detection",
+        "wordpress-shortcode-detection",
+        "wordpress-headless-preview"
     ],
     "performance": {
         "frontendRenderBudgetMs": 0,
@@ -79,8 +84,8 @@
         "privateDocsRequested": true
     },
     "marketplace": {
-        "summary": "Migrate your WordPress site into Capell — import posts, pages, and media from a standard WXR export, preview every change, and roll back safely.",
-        "description": "WordPress Importer turns a standard WordPress WXR export into a guided Capell migration. It reads your posts and pages, maps WordPress fields onto Capell's page schema, and hands them to Migration Assistant for preview, validation, mapping, and one-click rollback — so you see exactly what will change before anything is written. Built to extend rather than replace, it slots into the Operations bundle alongside Migration Assistant and pairs with URL Manager to preserve your old permalinks and SEO equity. The fastest, lowest-risk path off WordPress and onto Capell.",
+        "summary": "Preview WordPress WXR posts and pages in Capell with durable metadata ready for Migration Assistant mapping.",
+        "description": "WordPress Importer turns a standard WordPress WXR export into a Capell Migration Assistant source. It reads posts and pages, preserves source identity, old permalinks, taxonomy labels, author logins, media URLs, Gutenberg markers, and shortcode names, then builds a preview operators can inspect before execution. A headless console command produces the same Migration Assistant preview as JSON for scripted migration audits. Media downloads, redirect creation, and final page writes remain owned by companion Capell packages and Migration Assistant.",
         "screenshots": [
             {
                 "path": "docs/assets/marketplace/extension-card.jpg",
@@ -96,6 +101,21 @@
                 "path": "docs/assets/marketplace/hero-mobile.jpg",
                 "alt": "WordPress Importer mobile marketplace hero",
                 "caption": "Mobile overview of the WordPress migration workflow"
+            },
+            {
+                "path": "docs/screenshots/wordpress-wxr-source-selection.png",
+                "alt": "Migration Assistant source selection with WordPress WXR available",
+                "caption": "Select WordPress WXR as a Migration Assistant source"
+            },
+            {
+                "path": "docs/screenshots/wordpress-wxr-preview.png",
+                "alt": "WordPress WXR rows previewed before import",
+                "caption": "Preview parsed posts, pages, and preserved metadata"
+            },
+            {
+                "path": "docs/screenshots/wordpress-import-session.png",
+                "alt": "WordPress import session metadata handoff",
+                "caption": "Review the Migration Assistant session handoff"
             }
         ],
         "categories": ["admin", "console", "operations"]

@@ -40,7 +40,16 @@
         "cms",
         "laravel",
         "wordpress",
-        "migration"
+        "migration",
+        "wxr",
+        "importer",
+        "cms-migration",
+        "content-migration",
+        "posts",
+        "pages",
+        "gutenberg",
+        "permalinks",
+        "seo-redirects"
     ],
     "authors": [
         {
