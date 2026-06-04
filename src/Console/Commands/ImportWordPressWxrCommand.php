@@ -7,6 +7,7 @@ namespace Capell\WordPressImporter\Console\Commands;
 use Capell\MigrationAssistant\Services\Import\ExternalImportPreviewBuilder;
 use Capell\WordPressImporter\Services\WxrReader;
 use Illuminate\Console\Command;
+use Override;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
@@ -18,6 +19,7 @@ final class ImportWordPressWxrCommand extends Command
 
     protected $description = 'Read a WordPress WXR export and build a Migration Assistant preview.';
 
+    #[Override]
     public function getDescription(): string
     {
         return (string) __('capell-wordpress-importer::commands.import.description');
@@ -41,7 +43,7 @@ final class ImportWordPressWxrCommand extends Command
         $preview = $previewBuilder->build($result);
 
         if ((bool) $this->option('json')) {
-            $this->output->writeln((string) json_encode($preview->toArray(), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+            $this->output->writeln(json_encode($preview->toArray(), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
 
             return SymfonyCommand::SUCCESS;
         }
@@ -51,10 +53,8 @@ final class ImportWordPressWxrCommand extends Command
             'filename' => $result->metadata['filename'] ?? basename($resolvedPath),
         ]));
 
-        if ($preview->errors !== []) {
-            foreach ($preview->errors as $error) {
-                $this->components->warn($error);
-            }
+        foreach ($preview->errors as $error) {
+            $this->components->warn($error);
         }
 
         $this->table(

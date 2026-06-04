@@ -80,7 +80,7 @@ final class WxrReader implements ImportSourceReader
                 'site_title' => trim((string) $channel->title),
                 'wxr_version' => trim((string) $channel->children('wp', true)->wxr_version),
                 'post_count' => count($rows),
-                'attachment_count' => array_sum(array_map('count', $attachmentsByParent)),
+                'attachment_count' => array_sum(array_map(count(...), $attachmentsByParent)),
             ],
             suggestedTarget: 'page',
         );
@@ -200,8 +200,11 @@ final class WxrReader implements ImportSourceReader
 
             $parentId = trim((string) $wp->post_parent);
             $attachment = $this->inlineAttachments($wp, trim((string) $item->title));
+            if ($parentId === '') {
+                continue;
+            }
 
-            if ($parentId === '' || $attachment === []) {
+            if ($attachment === []) {
                 continue;
             }
 
