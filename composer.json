@@ -1,6 +1,6 @@
 {
     "name": "capell-app/wordpress-importer",
-    "description": "WordPress WXR import source for the Capell Migration AIOrchestrator.",
+    "description": "Migrate your WordPress site into Capell with guided WXR import previews and rollback-safe Migration Assistant handoff.",
     "type": "library",
     "license": "proprietary",
     "require": {

@@ -1,6 +1,6 @@
 # WordPress Importer
 
-WordPress Importer registers a WXR XML reader with the Capell Migration AIOrchestrator.
+WordPress Importer registers a WXR XML reader with Capell Migration Assistant.
 
 The reader extracts WordPress posts and pages into a neutral import row shape that MigrationAssistant can map, preview, validate, and execute.
 

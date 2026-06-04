@@ -2,7 +2,7 @@
 
 WordPress Importer is part of the Capell package set. This page names the main frameworks, packages, authors, and services this package leans on, with a short note about what they make possible here. It is intentionally shorter than the repository-wide credits page and closer to the package itself.
 
-Package role: WordPress WXR import source for the Capell Migration AIOrchestrator.
+Package role: WordPress WXR import source for Capell Migration Assistant.
 
 ## Shared Foundations
 

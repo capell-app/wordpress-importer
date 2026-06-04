@@ -2,11 +2,11 @@
     "manifest-version": 3,
     "name": "capell-app/wordpress-importer",
     "slug": "wordpress-importer",
-    "displayName": "Wordpress Importer",
+    "displayName": "WordPress Importer",
     "kind": "package",
     "capellApiVersion": "^4.0",
     "version": "4.x-dev",
-    "description": "WordPress Importer adds WordPress WXR XML parsing to the Capell MigrationAssistant workflow.",
+    "description": "Migrate your WordPress site into Capell — import posts, pages, and media from a standard WXR export, preview every change, and roll back safely.",
     "product": {
         "group": "Capell Operations",
         "tier": "premium",
@@ -66,7 +66,7 @@
     "healthChecks": [
         {
             "key": "wordpress-importer.package-health",
-            "label": "Wordpress Importer package surfaces, providers, and install health are discoverable by Diagnostics.",
+            "label": "WordPress Importer WXR reader registration and XML parser dependencies are available to Migration Assistant.",
             "class": "Capell\\WordPressImporter\\Health\\WordpressImporterHealthCheck",
             "severity": "critical",
             "surface": "admin"
@@ -79,12 +79,23 @@
         "privateDocsRequested": true
     },
     "marketplace": {
-        "summary": "WordPress Importer adds WordPress WXR XML parsing to the Capell MigrationAssistant workflow.",
+        "summary": "Migrate your WordPress site into Capell — import posts, pages, and media from a standard WXR export, preview every change, and roll back safely.",
+        "description": "WordPress Importer turns a standard WordPress WXR export into a guided Capell migration. It reads your posts and pages, maps WordPress fields onto Capell's page schema, and hands them to Migration Assistant for preview, validation, mapping, and one-click rollback — so you see exactly what will change before anything is written. Built to extend rather than replace, it slots into the Operations bundle alongside Migration Assistant and pairs with URL Manager to preserve your old permalinks and SEO equity. The fastest, lowest-risk path off WordPress and onto Capell.",
         "screenshots": [
             {
                 "path": "docs/assets/marketplace/extension-card.jpg",
-                "alt": "Wordpress Importer extension preview image",
-                "caption": "Wordpress Importer extension preview"
+                "alt": "WordPress Importer extension preview image",
+                "caption": "WordPress Importer extension preview"
+            },
+            {
+                "path": "docs/assets/marketplace/hero-desktop.jpg",
+                "alt": "WordPress Importer desktop marketplace hero",
+                "caption": "Desktop overview of the WordPress migration workflow"
+            },
+            {
+                "path": "docs/assets/marketplace/hero-mobile.jpg",
+                "alt": "WordPress Importer mobile marketplace hero",
+                "caption": "Mobile overview of the WordPress migration workflow"
             }
         ],
         "categories": ["admin", "console", "operations"]
