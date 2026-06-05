@@ -29,6 +29,7 @@ it('supports readable WordPress WXR XML files', function (): void {
 XML);
 
     expect((new WxrReader)->supports($path))->toBeTrue()
+        ->and((new WxrReader)->supportsPath($path))->toBeTrue()
         ->and((new WxrReader)->supports('xml'))->toBeTrue();
 });
 
@@ -129,11 +130,26 @@ XML);
     $result = $reader->read($path);
 
     expect((new WxrReader)->supports($path))->toBeFalse()
+        ->and((new WxrReader)->supportsPath($path))->toBeFalse()
         ->and($reader)->toBeInstanceOf(WxrReader::class)
         ->and($result->sourceType)->toBe('xml')
         ->and($result->rows)->toHaveCount(2)
         ->and($result->rows[0]['title'])->toBe('One');
 });
+
+it('rejects generic XML from the headless WordPress preview action', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'capell-generic-xml-');
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<catalog>
+    <book>
+        <title>One</title>
+    </book>
+</catalog>
+XML);
+
+    BuildWordPressImportPreviewAction::run($path);
+})->throws(RuntimeException::class, 'is not a readable WXR XML export');
 
 it('rejects WordPress WXR imports with doctype declarations', function (): void {
     $path = tempnam(sys_get_temp_dir(), 'capell-wxr-');

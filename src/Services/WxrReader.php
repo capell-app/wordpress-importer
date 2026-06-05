@@ -48,11 +48,16 @@ final class WxrReader implements ImportSourceReader
             return false;
         }
 
-        if (! is_readable($extension) || is_dir($extension)) {
+        return $this->supportsPath($extension);
+    }
+
+    public function supportsPath(string $path): bool
+    {
+        if (! is_readable($path) || is_dir($path)) {
             return false;
         }
 
-        return $this->isWordPressExportPath($extension);
+        return $this->isWordPressExportPath($path);
     }
 
     public function read(string $path): ExternalImportReadResult

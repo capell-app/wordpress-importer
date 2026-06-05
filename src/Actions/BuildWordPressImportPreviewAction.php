@@ -54,7 +54,13 @@ final class BuildWordPressImportPreviewAction
             throw new RuntimeException((string) __('capell-wordpress-importer::commands.import.path_missing', ['path' => $path]));
         }
 
-        $readResult = resolve(WxrReader::class)->read($resolvedPath);
+        $reader = resolve(WxrReader::class);
+
+        if (! $reader->supportsPath($resolvedPath)) {
+            throw new RuntimeException((string) __('capell-wordpress-importer::commands.import.invalid_wxr', ['path' => $path]));
+        }
+
+        $readResult = $reader->read($resolvedPath);
         $preview = resolve(ExternalImportPreviewBuilder::class)->build($readResult, self::WXR_FIELD_MAPPING);
 
         return new WordPressImportPreviewData(
