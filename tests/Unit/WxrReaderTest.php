@@ -211,20 +211,25 @@ XML);
         '--json' => true,
     ]);
 
-    $preview = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
+    $preview = capell_json_array(Artisan::output());
+    $rows = wxrArrayValue($preview, 'rows');
+    $row = wxrArrayValue($rows, 0);
+    $attributes = wxrArrayValue($row, 'attributes');
+    $meta = wxrArrayValue($attributes, 'meta');
+    $wordpressMeta = wxrArrayValue($meta, 'wordpress');
 
     expect($exitCode)->toBe(0)
         ->and($preview['target'])->toBe('page')
         ->and($preview['creates'])->toBe(1)
-        ->and($preview['rows'])->toHaveCount(1)
-        ->and($preview['rows'][0]['action'])->toBe('create')
-        ->and($preview['rows'][0]['attributes']['name'])->toBe('Command page')
-        ->and($preview['rows'][0]['attributes']['meta']['wordpress']['source_identity'])->toBe('wordpress:42')
-        ->and($preview['rows'][0]['attributes']['meta']['wordpress']['categories'])->toBe(['Updates'])
-        ->and($preview['rows'][0]['attributes']['meta']['wordpress']['tags'])->toBe(['Launch'])
-        ->and($preview['rows'][0]['attributes']['meta']['wordpress']['author_login'])->toBe('ben')
-        ->and($preview['rows'][0]['attributes']['meta']['wordpress']['featured_media_url'])->toBe('https://example.test/command-page.jpg')
-        ->and($preview['rows'][0]['attributes']['meta'])->not->toHaveKey('imported');
+        ->and($rows)->toHaveCount(1)
+        ->and($row['action'] ?? null)->toBe('create')
+        ->and($attributes['name'] ?? null)->toBe('Command page')
+        ->and($wordpressMeta['source_identity'] ?? null)->toBe('wordpress:42')
+        ->and($wordpressMeta['categories'] ?? null)->toBe(['Updates'])
+        ->and($wordpressMeta['tags'] ?? null)->toBe(['Launch'])
+        ->and($wordpressMeta['author_login'] ?? null)->toBe('ben')
+        ->and($wordpressMeta['featured_media_url'] ?? null)->toBe('https://example.test/command-page.jpg')
+        ->and($meta)->not->toHaveKey('imported');
 });
 
 it('maps WordPress WXR fields into explicit preview metadata', function (): void {
@@ -257,21 +262,24 @@ it('maps WordPress WXR fields into explicit preview metadata', function (): void
 XML);
 
     $importPreview = BuildWordPressImportPreviewAction::run($path);
-    $attributes = $importPreview->preview->rows[0]['attributes'];
+    $row = wxrArrayValue($importPreview->preview->rows, 0);
+    $attributes = wxrArrayValue($row, 'attributes');
+    $meta = wxrArrayValue($attributes, 'meta');
+    $wordpressMeta = wxrArrayValue($meta, 'wordpress');
 
     expect(BuildWordPressImportPreviewAction::fieldMapping())
         ->toHaveKey('categories', 'meta.wordpress.categories')
         ->and($importPreview->readResult->sourceType)->toBe('wordpress-wxr')
-        ->and($attributes['name'])->toBe('Mapped post')
-        ->and($attributes['meta']['content'])->toBe('<p>Mapped body</p>')
-        ->and($attributes['meta']['status'])->toBe('draft')
-        ->and($attributes['visible_from'])->toBe('2026-04-01 09:30:00')
-        ->and($attributes['meta']['wordpress']['old_permalink'])->toBe('https://example.test/mapped-post/')
-        ->and($attributes['meta']['wordpress']['categories'])->toBe(['Guides'])
-        ->and($attributes['meta']['wordpress']['tags'])->toBe(['Featured'])
-        ->and($attributes['meta']['wordpress']['author_login'])->toBe('editor')
-        ->and($attributes['meta']['wordpress']['media_urls'])->toBe(['https://example.test/mapped-post.jpg'])
-        ->and($attributes['meta'])->not->toHaveKey('imported');
+        ->and($attributes['name'] ?? null)->toBe('Mapped post')
+        ->and($meta['content'] ?? null)->toBe('<p>Mapped body</p>')
+        ->and($meta['status'] ?? null)->toBe('draft')
+        ->and($attributes['visible_from'] ?? null)->toBe('2026-04-01 09:30:00')
+        ->and($wordpressMeta['old_permalink'] ?? null)->toBe('https://example.test/mapped-post/')
+        ->and($wordpressMeta['categories'] ?? null)->toBe(['Guides'])
+        ->and($wordpressMeta['tags'] ?? null)->toBe(['Featured'])
+        ->and($wordpressMeta['author_login'] ?? null)->toBe('editor')
+        ->and($wordpressMeta['media_urls'] ?? null)->toBe(['https://example.test/mapped-post.jpg'])
+        ->and($meta)->not->toHaveKey('imported');
 });
 
 it('executes a WordPress WXR preview through migration-assistant into a page session', function (): void {
@@ -334,17 +342,40 @@ XML);
         ->withoutGlobalScopes()
         ->where('name', 'Executable WP child page')
         ->firstOrFail();
+    $parentMeta = $parentPage->getAttribute('meta');
+
+    throw_unless(is_array($parentMeta), RuntimeException::class, 'Expected executable parent page meta array.');
+
+    $parentWordPressMeta = wxrArrayValue($parentMeta, 'wordpress');
 
     expect($result->report->errors)->toBe([])
         ->and($result->session->status)->toBe(ImportSessionStatus::Completed)
         ->and($result->report->pagesCreated)->toBe(2)
         ->and($result->report->pageUrlsCreated)->toBe(2)
         ->and($parentPage->name)->toBe('Executable WP page')
-        ->and($parentPage->meta['content'] ?? null)->toBe('<p>Executable body</p>')
-        ->and($parentPage->meta['wordpress']['source_identity'] ?? null)->toBe('wordpress:141')
-        ->and($parentPage->meta['wordpress']['categories'] ?? null)->toBe(['Migration'])
-        ->and((int) $childPage->getAttribute('parent_id'))->toBe((int) $parentPage->getKey())
+        ->and($parentMeta['content'] ?? null)->toBe('<p>Executable body</p>')
+        ->and($parentWordPressMeta['source_identity'] ?? null)->toBe('wordpress:141')
+        ->and($parentWordPressMeta['categories'] ?? null)->toBe(['Migration'])
+        ->and(wxrIntValue($childPage->getAttribute('parent_id')))->toBe(wxrIntValue($parentPage->getKey()))
         ->and(PageUrl::query()->where('url', '/executable-wp-page')->exists())->toBeTrue()
         ->and(PageUrl::query()->where('url', '/executable-wp-child-page')->exists())->toBeTrue()
         ->and(ImportRollbackReport::query()->where('import_session_id', $result->session->getKey())->exists())->toBeTrue();
 });
+
+/**
+ * @param  array<array-key, mixed>  $values
+ * @return array<array-key, mixed>
+ */
+function wxrArrayValue(array $values, int|string $key): array
+{
+    $value = $values[$key] ?? null;
+
+    throw_unless(is_array($value), RuntimeException::class, sprintf('Expected WXR value [%s] to be an array.', (string) $key));
+
+    return $value;
+}
+
+function wxrIntValue(mixed $value): int
+{
+    return is_numeric($value) ? (int) $value : 0;
+}

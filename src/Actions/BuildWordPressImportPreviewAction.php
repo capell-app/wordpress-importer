@@ -10,6 +10,9 @@ use Capell\WordPressImporter\Services\WxrReader;
 use Lorisleiva\Actions\Concerns\AsObject;
 use RuntimeException;
 
+/**
+ * @method static WordPressImportPreviewData run(string $path)
+ */
 final class BuildWordPressImportPreviewAction
 {
     use AsObject;
