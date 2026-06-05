@@ -8,7 +8,7 @@ All notable changes to `capell-app/wordpress-importer` will be documented in thi
 
 #### Fixed
 
-- Restricted `WxrReader::supports()` to real WXR XML paths so the prepended reader no longer claims generic XML inputs.
+- Restricted WXR selection to readable path probes so the prepended reader no longer claims generic XML inputs.
 - Corrected remaining Migration Assistant naming copy.
 
 ### 2026-06-03
@@ -25,7 +25,7 @@ All notable changes to `capell-app/wordpress-importer` will be documented in thi
 #### Fixed
 
 - Replaced the stubbed `WordpressImporterHealthCheck` with real diagnostics for SimpleXML availability, WXR reader registration, and Migration Assistant reader contract compatibility.
-- Avoided double-loading non-WordPress XML imports by building the generic XML fallback from the already parsed document.
+- Kept non-WordPress XML imports on Migration Assistant's generic XML reader instead of falling back inside the WXR parser.
 
 ### Earlier
 

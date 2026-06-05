@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Services;
 
-use Capell\MigrationAssistant\Contracts\ImportSourceReader;
+use Capell\MigrationAssistant\Contracts\PathAwareImportSourceReader;
 use Capell\MigrationAssistant\Data\ExternalImportReadResult;
 use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
 use RuntimeException;
@@ -12,7 +12,7 @@ use SimpleXMLElement;
 use Throwable;
 use XMLReader;
 
-final class WxrReader implements ImportSourceReader
+final class WxrReader implements PathAwareImportSourceReader
 {
     /** @var list<string> */
     private const array WXR_COLUMNS = [
@@ -40,15 +40,7 @@ final class WxrReader implements ImportSourceReader
 
     public function supports(string $extension): bool
     {
-        if (strtolower($extension) === 'xml') {
-            return true;
-        }
-
-        if (strtolower(pathinfo($extension, PATHINFO_EXTENSION)) !== 'xml') {
-            return false;
-        }
-
-        return $this->supportsPath($extension);
+        return false;
     }
 
     public function supportsPath(string $path): bool
@@ -71,7 +63,7 @@ final class WxrReader implements ImportSourceReader
         $channel = $xml->channel;
 
         if (! $this->isWordPressExport($channel)) {
-            return $this->genericXmlResult($xml, $path);
+            throw new RuntimeException(sprintf('WordPress export [%s] does not contain WXR metadata.', $path));
         }
 
         throw_if(! $channel instanceof SimpleXMLElement || (! property_exists($channel, 'item') || $channel->item === null), RuntimeException::class, 'WordPress export must contain a channel with item entries.');
@@ -289,71 +281,5 @@ final class WxrReader implements ImportSourceReader
         preg_match_all('/\[(?!\/)([a-zA-Z][a-zA-Z0-9_-]*)\b[^\]]*\]/', $content, $matches);
 
         return array_values(array_unique($matches[1]));
-    }
-
-    private function genericXmlResult(SimpleXMLElement $xml, string $path): ExternalImportReadResult
-    {
-        $items = $this->itemElements($xml);
-        $rows = array_map(fn (SimpleXMLElement $item): array => $this->flatten($item), $items);
-        $columns = array_values(array_unique(array_merge(...array_map(array_keys(...), $rows !== [] ? $rows : [[]]))));
-
-        return new ExternalImportReadResult(
-            sourceType: 'xml',
-            columns: $columns,
-            rows: $rows,
-            metadata: [
-                'filename' => basename($path),
-                'root' => $xml->getName(),
-            ],
-        );
-    }
-
-    /**
-     * @return list<SimpleXMLElement>
-     */
-    private function itemElements(SimpleXMLElement $xml): array
-    {
-        $children = [];
-        foreach ($xml->children() as $child) {
-            $children[] = $child;
-        }
-
-        if ($children === []) {
-            return [$xml];
-        }
-
-        $firstChildName = $children[0]->getName();
-        $sameNamedChildren = array_values(array_filter(
-            $children,
-            static fn (SimpleXMLElement $child): bool => $child->getName() === $firstChildName,
-        ));
-
-        return count($sameNamedChildren) > 1 ? $sameNamedChildren : $children;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function flatten(SimpleXMLElement $element, string $prefix = ''): array
-    {
-        $row = [];
-
-        foreach ($element->children() as $child) {
-            $key = $prefix === '' ? $child->getName() : $prefix . '.' . $child->getName();
-
-            if ($child->children()->count() > 0) {
-                $row = array_merge($row, $this->flatten($child, $key));
-
-                continue;
-            }
-
-            $row[$key] = trim((string) $child);
-        }
-
-        if ($row === []) {
-            $row[$prefix === '' ? $element->getName() : $prefix] = trim((string) $element);
-        }
-
-        return $row;
     }
 }

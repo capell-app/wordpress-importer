@@ -19,9 +19,9 @@ The reader extracts WordPress posts and pages into a neutral import row shape th
 
 ## Boundary
 
-This package only owns WordPress WXR parsing, source registration, metadata preservation, and the headless preview command. Migration Assistant owns field mapping, previews, validation, execution, import sessions, notifications, and rollback reports.
+This package only owns WordPress WXR parsing, source registration, metadata preservation, and the headless preview command. Migration Assistant owns field mapping, previews, validation, execution, import sessions, notifications, rollback reports, page URL restoration, and parent remapping.
 
-`WxrReader::supports()` still claims extension-only `xml` values so the current Migration Assistant registry selects the prepended WordPress reader. When a full readable path is passed directly, the probe stream-sniffs for WordPress WXR and refuses generic XML paths. Direct `WxrReader::read()` calls return a generic in-memory XML result for non-WXR XML without delegating to a second reader.
+`WxrReader::supportsPath()` stream-sniffs readable XML paths for WXR metadata. `WxrReader::supports()` does not claim extension-only XML, so generic XML stays owned by Migration Assistant's `XmlReader`; direct `WxrReader::read()` calls reject non-WXR XML instead of acting as a fallback parser.
 
 ## Installation Audit
 

@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+use Capell\Core\Models\Blueprint;
+use Capell\Core\Models\Layout;
+use Capell\Core\Models\Page;
+use Capell\Core\Models\PageUrl;
+use Capell\Core\Models\Site;
+use Capell\MigrationAssistant\Actions\Imports\ExecuteExternalPageImportAction;
+use Capell\MigrationAssistant\Enums\ImportSessionStatus;
+use Capell\MigrationAssistant\Models\ImportRollbackReport;
+use Capell\MigrationAssistant\Services\Import\XmlReader;
 use Capell\MigrationAssistant\Support\ImportSourceRegistry;
 use Capell\WordPressImporter\Actions\BuildWordPressImportPreviewAction;
 use Capell\WordPressImporter\Services\WxrReader;
@@ -13,7 +22,7 @@ it('registers the WordPress WXR reader ahead of migration-assistant XML readers'
     expect($readers[0] ?? null)
         ->toBeInstanceOf(WxrReader::class)
         ->and(resolve(ImportSourceRegistry::class)->readerFor('export.xml'))
-        ->toBeInstanceOf(WxrReader::class);
+        ->toBeInstanceOf(XmlReader::class);
 });
 
 it('supports readable WordPress WXR XML files', function (): void {
@@ -28,9 +37,9 @@ it('supports readable WordPress WXR XML files', function (): void {
 </rss>
 XML);
 
-    expect((new WxrReader)->supports($path))->toBeTrue()
+    expect((new WxrReader)->supports($path))->toBeFalse()
         ->and((new WxrReader)->supportsPath($path))->toBeTrue()
-        ->and((new WxrReader)->supports('xml'))->toBeTrue();
+        ->and((new WxrReader)->supports('xml'))->toBeFalse();
 });
 
 it('reads WordPress WXR posts and pages into migration-assistant rows', function (): void {
@@ -131,7 +140,7 @@ XML);
 
     expect((new WxrReader)->supports($path))->toBeFalse()
         ->and((new WxrReader)->supportsPath($path))->toBeFalse()
-        ->and($reader)->toBeInstanceOf(WxrReader::class)
+        ->and($reader)->toBeInstanceOf(XmlReader::class)
         ->and($result->sourceType)->toBe('xml')
         ->and($result->rows)->toHaveCount(2)
         ->and($result->rows[0]['title'])->toBe('One');
@@ -263,4 +272,79 @@ XML);
         ->and($attributes['meta']['wordpress']['author_login'])->toBe('editor')
         ->and($attributes['meta']['wordpress']['media_urls'])->toBe(['https://example.test/mapped-post.jpg'])
         ->and($attributes['meta'])->not->toHaveKey('imported');
+});
+
+it('executes a WordPress WXR preview through migration-assistant into a page session', function (): void {
+    $layout = Layout::factory()->create();
+    $type = Blueprint::factory()->page()->create();
+    $site = Site::factory()->create();
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-execute-');
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+    xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Executable WordPress Site</title>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <item>
+            <title>Executable WP page</title>
+            <link>https://example.test/executable-wp-page/</link>
+            <content:encoded><![CDATA[<p>Executable body</p>]]></content:encoded>
+            <category domain="category"><![CDATA[Migration]]></category>
+            <wp:post_id>141</wp:post_id>
+            <wp:post_name>executable-wp-page</wp:post_name>
+            <wp:post_type>page</wp:post_type>
+            <wp:status>publish</wp:status>
+            <wp:post_date>2026-05-01 12:00:00</wp:post_date>
+            <dc:creator>ben</dc:creator>
+        </item>
+        <item>
+            <title>Executable WP child page</title>
+            <link>https://example.test/executable-wp-child-page/</link>
+            <content:encoded><![CDATA[<p>Executable child body</p>]]></content:encoded>
+            <wp:post_id>142</wp:post_id>
+            <wp:post_name>executable-wp-child-page</wp:post_name>
+            <wp:post_type>page</wp:post_type>
+            <wp:status>publish</wp:status>
+            <wp:post_parent>141</wp:post_parent>
+        </item>
+    </channel>
+</rss>
+XML);
+
+    $wordpressPreview = BuildWordPressImportPreviewAction::run($path);
+    $result = ExecuteExternalPageImportAction::run(
+        $wordpressPreview->preview,
+        [
+            'layout_id' => $layout->getKey(),
+            'blueprint_id' => $type->getKey(),
+            'site_id' => $site->getKey(),
+        ],
+        sourceFilename: basename($path),
+        targetLabel: 'WordPress WXR import',
+    );
+
+    $parentPage = Page::query()
+        ->withoutGlobalScopes()
+        ->whereKey($result->report->createdPageIds[0])
+        ->firstOrFail();
+    $childPage = Page::query()
+        ->withoutGlobalScopes()
+        ->where('name', 'Executable WP child page')
+        ->firstOrFail();
+
+    expect($result->report->errors)->toBe([])
+        ->and($result->session->status)->toBe(ImportSessionStatus::Completed)
+        ->and($result->report->pagesCreated)->toBe(2)
+        ->and($result->report->pageUrlsCreated)->toBe(2)
+        ->and($parentPage->name)->toBe('Executable WP page')
+        ->and($parentPage->meta['content'] ?? null)->toBe('<p>Executable body</p>')
+        ->and($parentPage->meta['wordpress']['source_identity'] ?? null)->toBe('wordpress:141')
+        ->and($parentPage->meta['wordpress']['categories'] ?? null)->toBe(['Migration'])
+        ->and((int) $childPage->getAttribute('parent_id'))->toBe((int) $parentPage->getKey())
+        ->and(PageUrl::query()->where('url', '/executable-wp-page')->exists())->toBeTrue()
+        ->and(PageUrl::query()->where('url', '/executable-wp-child-page')->exists())->toBeTrue()
+        ->and(ImportRollbackReport::query()->where('import_session_id', $result->session->getKey())->exists())->toBeTrue();
 });
