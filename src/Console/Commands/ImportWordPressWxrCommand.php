@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Console\Commands;
 
-use Capell\MigrationAssistant\Services\Import\ExternalImportPreviewBuilder;
-use Capell\WordPressImporter\Services\WxrReader;
+use Capell\WordPressImporter\Actions\BuildWordPressImportPreviewAction;
 use Illuminate\Console\Command;
 use Override;
 use RuntimeException;
@@ -25,7 +24,7 @@ final class ImportWordPressWxrCommand extends Command
         return (string) __('capell-wordpress-importer::commands.import.description');
     }
 
-    public function handle(WxrReader $reader, ExternalImportPreviewBuilder $previewBuilder): int
+    public function handle(): int
     {
         $path = $this->argument('path');
 
@@ -33,14 +32,9 @@ final class ImportWordPressWxrCommand extends Command
             throw new RuntimeException((string) __('capell-wordpress-importer::commands.import.path_required'));
         }
 
-        $resolvedPath = realpath($path);
-
-        if ($resolvedPath === false) {
-            throw new RuntimeException((string) __('capell-wordpress-importer::commands.import.path_missing', ['path' => $path]));
-        }
-
-        $result = $reader->read($resolvedPath);
-        $preview = $previewBuilder->build($result);
+        $importPreview = BuildWordPressImportPreviewAction::run($path);
+        $result = $importPreview->readResult;
+        $preview = $importPreview->preview;
 
         if ((bool) $this->option('json')) {
             $this->output->writeln(json_encode($preview->toArray(), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
@@ -50,7 +44,7 @@ final class ImportWordPressWxrCommand extends Command
 
         $this->components->info((string) __('capell-wordpress-importer::commands.import.read_summary', [
             'count' => $result->count(),
-            'filename' => $result->metadata['filename'] ?? basename($resolvedPath),
+            'filename' => $result->metadata['filename'] ?? basename($importPreview->path),
         ]));
 
         foreach ($preview->errors as $error) {

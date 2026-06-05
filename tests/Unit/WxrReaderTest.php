@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Capell\MigrationAssistant\Support\ImportSourceRegistry;
+use Capell\WordPressImporter\Actions\BuildWordPressImportPreviewAction;
 use Capell\WordPressImporter\Services\WxrReader;
 use Illuminate\Support\Facades\Artisan;
 
@@ -157,6 +158,7 @@ it('builds a headless migration assistant preview from the console command', fun
     file_put_contents($path, <<<'XML'
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
     xmlns:content="http://purl.org/rss/1.0/modules/content/"
     xmlns:wp="http://wordpress.org/export/1.2/">
     <channel>
@@ -166,10 +168,14 @@ it('builds a headless migration assistant preview from the console command', fun
             <title>Command page</title>
             <link>https://example.test/command-page/</link>
             <content:encoded><![CDATA[<p>Command body</p>]]></content:encoded>
+            <category domain="category"><![CDATA[Updates]]></category>
+            <category domain="post_tag"><![CDATA[Launch]]></category>
             <wp:post_id>42</wp:post_id>
             <wp:post_name>command-page</wp:post_name>
             <wp:post_type>page</wp:post_type>
             <wp:status>publish</wp:status>
+            <dc:creator>ben</dc:creator>
+            <wp:attachment_url>https://example.test/command-page.jpg</wp:attachment_url>
         </item>
     </channel>
 </rss>
@@ -188,5 +194,57 @@ XML);
         ->and($preview['rows'])->toHaveCount(1)
         ->and($preview['rows'][0]['action'])->toBe('create')
         ->and($preview['rows'][0]['attributes']['name'])->toBe('Command page')
-        ->and($preview['rows'][0]['attributes']['meta']['imported']['source_identity'])->toBe('wordpress:42');
+        ->and($preview['rows'][0]['attributes']['meta']['wordpress']['source_identity'])->toBe('wordpress:42')
+        ->and($preview['rows'][0]['attributes']['meta']['wordpress']['categories'])->toBe(['Updates'])
+        ->and($preview['rows'][0]['attributes']['meta']['wordpress']['tags'])->toBe(['Launch'])
+        ->and($preview['rows'][0]['attributes']['meta']['wordpress']['author_login'])->toBe('ben')
+        ->and($preview['rows'][0]['attributes']['meta']['wordpress']['featured_media_url'])->toBe('https://example.test/command-page.jpg')
+        ->and($preview['rows'][0]['attributes']['meta'])->not->toHaveKey('imported');
+});
+
+it('maps WordPress WXR fields into explicit preview metadata', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-preview-');
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+    xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Mapped WordPress Site</title>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <item>
+            <title>Mapped post</title>
+            <link>https://example.test/mapped-post/</link>
+            <content:encoded><![CDATA[<p>Mapped body</p>]]></content:encoded>
+            <category domain="category"><![CDATA[Guides]]></category>
+            <category domain="post_tag"><![CDATA[Featured]]></category>
+            <wp:post_id>77</wp:post_id>
+            <wp:post_name>mapped-post</wp:post_name>
+            <wp:post_type>post</wp:post_type>
+            <wp:status>draft</wp:status>
+            <wp:post_date>2026-04-01 09:30:00</wp:post_date>
+            <dc:creator>editor</dc:creator>
+            <wp:attachment_url>https://example.test/mapped-post.jpg</wp:attachment_url>
+        </item>
+    </channel>
+</rss>
+XML);
+
+    $importPreview = BuildWordPressImportPreviewAction::run($path);
+    $attributes = $importPreview->preview->rows[0]['attributes'];
+
+    expect(BuildWordPressImportPreviewAction::fieldMapping())
+        ->toHaveKey('categories', 'meta.wordpress.categories')
+        ->and($importPreview->readResult->sourceType)->toBe('wordpress-wxr')
+        ->and($attributes['name'])->toBe('Mapped post')
+        ->and($attributes['meta']['content'])->toBe('<p>Mapped body</p>')
+        ->and($attributes['meta']['status'])->toBe('draft')
+        ->and($attributes['visible_from'])->toBe('2026-04-01 09:30:00')
+        ->and($attributes['meta']['wordpress']['old_permalink'])->toBe('https://example.test/mapped-post/')
+        ->and($attributes['meta']['wordpress']['categories'])->toBe(['Guides'])
+        ->and($attributes['meta']['wordpress']['tags'])->toBe(['Featured'])
+        ->and($attributes['meta']['wordpress']['author_login'])->toBe('editor')
+        ->and($attributes['meta']['wordpress']['media_urls'])->toBe(['https://example.test/mapped-post.jpg'])
+        ->and($attributes['meta'])->not->toHaveKey('imported');
 });
