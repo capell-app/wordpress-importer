@@ -64,7 +64,9 @@ final class BuildWordPressImportPreviewAction
         }
 
         $readResult = $reader->read($resolvedPath);
-        $preview = resolve(ExternalImportPreviewBuilder::class)->build($readResult, self::WXR_FIELD_MAPPING);
+        $preview = ApplyWordPressPreviewIdempotencyAction::run(
+            resolve(ExternalImportPreviewBuilder::class)->build($readResult, self::WXR_FIELD_MAPPING),
+        );
 
         return new WordPressImportPreviewData(
             path: $resolvedPath,
