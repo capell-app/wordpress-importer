@@ -57,6 +57,7 @@
         "wordpress-permalink-metadata",
         "wordpress-permalink-redirects",
         "wordpress-idempotent-preview",
+        "wordpress-wxr-item-isolation",
         "wordpress-gutenberg-detection",
         "wordpress-shortcode-detection",
         "wordpress-headless-preview"

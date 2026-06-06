@@ -70,8 +70,9 @@ final class WxrReader implements PathAwareImportSourceReader
 
         $attachmentsByParent = $this->attachmentsByParent($channel);
         $rows = [];
+        $itemErrors = [];
 
-        foreach ($channel->item as $item) {
+        foreach ($channel->item as $itemIndex => $item) {
             $wp = $item->children('wp', true);
             $postType = trim((string) $wp->post_type);
 
@@ -79,7 +80,16 @@ final class WxrReader implements PathAwareImportSourceReader
                 continue;
             }
 
-            $rows[] = $this->rowFromItem($item, $attachmentsByParent);
+            try {
+                $rows[] = $this->rowFromItem($item, $attachmentsByParent);
+            } catch (Throwable $throwable) {
+                $itemErrors[] = sprintf(
+                    'Item %d (%s) skipped: %s',
+                    ((int) $itemIndex) + 1,
+                    $this->itemLabel($item),
+                    $throwable->getMessage(),
+                );
+            }
         }
 
         return new ExternalImportReadResult(
@@ -92,6 +102,8 @@ final class WxrReader implements PathAwareImportSourceReader
                 'wxr_version' => trim((string) $channel->children('wp', true)->wxr_version),
                 'post_count' => count($rows),
                 'attachment_count' => array_sum(array_map(count(...), $attachmentsByParent)),
+                'skipped_item_count' => count($itemErrors),
+                'item_errors' => $itemErrors,
             ],
             suggestedTarget: 'page',
         );
@@ -171,9 +183,13 @@ final class WxrReader implements PathAwareImportSourceReader
         $dc = $item->children('dc', true);
         $excerpt = $item->children('excerpt', true);
         $postId = trim((string) $wp->post_id);
+        $postTitle = trim((string) $item->title);
+
+        $this->assertImportableItem($postId, $postTitle);
+
         $postContent = trim((string) $content->encoded);
         $attachments = array_values(array_merge(
-            $this->inlineAttachments($wp, trim((string) $item->title)),
+            $this->inlineAttachments($wp, $postTitle),
             $attachmentsByParent[$postId] ?? [],
         ));
         $mediaUrls = array_values(array_unique(array_map(
@@ -185,7 +201,7 @@ final class WxrReader implements PathAwareImportSourceReader
             'source_identity' => 'wordpress:' . $postId,
             'post_id' => $postId,
             'post_type' => trim((string) $wp->post_type),
-            'post_title' => trim((string) $item->title),
+            'post_title' => $postTitle,
             'post_name' => trim((string) $wp->post_name),
             'old_permalink' => trim((string) $item->link),
             'link' => trim((string) $item->link),
@@ -203,6 +219,34 @@ final class WxrReader implements PathAwareImportSourceReader
             'contains_gutenberg_blocks' => str_contains($postContent, '<!-- wp:'),
             'shortcodes' => $this->shortcodes($postContent),
         ];
+    }
+
+    private function assertImportableItem(string $postId, string $postTitle): void
+    {
+        if ($postId === '') {
+            throw new RuntimeException('missing wp:post_id');
+        }
+
+        if ($postTitle === '') {
+            throw new RuntimeException('missing title');
+        }
+    }
+
+    private function itemLabel(SimpleXMLElement $item): string
+    {
+        $wp = $item->children('wp', true);
+        $postId = trim((string) $wp->post_id);
+        $title = trim((string) $item->title);
+
+        if ($postId !== '') {
+            return 'wp:post_id=' . $postId;
+        }
+
+        if ($title !== '') {
+            return $title;
+        }
+
+        return 'untitled';
     }
 
     /**
