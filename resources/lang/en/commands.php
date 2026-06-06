@@ -9,6 +9,7 @@ return [
         'path_missing' => 'WordPress export [:path] could not be found.',
         'invalid_wxr' => 'WordPress export [:path] is not a readable WXR XML export.',
         'read_summary' => 'Read :count WordPress row(s) from :filename.',
+        'redirect_note' => 'Created from a WordPress WXR old permalink after import.',
         'columns' => [
             'rows' => 'Rows',
             'creates' => 'Creates',

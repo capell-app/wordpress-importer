@@ -23,7 +23,7 @@
             "capell-app/core",
             "capell-app/migration-assistant"
         ],
-        "supports": [],
+        "supports": ["capell-app/url-manager"],
         "conflicts": []
     },
     "providers": {
@@ -55,6 +55,7 @@
         "wordpress-wxr-preview",
         "wordpress-wxr-media-references",
         "wordpress-permalink-metadata",
+        "wordpress-permalink-redirects",
         "wordpress-gutenberg-detection",
         "wordpress-shortcode-detection",
         "wordpress-headless-preview"
