@@ -15,6 +15,8 @@ use Capell\MigrationAssistant\Support\ImportSourceRegistry;
 use Capell\WordPressImporter\Actions\BuildWordPressImportPreviewAction;
 use Capell\WordPressImporter\Services\WxrReader;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 it('registers the WordPress WXR reader ahead of migration-assistant XML readers', function (): void {
     $readers = resolve(ImportSourceRegistry::class)->readers();
@@ -283,6 +285,11 @@ XML);
 });
 
 it('executes a WordPress WXR preview through migration-assistant into a page session', function (): void {
+    Storage::fake('public');
+    Http::fake([
+        'https://example.test/uploads/executable.jpg' => Http::response('fake image bytes', 200, ['Content-Type' => 'image/jpeg']),
+    ]);
+
     $layout = Layout::factory()->create();
     $type = Blueprint::factory()->page()->create();
     $site = Site::factory()->create();
@@ -299,7 +306,7 @@ it('executes a WordPress WXR preview through migration-assistant into a page ses
         <item>
             <title>Executable WP page</title>
             <link>https://example.test/executable-wp-page/</link>
-            <content:encoded><![CDATA[<p>Executable body</p>]]></content:encoded>
+            <content:encoded><![CDATA[<p>Executable body <img src="https://example.test/uploads/executable.jpg" alt="Imported"></p>]]></content:encoded>
             <category domain="category"><![CDATA[Migration]]></category>
             <wp:post_id>141</wp:post_id>
             <wp:post_name>executable-wp-page</wp:post_name>
@@ -307,6 +314,13 @@ it('executes a WordPress WXR preview through migration-assistant into a page ses
             <wp:status>publish</wp:status>
             <wp:post_date>2026-05-01 12:00:00</wp:post_date>
             <dc:creator>ben</dc:creator>
+        </item>
+        <item>
+            <title>Executable image</title>
+            <wp:post_id>143</wp:post_id>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>141</wp:post_parent>
+            <wp:attachment_url>https://example.test/uploads/executable.jpg</wp:attachment_url>
         </item>
         <item>
             <title>Executable WP child page</title>
@@ -353,9 +367,13 @@ XML);
         ->and($result->report->pagesCreated)->toBe(2)
         ->and($result->report->pageUrlsCreated)->toBe(2)
         ->and($parentPage->name)->toBe('Executable WP page')
-        ->and($parentMeta['content'] ?? null)->toBe('<p>Executable body</p>')
+        ->and($parentMeta['content'] ?? null)->not->toContain('https://example.test/uploads/executable.jpg')
+        ->and($parentMeta['content'] ?? null)->toContain('/storage/')
         ->and($parentWordPressMeta['source_identity'] ?? null)->toBe('wordpress:141')
         ->and($parentWordPressMeta['categories'] ?? null)->toBe(['Migration'])
+        ->and($parentWordPressMeta['imported_media'] ?? null)->toHaveCount(1)
+        ->and($parentWordPressMeta['imported_media'][0]['source_url'] ?? null)->toBe('https://example.test/uploads/executable.jpg')
+        ->and($parentPage->getMedia('wordpress-import'))->toHaveCount(1)
         ->and(wxrIntValue($childPage->getAttribute('parent_id')))->toBe(wxrIntValue($parentPage->getKey()))
         ->and(PageUrl::query()->where('url', '/executable-wp-page')->exists())->toBeTrue()
         ->and(PageUrl::query()->where('url', '/executable-wp-child-page')->exists())->toBeTrue()

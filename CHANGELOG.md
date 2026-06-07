@@ -4,6 +4,10 @@ All notable changes to `capell-app/wordpress-importer` will be documented in thi
 
 ## Unreleased
 
+### 2026-06-07
+
+- Added post-execution WordPress media import for completed Migration Assistant page imports, including media attachment to created Pages, `meta.wordpress.imported_media`, and exact content URL rewrites from WordPress asset URLs to local media URLs.
+
 ### 2026-06-04
 
 #### Fixed
