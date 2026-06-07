@@ -1,19 +1,27 @@
 # WordPress Importer
 
-WordPress Importer registers a WXR XML reader with the Capell Migration AIOrchestrator.
+WordPress Importer registers a WXR XML reader with Capell Migration Assistant.
 
-The reader extracts WordPress posts and pages into a neutral import row shape that MigrationAssistant can map, preview, validate, and execute.
+The reader extracts WordPress posts and pages into a neutral import row shape that Migration Assistant can map, preview, validate, and hand to its own execution flow.
 
 ## Extracted Fields
 
-- `post_id`, `post_type`, `post_title`, `post_name`, `link`, `post_content`, `post_excerpt`, `post_status`, `post_date`, and `parent_id`.
+- `source_identity`, `post_id`, `post_type`, `post_title`, `post_name`, `old_permalink`, `link`, `post_content`, `post_excerpt`, `post_status`, `post_date`, and `parent_id`.
 - Author login from the WXR `dc:creator` field.
 - Category and tag metadata.
-- Attachment URL references when present.
+- Inline and child attachment URL references when present.
+- Flattened `media_urls` plus the first `featured_media_url`.
+- `contains_gutenberg_blocks` and extracted shortcode names for later conversion decisions.
+
+## Console Preview
+
+`wordpress-importer:import {path} --json` reads a WXR export and emits the same Migration Assistant preview payload that the admin flow uses. This is intentionally preview-only: it is useful for migration audits, CI fixtures, and scripted source inspection, but it does not write Pages by itself.
 
 ## Boundary
 
-This package only owns WordPress WXR parsing and source registration. MigrationAssistant owns field mapping, previews, validation, execution, import sessions, notifications, and rollback reports.
+This package only owns WordPress WXR parsing, source registration, metadata preservation, and the headless preview command. Migration Assistant owns field mapping, previews, validation, execution, import sessions, notifications, rollback reports, page URL restoration, and parent remapping.
+
+`WxrReader::supportsPath()` stream-sniffs readable XML paths for WXR metadata. `WxrReader::supports()` does not claim extension-only XML, so generic XML stays owned by Migration Assistant's `XmlReader`; direct `WxrReader::read()` calls reject non-WXR XML instead of acting as a fallback parser.
 
 ## Installation Audit
 

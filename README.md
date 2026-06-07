@@ -13,7 +13,7 @@ WordPress WXR import source for Capell Migration Assistant.
 ## Why It Helps Your Capell Workflow
 
 - Adds WordPress WXR XML parsing as a source for the Migration Assistant workflow.
-- Helps owners migrate WordPress content through Capell preview, validation, mapping, execution, and rollback reporting instead of a one-off importer.
+- Helps owners review WordPress content through Capell preview, validation, and mapping before Migration Assistant executes the import workflow.
 - Gives developers a focused source package that keeps WordPress-specific parsing out of the core migration workflow.
 
 ## Best Used With
@@ -24,9 +24,11 @@ WordPress WXR import source for Capell Migration Assistant.
 
 ## What It Adds
 
-- Parses WordPress WXR XML through `ext-simplexml`.
+- Parses WordPress WXR XML through `ext-simplexml`; extension-only registry checks still select the reader for `.xml`, while direct path-aware probes can stream-sniff WXR files.
 - Registers the source reader with Migration Assistant.
-- Leaves import sessions, execution, media ingest, and rollback reporting to Migration Assistant.
+- Preserves source identity, old permalinks, taxonomy labels, author logins, media URL references, Gutenberg markers, and shortcode names in the preview payload.
+- Adds `wordpress-importer:import {path} --json` for headless preview generation and scripted migration audits.
+- Leaves import sessions, execution, media downloads, redirect creation, and rollback reporting to Migration Assistant and companion packages.
 
 ## Built With
 
@@ -66,8 +68,9 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 ## Install Impact
 
 - Requires `capell-app/migration-assistant`, `capell-app/core`, `capell-app/admin`, and `ext-simplexml`.
-- Registers a WordPress WXR source reader with MigrationAssistant.
-- Does not add migrations; MigrationAssistant owns import sessions and rollback reports.
+- Registers a WordPress WXR source reader with Migration Assistant.
+- Registers the `wordpress-importer:import` console command for preview-only WXR parsing.
+- Does not add migrations; Migration Assistant owns import sessions and rollback reports.
 
 ## Install And Setup
 

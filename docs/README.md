@@ -1,6 +1,6 @@
-# Wordpress Importer Docs
+# WordPress Importer Docs
 
-WordPress Importer adds WordPress WXR XML parsing to the Capell MigrationAssistant workflow.
+WordPress Importer turns a standard WordPress WXR export into a Migration Assistant preview with WordPress-specific metadata preserved for mapping and audit workflows.
 
 Start at the [package README](../README.md) when deciding whether to install this package. Use the docs below for setup, extension, debugging, and verification details.
 
