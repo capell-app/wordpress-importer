@@ -12,6 +12,7 @@ use Capell\MigrationAssistant\Enums\ImportSessionStatus;
 use Capell\MigrationAssistant\Models\ImportRollbackReport;
 use Capell\MigrationAssistant\Services\Import\XmlReader;
 use Capell\MigrationAssistant\Support\ImportSourceRegistry;
+use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
 use Capell\WordPressImporter\Actions\BuildWordPressImportPreviewAction;
 use Capell\WordPressImporter\Services\WxrReader;
 use Illuminate\Support\Facades\Artisan;
@@ -121,6 +122,59 @@ XML);
         ->and($result->rows[1]['parent_id'])->toBe('10')
         ->and($result->rows[1]['contains_gutenberg_blocks'])->toBeTrue()
         ->and($result->rows[1]['shortcodes'])->toBe(['gallery']);
+});
+
+it('streams WordPress WXR exports larger than the migration assistant DOM safety cap', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-large-');
+    throw_unless(is_string($path), RuntimeException::class, 'Expected large WXR fixture path.');
+
+    try {
+        $handle = fopen($path, 'wb');
+        throw_unless(is_resource($handle), RuntimeException::class, 'Expected large WXR fixture handle.');
+
+        fwrite($handle, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+    xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Large WordPress Site</title>
+        <wp:wxr_version>1.2</wp:wxr_version>
+XML);
+
+        $commentChunk = '<!-- ' . str_repeat('x', 1024 * 1024) . ' -->';
+
+        for ($chunk = 0; $chunk < 52; $chunk++) {
+            fwrite($handle, $commentChunk);
+        }
+
+        fwrite($handle, <<<'XML'
+        <item>
+            <title>Large export page</title>
+            <content:encoded><![CDATA[<p>Large body</p>]]></content:encoded>
+            <wp:post_id>501</wp:post_id>
+            <wp:post_name>large-export-page</wp:post_name>
+            <wp:post_type>page</wp:post_type>
+            <wp:status>publish</wp:status>
+            <wp:post_parent>0</wp:post_parent>
+        </item>
+    </channel>
+</rss>
+XML);
+        fclose($handle);
+
+        expect(filesize($path))->toBeGreaterThan(SafeXmlLoader::DEFAULT_MAX_BYTES);
+
+        $result = (new WxrReader)->read($path);
+
+        expect($result->metadata['site_title'])->toBe('Large WordPress Site')
+            ->and($result->metadata['post_count'])->toBe(1)
+            ->and($result->rows[0]['post_title'])->toBe('Large export page');
+    } finally {
+        if (file_exists($path)) {
+            unlink($path);
+        }
+    }
 });
 
 it('does not claim generic XML paths during direct path-aware probes', function (): void {

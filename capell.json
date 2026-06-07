@@ -60,6 +60,7 @@
         "wordpress-wxr-item-isolation",
         "wordpress-gutenberg-detection",
         "wordpress-shortcode-detection",
+        "wordpress-wxr-streaming-reader",
         "wordpress-headless-preview"
     ],
     "performance": {

@@ -10,7 +10,7 @@ use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
 use RuntimeException;
 use SimpleXMLElement;
 use Throwable;
-use XMLReader;
+use XMLReader as NativeXmlReader;
 
 final class WxrReader implements PathAwareImportSourceReader
 {
@@ -58,15 +58,23 @@ final class WxrReader implements PathAwareImportSourceReader
             throw new RuntimeException(sprintf('WordPress export [%s] is not readable.', $path));
         }
 
+        if (class_exists(NativeXmlReader::class)) {
+            return $this->readStreaming($path);
+        }
+
+        return $this->readDom($path);
+    }
+
+    private function readDom(string $path): ExternalImportReadResult
+    {
         $xml = SafeXmlLoader::loadFile($path, LIBXML_NOCDATA | LIBXML_NONET);
 
         $channel = $xml->channel;
+        throw_if(! $channel instanceof SimpleXMLElement || (! property_exists($channel, 'item') || $channel->item === null), RuntimeException::class, 'WordPress export must contain a channel with item entries.');
 
         if (! $this->isWordPressExport($channel)) {
             throw new RuntimeException(sprintf('WordPress export [%s] does not contain WXR metadata.', $path));
         }
-
-        throw_if(! $channel instanceof SimpleXMLElement || (! property_exists($channel, 'item') || $channel->item === null), RuntimeException::class, 'WordPress export must contain a channel with item entries.');
 
         $attachmentsByParent = $this->attachmentsByParent($channel);
         $rows = [];
@@ -109,6 +117,69 @@ final class WxrReader implements PathAwareImportSourceReader
         );
     }
 
+    private function readStreaming(string $path): ExternalImportReadResult
+    {
+        $metadata = $this->streamMetadata($path);
+
+        if ($metadata['wxr_version'] === '') {
+            throw new RuntimeException(sprintf('WordPress export [%s] does not contain WXR metadata.', $path));
+        }
+
+        $attachmentsByParent = $this->streamAttachmentsByParent($path);
+        $rows = [];
+        $itemErrors = [];
+        $itemIndex = 0;
+
+        $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$rows, &$itemErrors, &$itemIndex, $attachmentsByParent): void {
+            while ($reader->read()) {
+                $this->rejectDoctype($reader);
+
+                if ($reader->nodeType !== NativeXmlReader::ELEMENT || $reader->localName !== 'item') {
+                    continue;
+                }
+
+                $itemIndex++;
+                $item = $this->simpleXmlFromCurrentItem($reader);
+                $postType = trim((string) $item->children('wp', true)->post_type);
+
+                if (! in_array($postType, ['page', 'post'], true)) {
+                    continue;
+                }
+
+                try {
+                    $rows[] = $this->rowFromItem($item, $attachmentsByParent);
+                } catch (Throwable $throwable) {
+                    $itemErrors[] = sprintf(
+                        'Item %d (%s) skipped: %s',
+                        $itemIndex,
+                        $this->itemLabel($item),
+                        $throwable->getMessage(),
+                    );
+                }
+            }
+        });
+
+        if ($itemIndex === 0) {
+            throw new RuntimeException('WordPress export must contain a channel with item entries.');
+        }
+
+        return new ExternalImportReadResult(
+            sourceType: 'wordpress-wxr',
+            columns: self::WXR_COLUMNS,
+            rows: $rows,
+            metadata: [
+                'filename' => basename($path),
+                'site_title' => $metadata['site_title'],
+                'wxr_version' => $metadata['wxr_version'],
+                'post_count' => count($rows),
+                'attachment_count' => array_sum(array_map(count(...), $attachmentsByParent)),
+                'skipped_item_count' => count($itemErrors),
+                'item_errors' => $itemErrors,
+            ],
+            suggestedTarget: 'page',
+        );
+    }
+
     private function isWordPressExport(mixed $channel): bool
     {
         if (! $channel instanceof SimpleXMLElement) {
@@ -126,7 +197,7 @@ final class WxrReader implements PathAwareImportSourceReader
 
     private function isWordPressExportPath(string $path): bool
     {
-        if (class_exists(XMLReader::class)) {
+        if (class_exists(NativeXmlReader::class)) {
             return $this->streamHasWxrVersion($path);
         }
 
@@ -139,7 +210,7 @@ final class WxrReader implements PathAwareImportSourceReader
 
     private function streamHasWxrVersion(string $path): bool
     {
-        $reader = new XMLReader;
+        $reader = new NativeXmlReader;
         $previousXmlErrorHandling = libxml_use_internal_errors(true);
 
         try {
@@ -148,12 +219,12 @@ final class WxrReader implements PathAwareImportSourceReader
             }
 
             while ($reader->read()) {
-                if ($reader->nodeType === XMLReader::DOC_TYPE) {
+                if ($reader->nodeType === NativeXmlReader::DOC_TYPE) {
                     return false;
                 }
 
                 if (
-                    $reader->nodeType === XMLReader::ELEMENT
+                    $reader->nodeType === NativeXmlReader::ELEMENT
                     && $reader->localName === 'wxr_version'
                     && str_starts_with($reader->namespaceURI, 'http://wordpress.org/export/')
                     && trim($reader->readString()) !== ''
@@ -165,6 +236,133 @@ final class WxrReader implements PathAwareImportSourceReader
             return false;
         } catch (Throwable) {
             return false;
+        } finally {
+            $reader->close();
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousXmlErrorHandling);
+        }
+    }
+
+    /**
+     * @return array{site_title: string, wxr_version: string}
+     */
+    private function streamMetadata(string $path): array
+    {
+        $metadata = [
+            'site_title' => '',
+            'wxr_version' => '',
+        ];
+        $insideChannel = false;
+
+        $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$metadata, &$insideChannel): void {
+            while ($reader->read()) {
+                $this->rejectDoctype($reader);
+
+                if ($reader->nodeType === NativeXmlReader::ELEMENT && $reader->localName === 'channel') {
+                    $insideChannel = true;
+
+                    continue;
+                }
+
+                if ($reader->nodeType === NativeXmlReader::END_ELEMENT && $reader->localName === 'channel') {
+                    return;
+                }
+
+                if (! $insideChannel || $reader->nodeType !== NativeXmlReader::ELEMENT) {
+                    continue;
+                }
+
+                if ($reader->localName === 'title' && $metadata['site_title'] === '') {
+                    $metadata['site_title'] = trim($reader->readString());
+
+                    continue;
+                }
+
+                if (
+                    $reader->localName === 'wxr_version'
+                    && str_starts_with($reader->namespaceURI, 'http://wordpress.org/export/')
+                ) {
+                    $metadata['wxr_version'] = trim($reader->readString());
+                }
+            }
+        });
+
+        return $metadata;
+    }
+
+    /**
+     * @return array<string, list<array{url: string, title: string}>>
+     */
+    private function streamAttachmentsByParent(string $path): array
+    {
+        $attachments = [];
+
+        $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$attachments): void {
+            while ($reader->read()) {
+                $this->rejectDoctype($reader);
+
+                if ($reader->nodeType !== NativeXmlReader::ELEMENT || $reader->localName !== 'item') {
+                    continue;
+                }
+
+                $item = $this->simpleXmlFromCurrentItem($reader);
+                $wp = $item->children('wp', true);
+
+                if (trim((string) $wp->post_type) !== 'attachment') {
+                    continue;
+                }
+
+                $parentId = trim((string) $wp->post_parent);
+                $url = trim((string) $wp->attachment_url);
+
+                if ($parentId === '' || $parentId === '0' || $url === '') {
+                    continue;
+                }
+
+                $attachments[$parentId] ??= [];
+                $attachments[$parentId][] = [
+                    'url' => $url,
+                    'title' => trim((string) $item->title),
+                ];
+            }
+        });
+
+        return $attachments;
+    }
+
+    private function simpleXmlFromCurrentItem(NativeXmlReader $reader): SimpleXMLElement
+    {
+        $outerXml = $reader->readOuterXml();
+
+        if (! is_string($outerXml) || trim($outerXml) === '') {
+            throw new RuntimeException('empty WXR item XML');
+        }
+
+        return SafeXmlLoader::loadString($outerXml, LIBXML_NOCDATA | LIBXML_NONET, PHP_INT_MAX);
+    }
+
+    private function rejectDoctype(NativeXmlReader $reader): void
+    {
+        if ($reader->nodeType === NativeXmlReader::DOC_TYPE) {
+            throw new RuntimeException('XML payload contains a DOCTYPE declaration which is not permitted.');
+        }
+    }
+
+    private function withXmlReader(string $path, callable $callback): void
+    {
+        $reader = new NativeXmlReader;
+        $previousXmlErrorHandling = libxml_use_internal_errors(true);
+
+        try {
+            if (! $reader->open($path, null, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING)) {
+                throw new RuntimeException(sprintf('WordPress export [%s] could not be opened for streaming.', $path));
+            }
+
+            $callback($reader);
+        } catch (Throwable $throwable) {
+            throw $throwable instanceof RuntimeException
+                ? $throwable
+                : new RuntimeException('WordPress export could not be streamed safely: ' . $throwable->getMessage(), 0, $throwable);
         } finally {
             $reader->close();
             libxml_clear_errors();
