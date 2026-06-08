@@ -13,20 +13,14 @@
         "bundle": "operations"
     },
     "namespace": "Capell\\WordPressImporter",
-    "surfaces": [
-        "admin",
-        "console"
-    ],
+    "surfaces": ["admin", "console"],
     "dependencies": {
         "requires": [
             "capell-app/admin",
             "capell-app/core",
             "capell-app/migration-assistant"
         ],
-        "supports": [
-            "capell-app/url-manager",
-            "capell-app/seo-suite"
-        ],
+        "supports": ["capell-app/url-manager", "capell-app/seo-suite"],
         "conflicts": []
     },
     "providers": {
@@ -119,10 +113,6 @@
                 "caption": "Review the Migration Assistant session handoff"
             }
         ],
-        "categories": [
-            "admin",
-            "console",
-            "operations"
-        ]
+        "categories": ["admin", "console", "operations"]
     }
 }

@@ -16,7 +16,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
 use RuntimeException;
 
 /**
- * @method static WordPressPermalinkRedirectReportData run(iterable $pages, ?int $createdByUserId = null)
+ * @method static WordPressPermalinkRedirectReportData run(iterable<array-key, mixed> $pages, ?int $createdByUserId = null)
  */
 final class CreateWordPressPermalinkRedirectsAction
 {
@@ -26,6 +26,9 @@ final class CreateWordPressPermalinkRedirectsAction
 
     private const string UPSERT_REDIRECT_RULE_ACTION = UpsertRedirectRuleAction::class;
 
+    /**
+     * @param  iterable<array-key, mixed>  $pages
+     */
     public function handle(iterable $pages, ?int $createdByUserId = null): WordPressPermalinkRedirectReportData
     {
         if (

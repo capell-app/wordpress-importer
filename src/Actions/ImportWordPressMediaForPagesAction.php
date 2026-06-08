@@ -18,7 +18,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
 use Throwable;
 
 /**
- * @method static int run(iterable $pages)
+ * @method static int run(iterable<array-key, mixed> $pages)
  */
 final class ImportWordPressMediaForPagesAction
 {
@@ -31,6 +31,9 @@ final class ImportWordPressMediaForPagesAction
         private readonly ?WordPressMediaHostResolver $hostResolver = null,
     ) {}
 
+    /**
+     * @param  iterable<array-key, mixed>  $pages
+     */
     public function handle(iterable $pages): int
     {
         $imported = 0;

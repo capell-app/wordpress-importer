@@ -435,6 +435,10 @@ XML);
     $redirectReport = wxrArrayValue($session->result_summary ?? [], 'wordpress_permalink_redirects');
     $rollbackRedirectReport = wxrArrayValue($rollbackReport->summary ?? [], 'wordpress_permalink_redirects');
     $rollbackCreatedModels = is_array($rollbackReport->created_models) ? $rollbackReport->created_models : [];
+    $importedMedia = wxrArrayValue($parentWordPressMeta, 'imported_media');
+    $firstImportedMedia = wxrArrayValue($importedMedia, 0);
+    $redirectRows = wxrArrayValue($redirectReport, 'redirects');
+    $firstRedirect = wxrArrayValue($redirectRows, 0);
 
     expect($result->report->errors)->toBe([])
         ->and($result->session->status)->toBe(ImportSessionStatus::Completed)
@@ -445,8 +449,8 @@ XML);
         ->and($parentMeta['content'] ?? null)->toContain('/storage/')
         ->and($parentWordPressMeta['source_identity'] ?? null)->toBe('wordpress:141')
         ->and($parentWordPressMeta['categories'] ?? null)->toBe(['Migration'])
-        ->and($parentWordPressMeta['imported_media'] ?? null)->toHaveCount(1)
-        ->and($parentWordPressMeta['imported_media'][0]['source_url'] ?? null)->toBe('https://example.test/uploads/executable.jpg')
+        ->and($importedMedia)->toHaveCount(1)
+        ->and($firstImportedMedia['source_url'] ?? null)->toBe('https://example.test/uploads/executable.jpg')
         ->and($parentPage->getMedia('wordpress-import'))->toHaveCount(1)
         ->and(wxrIntValue($childPage->getAttribute('parent_id')))->toBe(wxrIntValue($parentPage->getKey()))
         ->and(PageUrl::query()->where('url', '/executable-wp-page')->exists())->toBeTrue()
@@ -454,8 +458,8 @@ XML);
         ->and($redirectRule->target_url)->toBe('/executable-wp-page')
         ->and($redirectReport['created'] ?? null)->toBe(1)
         ->and($redirectReport['skipped'] ?? null)->toBe(1)
-        ->and($redirectReport['redirects'][0]['old_url'] ?? null)->toBe('https://example.test/legacy-executable-page/')
-        ->and($redirectReport['redirects'][0]['redirect_rule_id'] ?? null)->toBe($redirectRule->getKey())
+        ->and($firstRedirect['old_url'] ?? null)->toBe('https://example.test/legacy-executable-page/')
+        ->and($firstRedirect['redirect_rule_id'] ?? null)->toBe($redirectRule->getKey())
         ->and($rollbackRedirectReport['created'] ?? null)->toBe(1)
         ->and($rollbackCreatedModels)->toContain([
             'class' => RedirectRule::class,
