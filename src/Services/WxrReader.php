@@ -136,6 +136,7 @@ final class WxrReader implements PathAwareImportSourceReader
                 if ($reader->nodeType !== NativeXmlReader::ELEMENT) {
                     continue;
                 }
+
                 if ($reader->localName !== 'item') {
                     continue;
                 }
@@ -267,9 +268,11 @@ final class WxrReader implements PathAwareImportSourceReader
                 if ($reader->nodeType === NativeXmlReader::END_ELEMENT && $reader->localName === 'channel') {
                     return;
                 }
+
                 if (! $insideChannel) {
                     continue;
                 }
+
                 if ($reader->nodeType !== NativeXmlReader::ELEMENT) {
                     continue;
                 }
@@ -305,6 +308,7 @@ final class WxrReader implements PathAwareImportSourceReader
                 if ($reader->nodeType !== NativeXmlReader::ELEMENT) {
                     continue;
                 }
+
                 if ($reader->localName !== 'item') {
                     continue;
                 }
@@ -321,9 +325,11 @@ final class WxrReader implements PathAwareImportSourceReader
                 if ($parentId === '') {
                     continue;
                 }
+
                 if ($parentId === '0') {
                     continue;
                 }
+
                 if ($url === '') {
                     continue;
                 }
