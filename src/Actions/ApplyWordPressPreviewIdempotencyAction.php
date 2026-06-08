@@ -58,7 +58,7 @@ final class ApplyWordPressPreviewIdempotencyAction
     private function existingSourceIdentities(ExternalImportPreview $preview): array
     {
         $sourceIdentities = array_values(array_filter(
-            array_map(fn (array $row): ?string => $this->sourceIdentity($row), $preview->rows),
+            array_map($this->sourceIdentity(...), $preview->rows),
             static fn (?string $sourceIdentity): bool => $sourceIdentity !== null,
         ));
 

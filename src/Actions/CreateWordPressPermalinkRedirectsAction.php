@@ -6,6 +6,8 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
+use Capell\UrlManager\Actions\UpsertRedirectRuleAction;
+use Capell\UrlManager\Data\RedirectRuleData;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Schema;
 use Lorisleiva\Actions\Concerns\AsObject;
@@ -17,9 +19,9 @@ final class CreateWordPressPermalinkRedirectsAction
 {
     use AsObject;
 
-    private const string REDIRECT_RULE_DATA = 'Capell\\UrlManager\\Data\\RedirectRuleData';
+    private const string REDIRECT_RULE_DATA = RedirectRuleData::class;
 
-    private const string UPSERT_REDIRECT_RULE_ACTION = 'Capell\\UrlManager\\Actions\\UpsertRedirectRuleAction';
+    private const string UPSERT_REDIRECT_RULE_ACTION = UpsertRedirectRuleAction::class;
 
     public function handle(iterable $pages, ?int $createdByUserId = null): int
     {
@@ -40,8 +42,13 @@ final class CreateWordPressPermalinkRedirectsAction
 
             $oldPermalink = $this->oldPermalink($page);
             $targetUrl = $this->targetUrl($page);
-
-            if ($oldPermalink === null || $targetUrl === null || $this->samePath($oldPermalink, $targetUrl)) {
+            if ($oldPermalink === null) {
+                continue;
+            }
+            if ($targetUrl === null) {
+                continue;
+            }
+            if ($this->samePath($oldPermalink, $targetUrl)) {
                 continue;
             }
 
