@@ -133,8 +133,11 @@ final class WxrReader implements PathAwareImportSourceReader
         $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$rows, &$itemErrors, &$itemIndex, $attachmentsByParent): void {
             while ($reader->read()) {
                 $this->rejectDoctype($reader);
+                if ($reader->nodeType !== NativeXmlReader::ELEMENT) {
+                    continue;
+                }
 
-                if ($reader->nodeType !== NativeXmlReader::ELEMENT || $reader->localName !== 'item') {
+                if ($reader->localName !== 'item') {
                     continue;
                 }
 
@@ -159,9 +162,7 @@ final class WxrReader implements PathAwareImportSourceReader
             }
         });
 
-        if ($itemIndex === 0) {
-            throw new RuntimeException('WordPress export must contain a channel with item entries.');
-        }
+        throw_if($itemIndex === 0, RuntimeException::class, 'WordPress export must contain a channel with item entries.');
 
         return new ExternalImportReadResult(
             sourceType: 'wordpress-wxr',
@@ -268,7 +269,11 @@ final class WxrReader implements PathAwareImportSourceReader
                     return;
                 }
 
-                if (! $insideChannel || $reader->nodeType !== NativeXmlReader::ELEMENT) {
+                if (! $insideChannel) {
+                    continue;
+                }
+
+                if ($reader->nodeType !== NativeXmlReader::ELEMENT) {
                     continue;
                 }
 
@@ -300,8 +305,11 @@ final class WxrReader implements PathAwareImportSourceReader
         $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$attachments): void {
             while ($reader->read()) {
                 $this->rejectDoctype($reader);
+                if ($reader->nodeType !== NativeXmlReader::ELEMENT) {
+                    continue;
+                }
 
-                if ($reader->nodeType !== NativeXmlReader::ELEMENT || $reader->localName !== 'item') {
+                if ($reader->localName !== 'item') {
                     continue;
                 }
 
@@ -314,8 +322,15 @@ final class WxrReader implements PathAwareImportSourceReader
 
                 $parentId = trim((string) $wp->post_parent);
                 $url = trim((string) $wp->attachment_url);
+                if ($parentId === '') {
+                    continue;
+                }
 
-                if ($parentId === '' || $parentId === '0' || $url === '') {
+                if ($parentId === '0') {
+                    continue;
+                }
+
+                if ($url === '') {
                     continue;
                 }
 
@@ -334,18 +349,14 @@ final class WxrReader implements PathAwareImportSourceReader
     {
         $outerXml = $reader->readOuterXml();
 
-        if (! is_string($outerXml) || trim($outerXml) === '') {
-            throw new RuntimeException('empty WXR item XML');
-        }
+        throw_if(! is_string($outerXml) || trim($outerXml) === '', RuntimeException::class, 'empty WXR item XML');
 
         return SafeXmlLoader::loadString($outerXml, LIBXML_NOCDATA | LIBXML_NONET, PHP_INT_MAX);
     }
 
     private function rejectDoctype(NativeXmlReader $reader): void
     {
-        if ($reader->nodeType === NativeXmlReader::DOC_TYPE) {
-            throw new RuntimeException('XML payload contains a DOCTYPE declaration which is not permitted.');
-        }
+        throw_if($reader->nodeType === NativeXmlReader::DOC_TYPE, RuntimeException::class, 'XML payload contains a DOCTYPE declaration which is not permitted.');
     }
 
     private function withXmlReader(string $path, callable $callback): void
@@ -421,13 +432,9 @@ final class WxrReader implements PathAwareImportSourceReader
 
     private function assertImportableItem(string $postId, string $postTitle): void
     {
-        if ($postId === '') {
-            throw new RuntimeException('missing wp:post_id');
-        }
+        throw_if($postId === '', RuntimeException::class, 'missing wp:post_id');
 
-        if ($postTitle === '') {
-            throw new RuntimeException('missing title');
-        }
+        throw_if($postTitle === '', RuntimeException::class, 'missing title');
     }
 
     private function itemLabel(SimpleXMLElement $item): string

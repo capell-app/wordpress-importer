@@ -8,9 +8,11 @@ use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\MigrationAssistant\Events\ImportCompleted;
 use Capell\MigrationAssistant\Support\ImportSourceRegistry;
 use Capell\WordPressImporter\Console\Commands\ImportWordPressWxrCommand;
+use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Listeners\CreateWordPressRedirectsForCompletedImport;
 use Capell\WordPressImporter\Listeners\ImportWordPressMediaForCompletedImport;
 use Capell\WordPressImporter\Services\WxrReader;
+use Capell\WordPressImporter\Support\DnsWordPressMediaHostResolver;
 use Illuminate\Support\Facades\Event;
 use Spatie\LaravelPackageTools\Package;
 
@@ -30,6 +32,8 @@ class WordPressImporterServiceProvider extends AbstractPackageServiceProvider
 
     public function packageRegistered(): void
     {
+        $this->app->singleton(WordPressMediaHostResolver::class, DnsWordPressMediaHostResolver::class);
+
         $this->app->afterResolving(
             ImportSourceRegistry::class,
             static function (ImportSourceRegistry $registry): void {

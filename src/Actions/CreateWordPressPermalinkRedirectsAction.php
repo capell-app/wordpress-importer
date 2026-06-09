@@ -6,32 +6,44 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
+use Capell\UrlManager\Actions\UpsertRedirectRuleAction;
+use Capell\UrlManager\Data\RedirectRuleData;
+use Capell\WordPressImporter\Data\WordPressPermalinkRedirectReportData;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Lorisleiva\Actions\Concerns\AsObject;
+use RuntimeException;
 
 /**
- * @method static int run(iterable $pages, ?int $createdByUserId = null)
+ * @method static WordPressPermalinkRedirectReportData run(iterable<array-key, mixed> $pages, ?int $createdByUserId = null)
  */
 final class CreateWordPressPermalinkRedirectsAction
 {
     use AsObject;
 
-    private const string REDIRECT_RULE_DATA = 'Capell\\UrlManager\\Data\\RedirectRuleData';
+    private const string REDIRECT_RULE_DATA = RedirectRuleData::class;
 
-    private const string UPSERT_REDIRECT_RULE_ACTION = 'Capell\\UrlManager\\Actions\\UpsertRedirectRuleAction';
+    private const string UPSERT_REDIRECT_RULE_ACTION = UpsertRedirectRuleAction::class;
 
-    public function handle(iterable $pages, ?int $createdByUserId = null): int
+    /**
+     * @param  iterable<array-key, mixed>  $pages
+     */
+    public function handle(iterable $pages, ?int $createdByUserId = null): WordPressPermalinkRedirectReportData
     {
         if (
             ! class_exists(self::REDIRECT_RULE_DATA)
             || ! class_exists(self::UPSERT_REDIRECT_RULE_ACTION)
             || ! Schema::hasTable('url_manager_redirect_rules')
         ) {
-            return 0;
+            return WordPressPermalinkRedirectReportData::empty();
         }
 
         $created = 0;
+        $updated = 0;
+        $skipped = 0;
+        $createdRedirectRuleIds = [];
+        $redirects = [];
 
         foreach ($pages as $page) {
             if (! $page instanceof Page) {
@@ -40,16 +52,58 @@ final class CreateWordPressPermalinkRedirectsAction
 
             $oldPermalink = $this->oldPermalink($page);
             $targetUrl = $this->targetUrl($page);
+            if ($oldPermalink === null) {
+                $skipped++;
+                $redirects[] = $this->row($page, null, $targetUrl, 'skipped', 'missing_old_permalink');
 
-            if ($oldPermalink === null || $targetUrl === null || $this->samePath($oldPermalink, $targetUrl)) {
                 continue;
             }
 
-            $this->upsertRedirect($oldPermalink, $targetUrl, $page, $createdByUserId);
-            $created++;
+            if ($targetUrl === null) {
+                $skipped++;
+                $redirects[] = $this->row($page, $oldPermalink, null, 'skipped', 'missing_target_url');
+
+                continue;
+            }
+
+            if ($this->samePath($oldPermalink, $targetUrl)) {
+                $skipped++;
+                $redirects[] = $this->row($page, $oldPermalink, $targetUrl, 'skipped', 'same_target_path');
+
+                continue;
+            }
+
+            $redirectRule = $this->upsertRedirect($oldPermalink, $targetUrl, $page, $createdByUserId);
+            $redirectRuleId = $this->modelKey($redirectRule);
+            $wasCreated = (bool) $redirectRule->wasRecentlyCreated;
+
+            if ($wasCreated) {
+                $created++;
+
+                if ($redirectRuleId !== null) {
+                    $createdRedirectRuleIds[] = $redirectRuleId;
+                }
+            } else {
+                $updated++;
+            }
+
+            $redirects[] = $this->row(
+                $page,
+                $oldPermalink,
+                $targetUrl,
+                $wasCreated ? 'created' : 'updated',
+                null,
+                $redirectRuleId,
+            );
         }
 
-        return $created;
+        return new WordPressPermalinkRedirectReportData(
+            created: $created,
+            updated: $updated,
+            skipped: $skipped,
+            createdRedirectRuleIds: array_values(array_unique($createdRedirectRuleIds)),
+            redirects: $redirects,
+        );
     }
 
     private function oldPermalink(Page $page): ?string
@@ -99,12 +153,12 @@ final class CreateWordPressPermalinkRedirectsAction
         return $path === '/' ? '/' : rtrim($path, '/');
     }
 
-    private function upsertRedirect(string $oldPermalink, string $targetUrl, Page $page, ?int $createdByUserId): void
+    private function upsertRedirect(string $oldPermalink, string $targetUrl, Page $page, ?int $createdByUserId): Model
     {
         $dataClass = self::REDIRECT_RULE_DATA;
         $actionClass = self::UPSERT_REDIRECT_RULE_ACTION;
 
-        $actionClass::run(new $dataClass(
+        $redirectRule = $actionClass::run(new $dataClass(
             sourceUrl: $oldPermalink,
             targetUrl: $targetUrl,
             siteId: is_numeric($page->getAttribute('site_id')) ? (int) $page->getAttribute('site_id') : null,
@@ -112,6 +166,10 @@ final class CreateWordPressPermalinkRedirectsAction
             notes: (string) __('capell-wordpress-importer::commands.import.redirect_note'),
             createdByUserId: $createdByUserId,
         ));
+
+        throw_unless($redirectRule instanceof Model, RuntimeException::class, 'URL Manager redirect upsert did not return a model.');
+
+        return $redirectRule;
     }
 
     private function languageId(Page $page): ?int
@@ -129,5 +187,35 @@ final class CreateWordPressPermalinkRedirectsAction
             ->value('language_id');
 
         return is_numeric($languageId) ? (int) $languageId : null;
+    }
+
+    /**
+     * @return array{page_id: int|string|null, old_url: string|null, target_url: string|null, status: string, reason: string|null, redirect_rule_id: int|string|null, site_id: int|null, language_id: int|null}
+     */
+    private function row(
+        Page $page,
+        ?string $oldUrl,
+        ?string $targetUrl,
+        string $status,
+        ?string $reason,
+        int|string|null $redirectRuleId = null,
+    ): array {
+        return [
+            'page_id' => $this->modelKey($page),
+            'old_url' => $oldUrl,
+            'target_url' => $targetUrl,
+            'status' => $status,
+            'reason' => $reason,
+            'redirect_rule_id' => $redirectRuleId,
+            'site_id' => is_numeric($page->getAttribute('site_id')) ? (int) $page->getAttribute('site_id') : null,
+            'language_id' => $this->languageId($page),
+        ];
+    }
+
+    private function modelKey(Model $model): int|string|null
+    {
+        $key = $model->getKey();
+
+        return is_int($key) || is_string($key) ? $key : null;
     }
 }

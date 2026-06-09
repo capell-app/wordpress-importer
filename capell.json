@@ -13,17 +13,14 @@
         "bundle": "operations"
     },
     "namespace": "Capell\\WordPressImporter",
-    "surfaces": [
-        "admin",
-        "console"
-    ],
+    "surfaces": ["admin", "console"],
     "dependencies": {
         "requires": [
             "capell-app/admin",
             "capell-app/core",
             "capell-app/migration-assistant"
         ],
-        "supports": ["capell-app/url-manager"],
+        "supports": ["capell-app/url-manager", "capell-app/seo-suite"],
         "conflicts": []
     },
     "providers": {
@@ -56,6 +53,7 @@
         "wordpress-wxr-media-references",
         "wordpress-permalink-metadata",
         "wordpress-permalink-redirects",
+        "wordpress-permalink-redirect-reports",
         "wordpress-idempotent-preview",
         "wordpress-wxr-item-isolation",
         "wordpress-gutenberg-detection",
@@ -92,7 +90,7 @@
     },
     "marketplace": {
         "summary": "Preview WordPress WXR posts and pages in Capell with durable metadata ready for Migration Assistant mapping.",
-        "description": "WordPress Importer turns a standard WordPress WXR export into a Capell Migration Assistant source. It reads posts and pages, preserves source identity, old permalinks, taxonomy labels, author logins, media URLs, Gutenberg markers, and shortcode names, then builds a preview operators can inspect before execution. A headless console command produces the same Migration Assistant preview as JSON for scripted migration audits. Media downloads, redirect creation, and final page writes remain owned by companion Capell packages and Migration Assistant.",
+        "description": "WordPress Importer turns a standard WordPress WXR export into a Capell Migration Assistant source. It reads posts and pages, preserves source identity, old permalinks, taxonomy labels, author logins, media URLs, Gutenberg markers, and shortcode names, then builds a preview operators can inspect before execution. Completed imports can download referenced media, create URL Manager redirects for changed WordPress permalinks, and store redirect reports on the Migration Assistant session and rollback report for SEO review. A headless console command produces the same Migration Assistant preview as JSON for scripted migration audits.",
         "screenshots": [
             {
                 "path": "docs/assets/marketplace/extension-card.jpg",
@@ -115,10 +113,6 @@
                 "caption": "Review the Migration Assistant session handoff"
             }
         ],
-        "categories": [
-            "admin",
-            "console",
-            "operations"
-        ]
+        "categories": ["admin", "console", "operations"]
     }
 }

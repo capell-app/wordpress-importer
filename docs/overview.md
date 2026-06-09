@@ -30,7 +30,7 @@ This package only owns WordPress WXR parsing, source registration, metadata pres
 - Database impact: no package-owned migrations; Migration Assistant owns import session persistence
 - Public frontend impact: none
 
-In the isolated batch harness, Composer installed both `capell-app/migration-assistant` and `capell-app/wordpress-importer`. Capell extension installation required `capell-app/migration-assistant` to be installed before this package. After installation, admin routes came from Migration Assistant (`/admin/import-sessions`, `/admin/recovery-center/import-pages`, and `/admin/recovery-center/import-sites`); WordPress Importer itself contributes the WXR reader to the import source registry rather than its own route.
+In the isolated batch harness, Composer installed both `capell-app/migration-assistant` and `capell-app/wordpress-importer`. Capell extension installation required `capell-app/migration-assistant` to be installed before this package. After installation, admin routes came from Migration Assistant (`/admin/migration-assistant/import-sessions`, `/admin/migration-assistant/recovery-center/import-pages`, and `/admin/migration-assistant/recovery-center/import-sites`); WordPress Importer itself contributes the WXR reader to the import source registry rather than its own route.
 
 ## Admin Surfaces
 

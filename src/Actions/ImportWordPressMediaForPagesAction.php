@@ -6,16 +6,19 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\Core\Contracts\Media\MediaContract;
 use Capell\Core\Models\Page;
+use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
+use Capell\WordPressImporter\Data\ResolvedWordPressMediaEndpointData;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Lorisleiva\Actions\Concerns\AsObject;
 use Throwable;
 
 /**
- * @method static int run(iterable $pages)
+ * @method static int run(iterable<array-key, mixed> $pages)
  */
 final class ImportWordPressMediaForPagesAction
 {
@@ -23,8 +26,14 @@ final class ImportWordPressMediaForPagesAction
 
     private const string COLLECTION = 'wordpress-import';
 
-    public function __construct(private readonly ?HttpFactory $http = null) {}
+    public function __construct(
+        private readonly ?HttpFactory $http = null,
+        private readonly ?WordPressMediaHostResolver $hostResolver = null,
+    ) {}
 
+    /**
+     * @param  iterable<array-key, mixed>  $pages
+     */
     public function handle(iterable $pages): int
     {
         $imported = 0;
@@ -115,9 +124,13 @@ final class ImportWordPressMediaForPagesAction
         }
 
         try {
-            $response = ($this->http ?? app(HttpFactory::class))
+            $endpoint = $this->endpoint($mediaUrl);
+            $response = ($this->http ?? resolve(HttpFactory::class))
                 ->timeout(20)
-                ->get($mediaUrl);
+                ->withoutRedirecting()
+                ->withHeaders(['Host' => $endpoint->hostHeader()])
+                ->withOptions($this->requestOptions($endpoint))
+                ->get($endpoint->url);
 
             if (! $response->successful() || $response->body() === '') {
                 return null;
@@ -139,6 +152,109 @@ final class ImportWordPressMediaForPagesAction
         } finally {
             File::delete($temporaryPath);
         }
+    }
+
+    private function endpoint(string $url): ResolvedWordPressMediaEndpointData
+    {
+        $parts = parse_url($url);
+
+        throw_if(! is_array($parts), InvalidArgumentException::class, 'WordPress media URL must be an absolute HTTP URL.');
+
+        $scheme = is_string($parts['scheme'] ?? null) ? strtolower($parts['scheme']) : null;
+        $host = is_string($parts['host'] ?? null) ? strtolower($parts['host']) : null;
+
+        throw_if(! in_array($scheme, ['https', 'http'], true) || $host === null || $host === '', InvalidArgumentException::class, 'WordPress media URL must be an absolute HTTP URL.');
+
+        $addresses = $this->resolvedHostAddresses($host);
+
+        throw_if($addresses === [], InvalidArgumentException::class, 'WordPress media URL host could not be resolved.');
+        throw_if($this->hasPrivateAddress($addresses), InvalidArgumentException::class, 'WordPress media URL host is not allowed.');
+
+        return new ResolvedWordPressMediaEndpointData(
+            url: $url,
+            scheme: $scheme,
+            host: $host,
+            port: $this->port($parts, $scheme),
+            address: $addresses[0],
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function requestOptions(ResolvedWordPressMediaEndpointData $endpoint): array
+    {
+        throw_unless(defined('CURLOPT_RESOLVE'), InvalidArgumentException::class, 'WordPress media imports require cURL host pinning support.');
+
+        return [
+            'curl' => [
+                CURLOPT_RESOLVE => [$endpoint->curlResolveEntry()],
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $parts
+     */
+    private function port(array $parts, string $scheme): int
+    {
+        $port = $parts['port'] ?? null;
+
+        if (is_int($port) && $port > 0 && $port <= 65535) {
+            return $port;
+        }
+
+        return $scheme === 'https' ? 443 : 80;
+    }
+
+    /**
+     * @param  list<string>  $addresses
+     */
+    private function hasPrivateAddress(array $addresses): bool
+    {
+        foreach ($addresses as $address) {
+            if ($this->isPrivateAddress($address)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isPrivateHostLabel(string $host): bool
+    {
+        return in_array($host, ['localhost', 'localhost.localdomain'], true) || str_ends_with($host, '.localhost');
+    }
+
+    private function isPrivateAddress(string $address): bool
+    {
+        return filter_var(
+            $address,
+            FILTER_VALIDATE_IP,
+            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE,
+        ) === false;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function resolvedHostAddresses(string $host): array
+    {
+        if ($this->isPrivateHostLabel($host)) {
+            return ['127.0.0.1'];
+        }
+
+        if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
+            return [$host];
+        }
+
+        $addresses = ($this->hostResolver ?? resolve(WordPressMediaHostResolver::class))->resolve($host);
+
+        return array_values(collect($addresses)
+            ->filter(static fn (string $address): bool => filter_var($address, FILTER_VALIDATE_IP) !== false)
+            ->unique()
+            ->values()
+            ->all());
     }
 
     private function fileName(string $mediaUrl): string

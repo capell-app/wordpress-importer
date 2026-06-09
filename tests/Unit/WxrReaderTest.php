@@ -7,16 +7,22 @@ use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
+use Capell\MigrationAssistant\Actions\ExecuteImportRollbackAction;
 use Capell\MigrationAssistant\Actions\Imports\ExecuteExternalPageImportAction;
 use Capell\MigrationAssistant\Enums\ImportSessionStatus;
 use Capell\MigrationAssistant\Models\ImportRollbackReport;
 use Capell\MigrationAssistant\Services\Import\XmlReader;
 use Capell\MigrationAssistant\Support\ImportSourceRegistry;
 use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
+use Capell\UrlManager\Models\RedirectRule;
 use Capell\WordPressImporter\Actions\BuildWordPressImportPreviewAction;
+use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Services\WxrReader;
+use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
+use Illuminate\Database\Schema\Blueprint as SchemaBlueprint;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 it('registers the WordPress WXR reader ahead of migration-assistant XML readers', function (): void {
@@ -339,10 +345,14 @@ XML);
 });
 
 it('executes a WordPress WXR preview through migration-assistant into a page session', function (): void {
+    ensureWordPressImporterUrlManagerRedirectRulesTable();
     Storage::fake('public');
     Http::fake([
         'https://example.test/uploads/executable.jpg' => Http::response('fake image bytes', 200, ['Content-Type' => 'image/jpeg']),
     ]);
+    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+        'example.test' => ['93.184.216.34'],
+    ]));
 
     $layout = Layout::factory()->create();
     $type = Blueprint::factory()->page()->create();
@@ -359,7 +369,7 @@ it('executes a WordPress WXR preview through migration-assistant into a page ses
         <wp:wxr_version>1.2</wp:wxr_version>
         <item>
             <title>Executable WP page</title>
-            <link>https://example.test/executable-wp-page/</link>
+            <link>https://example.test/legacy-executable-page/</link>
             <content:encoded><![CDATA[<p>Executable body <img src="https://example.test/uploads/executable.jpg" alt="Imported"></p>]]></content:encoded>
             <category domain="category"><![CDATA[Migration]]></category>
             <wp:post_id>141</wp:post_id>
@@ -415,6 +425,20 @@ XML);
     throw_unless(is_array($parentMeta), RuntimeException::class, 'Expected executable parent page meta array.');
 
     $parentWordPressMeta = wxrArrayValue($parentMeta, 'wordpress');
+    $redirectRule = RedirectRule::query()
+        ->where('source_url', '/legacy-executable-page')
+        ->firstOrFail();
+    $rollbackReport = ImportRollbackReport::query()
+        ->where('import_session_id', $result->session->getKey())
+        ->firstOrFail();
+    $session = $result->session->refresh();
+    $redirectReport = wxrArrayValue($session->result_summary ?? [], 'wordpress_permalink_redirects');
+    $rollbackRedirectReport = wxrArrayValue($rollbackReport->summary ?? [], 'wordpress_permalink_redirects');
+    $rollbackCreatedModels = is_array($rollbackReport->created_models) ? $rollbackReport->created_models : [];
+    $importedMedia = wxrArrayValue($parentWordPressMeta, 'imported_media');
+    $firstImportedMedia = wxrArrayValue($importedMedia, 0);
+    $redirectRows = wxrArrayValue($redirectReport, 'redirects');
+    $firstRedirect = wxrArrayValue($redirectRows, 0);
 
     expect($result->report->errors)->toBe([])
         ->and($result->session->status)->toBe(ImportSessionStatus::Completed)
@@ -425,13 +449,26 @@ XML);
         ->and($parentMeta['content'] ?? null)->toContain('/storage/')
         ->and($parentWordPressMeta['source_identity'] ?? null)->toBe('wordpress:141')
         ->and($parentWordPressMeta['categories'] ?? null)->toBe(['Migration'])
-        ->and($parentWordPressMeta['imported_media'] ?? null)->toHaveCount(1)
-        ->and($parentWordPressMeta['imported_media'][0]['source_url'] ?? null)->toBe('https://example.test/uploads/executable.jpg')
+        ->and($importedMedia)->toHaveCount(1)
+        ->and($firstImportedMedia['source_url'] ?? null)->toBe('https://example.test/uploads/executable.jpg')
         ->and($parentPage->getMedia('wordpress-import'))->toHaveCount(1)
         ->and(wxrIntValue($childPage->getAttribute('parent_id')))->toBe(wxrIntValue($parentPage->getKey()))
         ->and(PageUrl::query()->where('url', '/executable-wp-page')->exists())->toBeTrue()
         ->and(PageUrl::query()->where('url', '/executable-wp-child-page')->exists())->toBeTrue()
-        ->and(ImportRollbackReport::query()->where('import_session_id', $result->session->getKey())->exists())->toBeTrue();
+        ->and($redirectRule->target_url)->toBe('/executable-wp-page')
+        ->and($redirectReport['created'] ?? null)->toBe(1)
+        ->and($redirectReport['skipped'] ?? null)->toBe(1)
+        ->and($firstRedirect['old_url'] ?? null)->toBe('https://example.test/legacy-executable-page/')
+        ->and($firstRedirect['redirect_rule_id'] ?? null)->toBe($redirectRule->getKey())
+        ->and($rollbackRedirectReport['created'] ?? null)->toBe(1)
+        ->and($rollbackCreatedModels)->toContain([
+            'class' => RedirectRule::class,
+            'id' => $redirectRule->getKey(),
+        ]);
+
+    ExecuteImportRollbackAction::run($rollbackReport->refresh());
+
+    expect(RedirectRule::query()->whereKey($redirectRule->getKey())->exists())->toBeFalse();
 });
 
 /**
@@ -450,4 +487,31 @@ function wxrArrayValue(array $values, int|string $key): array
 function wxrIntValue(mixed $value): int
 {
     return is_numeric($value) ? (int) $value : 0;
+}
+
+function ensureWordPressImporterUrlManagerRedirectRulesTable(): void
+{
+    if (Schema::hasTable('url_manager_redirect_rules')) {
+        return;
+    }
+
+    Schema::create('url_manager_redirect_rules', function (SchemaBlueprint $table): void {
+        $table->id();
+        $table->unsignedBigInteger('site_id')->nullable();
+        $table->unsignedBigInteger('language_id')->nullable();
+        $table->string('source_url', 2048);
+        $table->string('source_hash', 64);
+        $table->string('target_url', 2048);
+        $table->string('target_hash', 64);
+        $table->unsignedSmallInteger('status_code')->default(301);
+        $table->string('match_type')->default('exact');
+        $table->string('status')->default('active');
+        $table->integer('priority')->default(0);
+        $table->boolean('preserve_query')->default(true);
+        $table->unsignedInteger('hit_count')->default(0);
+        $table->timestamp('last_hit_at')->nullable();
+        $table->text('notes')->nullable();
+        $table->unsignedBigInteger('created_by_user_id')->nullable();
+        $table->timestamps();
+    });
 }
