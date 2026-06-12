@@ -32,7 +32,12 @@
         "admin": [],
         "frontend": []
     },
-    "contributes": [],
+    "contributes": [
+        {
+            "type": "health-check",
+            "class": "Capell\\WordPressImporter\\Health\\WordpressImporterHealthCheck"
+        }
+    ],
     "database": {
         "migrations": false,
         "settings": false,
@@ -147,5 +152,8 @@
             }
         ],
         "categories": ["admin", "console", "operations"]
+    },
+    "contributionTraceability": {
+        "deferredContributions": []
     }
 }
