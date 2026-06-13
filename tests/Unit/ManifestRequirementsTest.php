@@ -11,10 +11,35 @@ use Capell\WordPressImporter\Providers\WordPressImporterServiceProvider;
 use Capell\WordPressImporter\Services\WxrReader;
 use Illuminate\Support\Facades\File;
 
+/**
+ * @param  array<array-key, mixed>  $manifest
+ * @return array<array-key, mixed>
+ */
+function wordpressImporterManifestArray(array $manifest, string $key): array
+{
+    $value = data_get($manifest, $key);
+
+    throw_unless(is_array($value), RuntimeException::class, sprintf('Expected WordPress Importer manifest [%s] to be an array.', $key));
+
+    return $value;
+}
+
+/**
+ * @param  array<array-key, mixed>  $manifest
+ */
+function wordpressImporterManifestString(array $manifest, string $key): string
+{
+    $value = data_get($manifest, $key);
+
+    throw_unless(is_string($value), RuntimeException::class, sprintf('Expected WordPress Importer manifest [%s] to be a string.', $key));
+
+    return $value;
+}
+
 it('declares the shipped wordpress importer manifest surfaces', function (): void {
     $packagePath = dirname(__DIR__, 2);
-    $manifest = json_decode(File::get($packagePath . '/capell.json'), true, flags: JSON_THROW_ON_ERROR);
-    $composer = json_decode(File::get($packagePath . '/composer.json'), true, flags: JSON_THROW_ON_ERROR);
+    $manifest = capell_json_file_array($packagePath . '/capell.json');
+    $composer = capell_json_file_array($packagePath . '/composer.json');
 
     (new ManifestValidator)->validate($manifest, $composer, 'capell-app/wordpress-importer', $packagePath . '/capell.json');
 
@@ -22,41 +47,38 @@ it('declares the shipped wordpress importer manifest surfaces', function (): voi
         ->toHaveKey('manifest-version', 3)
         ->toHaveKey('name', 'capell-app/wordpress-importer')
         ->toHaveKey('namespace', 'Capell\\WordPressImporter')
-        ->and($manifest['surfaces'])->toContain('admin', 'console')
-        ->and($manifest['dependencies']['requires'])->toContain(
+        ->and(wordpressImporterManifestArray($manifest, 'surfaces'))->toContain('admin', 'console')
+        ->and(wordpressImporterManifestArray($manifest, 'dependencies.requires'))->toContain(
             'capell-app/admin',
             'capell-app/core',
             'capell-app/migration-assistant',
         )
-        ->and($manifest['providers']['runtime'])->toContain(WordPressImporterServiceProvider::class)
-        ->and($manifest['commands']['import'])->toBe('wordpress-importer:import')
+        ->and(wordpressImporterManifestArray($manifest, 'providers.runtime'))->toContain(WordPressImporterServiceProvider::class)
+        ->and(wordpressImporterManifestString($manifest, 'commands.import'))->toBe('wordpress-importer:import')
         ->and(class_exists(ImportWordPressWxrCommand::class))->toBeTrue()
-        ->and($manifest['contributes'])->toContain([
+        ->and(wordpressImporterManifestArray($manifest, 'contributes'))->toContain([
             'type' => 'health-check',
             'class' => WordpressImporterHealthCheck::class,
         ])
-        ->and($manifest['healthChecks'][0]['class'])->toBe(WordpressImporterHealthCheck::class)
+        ->and(wordpressImporterManifestString($manifest, 'healthChecks.0.class'))->toBe(WordpressImporterHealthCheck::class)
         ->and(class_implements(WordpressImporterHealthCheck::class))->toContain(ChecksExtensionHealth::class)
         ->and(class_implements(WxrReader::class))->toContain(ImportSourceReader::class)
-        ->and($manifest['capabilities'])->toContain(
+        ->and(wordpressImporterManifestArray($manifest, 'capabilities'))->toContain(
             'wordpress-wxr-reader',
             'wordpress-wxr-preview',
             'wordpress-permalink-redirects',
             'wordpress-headless-preview',
         )
-        ->and($manifest['contributionTraceability']['deferredContributions'])->toBe([]);
+        ->and(wordpressImporterManifestArray($manifest, 'contributionTraceability.deferredContributions'))->toBe([]);
 });
 
 it('declares committed marketplace assets for required wordpress importer screenshot targets', function (): void {
     $packagePath = dirname(__DIR__, 2);
-    $manifest = json_decode(File::get($packagePath . '/capell.json'), true, flags: JSON_THROW_ON_ERROR);
-    $screenshotContract = json_decode(File::get($packagePath . '/docs/screenshots.json'), true, flags: JSON_THROW_ON_ERROR);
+    $manifest = capell_json_file_array($packagePath . '/capell.json');
+    $screenshotContract = capell_json_file_array($packagePath . '/docs/screenshots.json');
 
-    $marketplaceScreenshots = $manifest['marketplace']['screenshots'] ?? [];
-    $contractEntries = $screenshotContract['entries'] ?? [];
-
-    throw_unless(is_array($marketplaceScreenshots), RuntimeException::class, 'WordPress Importer marketplace screenshots must be an array.');
-    throw_unless(is_array($contractEntries), RuntimeException::class, 'WordPress Importer screenshot contract entries must be an array.');
+    $marketplaceScreenshots = wordpressImporterManifestArray($manifest, 'marketplace.screenshots');
+    $contractEntries = wordpressImporterManifestArray($screenshotContract, 'entries');
 
     $marketplaceScreenshotPaths = [];
 
