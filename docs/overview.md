@@ -1,43 +1,93 @@
 # WordPress Importer
 
-WordPress Importer registers a WXR XML reader with Capell Migration Assistant.
+<!-- prettier-ignore-start -->
 
-The reader extracts WordPress posts and pages into a neutral import row shape that Migration Assistant can map, preview, validate, and hand to its own execution flow.
+## What This Plugin Adds
 
-## Extracted Fields
+WordPress Importer is an **Available**, **No schema impact** Capell package in the **Capell Operations** product group. It ships as `capell-app/wordpress-importer` and extends these surfaces: admin, console.
 
-- `source_identity`, `post_id`, `post_type`, `post_title`, `post_name`, `old_permalink`, `link`, `post_content`, `post_excerpt`, `post_status`, `post_date`, and `parent_id`.
-- Author login from the WXR `dc:creator` field.
-- Category and tag metadata.
-- Inline and child attachment URL references when present.
-- Flattened `media_urls` plus the first `featured_media_url`.
-- `contains_gutenberg_blocks` and extracted shortcode names for later conversion decisions.
+Preview WordPress WXR posts and pages in Capell Migration Assistant with permalink, taxonomy, author, media-reference, Gutenberg, and shortcode metadata preserved.
 
-## Console Preview
+After install, the package contributes admin-facing extension points. Docs gap: no concrete Filament resource or page was detected.
 
-`wordpress-importer:import {path} --json` reads a WXR export and emits the same Migration Assistant preview payload that the admin flow uses. This is intentionally preview-only: it is useful for migration audits, CI fixtures, and scripted source inspection, but it does not write Pages by itself.
+Status details:
 
-## Boundary
-
-This package only owns WordPress WXR parsing, source registration, metadata preservation, and the headless preview command. Migration Assistant owns field mapping, previews, validation, execution, import sessions, notifications, rollback reports, page URL restoration, and parent remapping.
-
-`WxrReader::supportsPath()` stream-sniffs readable XML paths for WXR metadata. `WxrReader::supports()` does not claim extension-only XML, so generic XML stays owned by Migration Assistant's `XmlReader`; direct `WxrReader::read()` calls reject non-WXR XML instead of acting as a fallback parser.
-
-## Installation Audit
-
+- Status: Available
+- Tier: premium
+- Bundle: operations
 - Composer package: `capell-app/wordpress-importer`
-- Hard dependencies: `capell-app/admin`, `capell-app/core`, `capell-app/migration-assistant`, `ext-simplexml`
-- Database impact: no package-owned migrations; Migration Assistant owns import session persistence
-- Public frontend impact: none
+- Namespace: `Capell\WordPressImporter`
+- Theme key: not applicable
 
-In the isolated batch harness, Composer installed both `capell-app/migration-assistant` and `capell-app/wordpress-importer`. Capell extension installation required `capell-app/migration-assistant` to be installed before this package. After installation, admin routes came from Migration Assistant (`/admin/migration-assistant/import-sessions`, `/admin/migration-assistant/recovery-center/import-pages`, and `/admin/migration-assistant/recovery-center/import-sites`); WordPress Importer itself contributes the WXR reader to the import source registry rather than its own route.
+## Why It Matters
 
-## Admin Surfaces
+**For developers:** The package gives developers package-owned service providers, Actions, and Data objects instead of pushing this behaviour into core or application code.
 
-- No standalone Filament page, resource, route, or settings page is owned by this package.
-- The visible workflow is the Migration Assistant import flow with WordPress WXR available as a source reader.
-- Screenshot capture should focus on the Migration Assistant source selection/import flow with the WordPress WXR source present.
+**For teams:** Preview WordPress WXR posts and pages in Capell with durable metadata ready for Migration Assistant mapping.
 
-## Screenshot Coverage
+## Screens And Workflow
 
-See [screenshots.json](screenshots.json) for the screenshot contract. Final capture should seed or upload a small WXR file so the WordPress source selection and parsed-row preview are visible.
+Screenshot contract: `screenshots.json`.
+
+- Migration Assistant import flow with WordPress WXR available as an import source (admin, required).
+- Parsed WordPress WXR rows previewed in Migration Assistant (admin, required).
+- Import session detail for a WordPress WXR import (admin, optional).
+
+## Technical Shape
+
+- Service providers: `Capell\WordPressImporter\Providers\WordPressImporterServiceProvider`.
+- Listeners: `CreateWordPressRedirectsForCompletedImport`, `ImportWordPressMediaForCompletedImport`.
+- Actions: `ApplyWordPressPreviewIdempotencyAction`, `BuildWordPressImportPreviewAction`, `CreateWordPressPermalinkRedirectsAction`, `ImportWordPressMediaForPagesAction`.
+- Data objects: `ResolvedWordPressMediaEndpointData`, `WordPressImportPreviewData`, `WordPressPermalinkRedirectReportData`.
+- Command signatures: `wordpress-importer:import`.
+- Console command classes: `ImportWordPressWxrCommand`.
+- Manifest contributions: `health-check: Capell\WordPressImporter\Health\WordpressImporterHealthCheck`.
+- Health checks: `Capell\WordPressImporter\Health\WordpressImporterHealthCheck`.
+
+## Data Model
+
+This package has no schema impact. It does not declare package-owned migrations or required tables.
+
+Docs gap: document extension points here if the package delegates persistence to a host package.
+
+## Install Impact
+
+- Admin navigation: admin-facing extension points are declared, but no concrete Filament class was detected.
+- Permissions: none declared in `capell.json`.
+- Public routes: none detected in package route files.
+- Database changes: no package migrations declared.
+- Settings: no package settings declared.
+- Queues or schedules: none detected in standard package paths.
+- Cache tags: none declared.
+- Commands: `wordpress-importer:import`.
+
+## Common Pitfalls
+
+- Run package commands from the host app; in this repository use `vendor/bin/pest` for package tests.
+- Keep `composer.json`, `composer.local.json`, `capell.json`, docs, screenshots, and tests aligned when the package surface changes.
+
+## Troubleshooting
+
+| Symptom | Likely cause | Check | Fix |
+| --- | --- | --- | --- |
+| Package surface is missing after install | Provider or manifest is not loaded | Confirm `capell.json`, package `composer.json`, and provider registration | Reinstall the package, refresh Composer autoload, and clear host caches |
+| Background work does not run | Queue worker or scheduled command is not active | Check package jobs, commands, and host scheduler configuration | Start the queue or scheduler, then run the focused command or package test |
+
+## Quick Start
+
+1. Install the package: `composer require capell-app/wordpress-importer`.
+2. Run the required setup: no package migrations are declared; clear cached config and routes if the host app uses caches.
+3. Verify the package provider is registered and the related frontend, command, or extension point is active.
+
+## Next Steps
+
+- [Package docs index](README.md)
+- [Screenshot contract](screenshots.json)
+- [Marketplace assets](assets/marketplace/)
+- [Capell content language plan](../../../docs/CONTENT_LANGUAGE_PLAN.md)
+- [Capell documentation design system](../../../docs/DESIGN_SYSTEM.md)
+- [Capell and package ERD notes](../../../docs/erd/capell-and-package-erds.md)
+- Related packages: [Migration Assistant](../../migration-assistant/README.md), [Url Manager](../../url-manager/README.md), [Seo Suite](../../seo-suite/README.md).
+- Focused tests: `vendor/bin/pest packages/wordpress-importer/tests --configuration=phpunit.xml`.
+
+<!-- prettier-ignore-end -->
