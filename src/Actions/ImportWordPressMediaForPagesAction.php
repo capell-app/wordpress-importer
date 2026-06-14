@@ -117,11 +117,7 @@ final class ImportWordPressMediaForPagesAction
 
     private function downloadAndAttach(Page $page, string $mediaUrl): ?MediaContract
     {
-        $temporaryPath = tempnam(sys_get_temp_dir(), 'capell-wp-media-');
-
-        if ($temporaryPath === false) {
-            return null;
-        }
+        $temporaryPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'capell-wp-media-' . Str::random(32);
 
         try {
             $endpoint = $this->endpoint($mediaUrl);

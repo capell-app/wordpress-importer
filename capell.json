@@ -32,7 +32,12 @@
         "admin": [],
         "frontend": []
     },
-    "contributes": [],
+    "contributes": [
+        {
+            "type": "health-check",
+            "class": "Capell\\WordPressImporter\\Health\\WordpressImporterHealthCheck"
+        }
+    ],
     "database": {
         "migrations": false,
         "settings": false,
@@ -61,6 +66,39 @@
         "wordpress-wxr-streaming-reader",
         "wordpress-headless-preview"
     ],
+    "security": {
+        "riskTier": "sensitive",
+        "publicSurface": {
+            "routeNames": [],
+            "auth": "none",
+            "csrfExemptRoutes": [],
+            "signedRoutes": [],
+            "tokenizedRoutes": [],
+            "webhookRoutes": [],
+            "throttledRoutes": []
+        },
+        "sensitiveData": {
+            "encryptedFields": [],
+            "hashedTokenFields": [],
+            "redactedOutputClasses": [],
+            "plaintextJustifications": []
+        },
+        "publicOutput": {
+            "cacheSafe": true,
+            "forbidAuthoringSurface": true,
+            "forbidSecrets": true,
+            "forbidPublicBladeQueries": true
+        },
+        "externalHttpClients": {
+            "requiresTimeouts": false,
+            "requiresSecretRedaction": false,
+            "clients": []
+        },
+        "adminSurface": {
+            "authorization": "panel-auth",
+            "permissions": []
+        }
+    },
     "performance": {
         "frontendRenderBudgetMs": 0,
         "adminQueryBudget": 40,
@@ -114,5 +152,8 @@
             }
         ],
         "categories": ["admin", "console", "operations"]
+    },
+    "contributionTraceability": {
+        "deferredContributions": []
     }
 }
