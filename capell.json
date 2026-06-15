@@ -34,6 +34,14 @@
     },
     "contributes": [
         {
+            "type": "console-command",
+            "class": "Capell\\WordPressImporter\\Manifest\\WordPressImporterConsoleCommandContribution",
+            "commands": ["wordpress-importer:import"],
+            "commandClasses": [
+                "Capell\\WordPressImporter\\Console\\Commands\\ImportWordPressWxrCommand"
+            ]
+        },
+        {
             "type": "health-check",
             "class": "Capell\\WordPressImporter\\Health\\WordpressImporterHealthCheck"
         }
