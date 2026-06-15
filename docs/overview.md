@@ -41,7 +41,7 @@ Screenshot contract: `screenshots.json`.
 - Data objects: `ResolvedWordPressMediaEndpointData`, `WordPressImportPreviewData`, `WordPressPermalinkRedirectReportData`.
 - Command signatures: `wordpress-importer:import`.
 - Console command classes: `ImportWordPressWxrCommand`.
-- Manifest contributions: `health-check: Capell\WordPressImporter\Health\WordpressImporterHealthCheck`.
+- Manifest contributions: `console-command: Capell\WordPressImporter\Manifest\WordPressImporterConsoleCommandContribution`, `health-check: Capell\WordPressImporter\Health\WordpressImporterHealthCheck`.
 - Health checks: `Capell\WordPressImporter\Health\WordpressImporterHealthCheck`.
 
 ## Data Model
