@@ -24,6 +24,7 @@ final class WxrReader implements PathAwareImportSourceReader
         'old_permalink',
         'link',
         'post_content',
+        'post_content_raw',
         'post_excerpt',
         'post_status',
         'post_date',
@@ -396,7 +397,8 @@ final class WxrReader implements PathAwareImportSourceReader
 
         $this->assertImportableItem($postId, $postTitle);
 
-        $postContent = trim((string) $content->encoded);
+        $postContentRaw = trim((string) $content->encoded);
+        $postContent = $this->normalizeContent($postContentRaw);
         $attachments = array_values(array_merge(
             $this->inlineAttachments($wp, $postTitle),
             $attachmentsByParent[$postId] ?? [],
@@ -415,6 +417,7 @@ final class WxrReader implements PathAwareImportSourceReader
             'old_permalink' => trim((string) $item->link),
             'link' => trim((string) $item->link),
             'post_content' => $postContent,
+            'post_content_raw' => $postContentRaw,
             'post_excerpt' => trim((string) $excerpt->encoded),
             'post_status' => trim((string) $wp->status),
             'post_date' => trim((string) $wp->post_date),
@@ -425,8 +428,8 @@ final class WxrReader implements PathAwareImportSourceReader
             'attachments' => $attachments,
             'media_urls' => $mediaUrls,
             'featured_media_url' => $mediaUrls[0] ?? null,
-            'contains_gutenberg_blocks' => str_contains($postContent, '<!-- wp:'),
-            'shortcodes' => $this->shortcodes($postContent),
+            'contains_gutenberg_blocks' => str_contains($postContentRaw, '<!-- wp:'),
+            'shortcodes' => $this->shortcodes($postContentRaw),
         ];
     }
 
@@ -530,5 +533,31 @@ final class WxrReader implements PathAwareImportSourceReader
         preg_match_all('/\[(?!\/)([a-zA-Z][a-zA-Z0-9_-]*)\b[^\]]*\]/', $content, $matches);
 
         return array_values(array_unique($matches[1]));
+    }
+
+    private function normalizeContent(string $content): string
+    {
+        $content = preg_replace('/<!--\s*\/?wp:[^>]*-->/', '', $content) ?? $content;
+
+        $content = preg_replace_callback(
+            '/\[([a-zA-Z][a-zA-Z0-9_-]*)\b([^\]]*)\](?:.*?)\[\/\1\]|\[([a-zA-Z][a-zA-Z0-9_-]*)\b([^\]]*)\/?\]/s',
+            function (array $matches): string {
+                $shortcode = strtolower((string) ($matches[1] !== '' ? $matches[1] : $matches[3]));
+                $attributes = trim((string) ($matches[2] !== '' ? $matches[2] : $matches[4]));
+
+                if ($shortcode === 'caption') {
+                    return trim(strip_tags((string) ($matches[0] ?? ''), '<a><br><em><img><p><strong>'));
+                }
+
+                return sprintf(
+                    '<div class="capell-wordpress-shortcode-placeholder" data-shortcode="%s"%s></div>',
+                    e($shortcode),
+                    $attributes === '' ? '' : ' data-attributes="' . e($attributes) . '"',
+                );
+            },
+            $content,
+        ) ?? $content;
+
+        return trim($content);
     }
 }

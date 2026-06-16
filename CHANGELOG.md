@@ -4,6 +4,8 @@ All notable changes to `capell-app/wordpress-importer` will be documented in thi
 
 ## Unreleased
 
+- Normalized imported WordPress content by stripping Gutenberg block comments, replacing shortcodes with safe placeholders, and preserving raw WordPress content in `meta.wordpress.raw_content`.
+
 ### 2026-06-07
 
 - Added post-execution WordPress media import for completed Migration Assistant page imports, including media attachment to created Pages, `meta.wordpress.imported_media`, and exact content URL rewrites from WordPress asset URLs to local media URLs.

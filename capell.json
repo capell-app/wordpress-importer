@@ -72,6 +72,7 @@
         "wordpress-gutenberg-detection",
         "wordpress-shortcode-detection",
         "wordpress-wxr-streaming-reader",
+        "wordpress-content-normalization",
         "wordpress-headless-preview"
     ],
     "security": {
