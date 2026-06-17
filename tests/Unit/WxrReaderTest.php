@@ -105,6 +105,7 @@ XML);
         ->and($result->columns)->toContain('source_identity')
         ->and($result->columns)->toContain('old_permalink')
         ->and($result->columns)->toContain('featured_media_url')
+        ->and($result->columns)->toContain('post_content_raw')
         ->and($result->metadata['site_title'])->toBe('Example WordPress Site')
         ->and($result->metadata['post_count'])->toBe(2)
         ->and($result->metadata['attachment_count'])->toBe(1)
@@ -126,6 +127,8 @@ XML);
         ])
         ->and($result->rows[0]['featured_media_url'])->toBe('https://example.test/about-hero.jpg')
         ->and($result->rows[1]['parent_id'])->toBe('10')
+        ->and($result->rows[1]['post_content'])->toBe('<p>News body</p><div class="capell-wordpress-shortcode-placeholder" data-shortcode="gallery" data-attributes="ids=&quot;1,2&quot;"></div>')
+        ->and($result->rows[1]['post_content_raw'])->toBe('<!-- wp:paragraph --><p>News body</p><!-- /wp:paragraph -->[gallery ids="1,2"]')
         ->and($result->rows[1]['contains_gutenberg_blocks'])->toBeTrue()
         ->and($result->rows[1]['shortcodes'])->toBe(['gallery']);
 });
@@ -331,6 +334,7 @@ XML);
 
     expect(BuildWordPressImportPreviewAction::fieldMapping())
         ->toHaveKey('categories', 'meta.wordpress.categories')
+        ->toHaveKey('post_content_raw', 'meta.wordpress.raw_content')
         ->and($importPreview->readResult->sourceType)->toBe('wordpress-wxr')
         ->and($attributes['name'] ?? null)->toBe('Mapped post')
         ->and($meta['content'] ?? null)->toBe('<p>Mapped body</p>')
@@ -341,6 +345,7 @@ XML);
         ->and($wordpressMeta['tags'] ?? null)->toBe(['Featured'])
         ->and($wordpressMeta['author_login'] ?? null)->toBe('editor')
         ->and($wordpressMeta['media_urls'] ?? null)->toBe(['https://example.test/mapped-post.jpg'])
+        ->and($wordpressMeta['raw_content'] ?? null)->toBe('<p>Mapped body</p>')
         ->and($meta)->not->toHaveKey('imported');
 });
 

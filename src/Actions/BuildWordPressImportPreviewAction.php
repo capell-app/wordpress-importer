@@ -27,6 +27,7 @@ final class BuildWordPressImportPreviewAction
         'old_permalink' => 'meta.wordpress.old_permalink',
         'link' => 'meta.wordpress.link',
         'post_content' => 'meta.content',
+        'post_content_raw' => 'meta.wordpress.raw_content',
         'post_excerpt' => 'meta.excerpt',
         'post_status' => 'meta.status',
         'post_date' => 'visible_from',
