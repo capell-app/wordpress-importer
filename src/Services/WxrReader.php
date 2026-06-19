@@ -352,7 +352,14 @@ final class WxrReader implements PathAwareImportSourceReader
 
         throw_if(! is_string($outerXml) || trim($outerXml) === '', RuntimeException::class, 'empty WXR item XML');
 
-        return SafeXmlLoader::loadString($outerXml, LIBXML_NOCDATA | LIBXML_NONET, PHP_INT_MAX);
+        // Enforce a per-item byte ceiling so a single enormous <item> (e.g. a huge
+        // content:encoded body) cannot OOM-kill the streaming import worker. Passing
+        // PHP_INT_MAX would defeat the loader's size guard entirely; the loader's
+        // default 50MB cap is restored here and an oversized item throws a catchable
+        // RuntimeException instead of exhausting memory.
+        $maximumItemBytes = SafeXmlLoader::DEFAULT_MAX_BYTES;
+
+        return SafeXmlLoader::loadString($outerXml, LIBXML_NOCDATA | LIBXML_NONET, $maximumItemBytes);
     }
 
     private function rejectDoctype(NativeXmlReader $reader): void
