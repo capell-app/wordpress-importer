@@ -33,6 +33,34 @@ Screenshot contract: `screenshots.json`.
 - Parsed WordPress WXR rows previewed in Migration Assistant (admin, required).
 - Import session detail for a WordPress WXR import (admin, optional).
 
+## Screenshot Evidence
+
+These captures are the package-owned visual contract for the admin pages, public pages, actions, workflows, and feature surfaces described above. Keep this section aligned with `docs/screenshots.json` whenever the package surface changes.
+
+### Migration Assistant import flow with WordPress WXR available as an import source
+
+![Migration Assistant import flow with WordPress WXR available as an import source](screenshots/wordpress-wxr-source-selection.png)
+
+- Surface: admin · Target: /admin/migration-assistant/recovery-center/import-pages.
+- Documents: An operator sees WordPress WXR as an available source in the Migration Assistant import flow.
+- Capture notes: Install Migration Assistant first, then WordPress Importer. Capture the source selection state where the WXR reader is visible.
+
+### Parsed WordPress WXR rows previewed in Migration Assistant
+
+![Parsed WordPress WXR rows previewed in Migration Assistant](screenshots/wordpress-wxr-preview.png)
+
+- Surface: admin · Target: /admin/migration-assistant/recovery-center/import-pages.
+- Documents: An operator previews parsed WXR posts/pages with title, slug, status, date, categories, tags, and author fields.
+- Capture notes: Use a small WXR fixture with at least one post and one page to show extracted title, slug, status, date, categories, tags, and author fields.
+
+### Import session detail for a WordPress WXR import
+
+![Import session detail for a WordPress WXR import](screenshots/wordpress-import-session.png)
+
+- Surface: admin · Target: /admin/migration-assistant/import-sessions/{record}.
+- Documents: An operator reviews the Migration Assistant import session created for a WordPress WXR import.
+- Capture notes: Migration Assistant owns the page; include this screenshot when a demo import session can be created.
+
 ## Technical Shape
 
 - Service providers: `Capell\WordPressImporter\Providers\WordPressImporterServiceProvider`.
