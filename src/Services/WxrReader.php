@@ -549,8 +549,12 @@ final class WxrReader implements PathAwareImportSourceReader
         $content = preg_replace_callback(
             '/\[([a-zA-Z][a-zA-Z0-9_-]*)\b([^\]]*)\](?:.*?)\[\/\1\]|\[([a-zA-Z][a-zA-Z0-9_-]*)\b([^\]]*)\/?\]/s',
             function (array $matches): string {
-                $shortcode = strtolower((string) ($matches[1] !== '' ? $matches[1] : $matches[3]));
-                $attributes = trim((string) ($matches[2] !== '' ? $matches[2] : $matches[4]));
+                $openingShortcode = $matches[1] ?? '';
+                $openingAttributes = $matches[2] ?? '';
+                $selfClosingShortcode = $matches[3] ?? '';
+                $selfClosingAttributes = $matches[4] ?? '';
+                $shortcode = strtolower((string) ($openingShortcode !== '' ? $openingShortcode : $selfClosingShortcode));
+                $attributes = trim((string) ($openingAttributes !== '' ? $openingAttributes : $selfClosingAttributes));
 
                 if ($shortcode === 'caption') {
                     return trim(strip_tags((string) ($matches[0] ?? ''), '<a><br><em><img><p><strong>'));
