@@ -22,6 +22,7 @@ it('rejects a WXR item whose body exceeds the per-item byte cap instead of exhau
     // Stream the fixture to disk so the test itself never holds the oversized
     // payload in memory all at once.
     $fileHandle = fopen($exportPath, 'wb');
+    throw_unless($fileHandle !== false, RuntimeException::class, 'Expected temporary WXR fixture handle.');
 
     fwrite($fileHandle, <<<'XML'
 <?xml version="1.0" encoding="UTF-8" ?>
