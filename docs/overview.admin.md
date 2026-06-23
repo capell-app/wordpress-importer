@@ -1,7 +1,3 @@
-# WordPress Importer
-
-<!-- prettier-ignore-start -->
-
 ## What it does for you
 
 WordPress Importer brings your WordPress posts, pages, and media into Capell. It works with Migration Assistant: you point it at a WordPress export, match the old categories and content to Capell, import, and verify everything came across.
@@ -28,10 +24,3 @@ It appears as a source inside **Migration Assistant**. Install Migration Assista
 - Bring your **WordPress** posts into Capell without re-typing them.
 - Match old categories to new ones so your content stays organised.
 - Verify that images came across after the import.
-
----
-
-For how to use WordPress Importer, see the [admin guide](admin-guide.md).
-For developers: see the [README](../README.md).
-
-<!-- prettier-ignore-end -->
