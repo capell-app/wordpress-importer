@@ -99,9 +99,11 @@
             "forbidPublicBladeQueries": true
         },
         "externalHttpClients": {
-            "requiresTimeouts": false,
-            "requiresSecretRedaction": false,
-            "clients": []
+            "requiresTimeouts": true,
+            "requiresSecretRedaction": true,
+            "clients": [
+                "Capell\\WordPressImporter\\Actions\\ImportWordPressMediaForPagesAction"
+            ]
         },
         "adminSurface": {
             "authorization": "panel-auth",
