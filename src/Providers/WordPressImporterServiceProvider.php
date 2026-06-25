@@ -16,7 +16,7 @@ use Capell\WordPressImporter\Support\DnsWordPressMediaHostResolver;
 use Illuminate\Support\Facades\Event;
 use Spatie\LaravelPackageTools\Package;
 
-class WordPressImporterServiceProvider extends AbstractPackageServiceProvider
+final class WordPressImporterServiceProvider extends AbstractPackageServiceProvider
 {
     public static string $name = 'capell-wordpress-importer';
 
