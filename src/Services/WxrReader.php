@@ -12,6 +12,13 @@ use SimpleXMLElement;
 use Throwable;
 use XMLReader as NativeXmlReader;
 
+/**
+ * Registry adapter for Migration Assistant's source-reader contract.
+ *
+ * ReadWordPressWxrAction owns path resolution and import orchestration; this
+ * service stays focused on the streaming and DOM WXR parsing implementation
+ * required by the shared reader registry.
+ */
 final class WxrReader implements PathAwareImportSourceReader
 {
     /** @var list<string> */
