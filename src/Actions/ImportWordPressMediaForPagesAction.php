@@ -12,6 +12,7 @@ use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Lorisleiva\Actions\Concerns\AsObject;
@@ -129,6 +130,12 @@ final class ImportWordPressMediaForPagesAction
                 ->get($endpoint->url);
 
             if (! $response->successful() || $response->body() === '') {
+                Log::warning('WordPress media import download failed.', [
+                    ...$this->failureContext($mediaUrl),
+                    'status' => $response->status(),
+                    'empty_body' => $response->body() === '',
+                ]);
+
                 return null;
             }
 
@@ -143,11 +150,30 @@ final class ImportWordPressMediaForPagesAction
             );
 
             return $page->addMediaFromUploadedFile($uploadedFile, self::COLLECTION);
-        } catch (Throwable) {
+        } catch (Throwable $throwable) {
+            Log::warning('WordPress media import attachment failed.', [
+                ...$this->failureContext($mediaUrl),
+                'exception' => $throwable::class,
+                'message' => $throwable->getMessage(),
+            ]);
+
             return null;
         } finally {
             File::delete($temporaryPath);
         }
+    }
+
+    /**
+     * @return array{url_host: string|null, url_path: string|null}
+     */
+    private function failureContext(string $mediaUrl): array
+    {
+        $parts = parse_url($mediaUrl);
+
+        return [
+            'url_host' => is_array($parts) && is_string($parts['host'] ?? null) ? strtolower($parts['host']) : null,
+            'url_path' => is_array($parts) && is_string($parts['path'] ?? null) ? $parts['path'] : null,
+        ];
     }
 
     private function endpoint(string $url): ResolvedWordPressMediaEndpointData
