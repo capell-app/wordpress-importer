@@ -9,9 +9,11 @@ use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 it('does not request imported WordPress media from private hosts', function (): void {
     Http::fake();
+    Log::spy();
 
     app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([]));
 
@@ -29,9 +31,18 @@ it('does not request imported WordPress media from private hosts', function (): 
     expect($imported)->toBe(0);
 
     Http::assertNothingSent();
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->with('WordPress media import attachment failed.', Mockery::on(
+            fn (array $context): bool => ($context['url_host'] ?? null) === '127.0.0.1'
+                && ($context['url_path'] ?? null) === '/private.jpg'
+                && ($context['exception'] ?? null) === InvalidArgumentException::class,
+        ));
 });
 
 it('does not follow imported WordPress media redirects to unchecked targets', function (): void {
+    Log::spy();
+
     /** @var array<string, mixed>|null $requestOptions */
     $requestOptions = null;
 
@@ -61,4 +72,11 @@ it('does not follow imported WordPress media redirects to unchecked targets', fu
         ->and(data_get($requestOptions, 'curl.' . CURLOPT_RESOLVE))->toBe(['media.example.test:443:93.184.216.34']);
 
     Http::assertSentCount(1);
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->with('WordPress media import download failed.', Mockery::on(
+            fn (array $context): bool => ($context['url_host'] ?? null) === 'media.example.test'
+                && ($context['url_path'] ?? null) === '/image.jpg'
+                && ($context['status'] ?? null) === 302,
+        ));
 });

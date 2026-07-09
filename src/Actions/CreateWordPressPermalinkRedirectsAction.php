@@ -6,8 +6,6 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
-use Capell\UrlManager\Actions\UpsertRedirectRuleAction;
-use Capell\UrlManager\Data\RedirectRuleData;
 use Capell\WordPressImporter\Data\WordPressPermalinkRedirectReportData;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
@@ -22,9 +20,9 @@ final class CreateWordPressPermalinkRedirectsAction
 {
     use AsObject;
 
-    private const string REDIRECT_RULE_DATA = RedirectRuleData::class;
+    private const string REDIRECT_RULE_DATA = 'Capell\\UrlManager\\Data\\RedirectRuleData';
 
-    private const string UPSERT_REDIRECT_RULE_ACTION = UpsertRedirectRuleAction::class;
+    private const string UPSERT_REDIRECT_RULE_ACTION = 'Capell\\UrlManager\\Actions\\UpsertRedirectRuleAction';
 
     /**
      * @param  iterable<array-key, mixed>  $pages
