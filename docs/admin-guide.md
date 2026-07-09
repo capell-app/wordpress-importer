@@ -12,12 +12,11 @@ This guide is for editors moving a site from WordPress and owners planning the m
 
 ![An operator sees WordPress as an available source in the Migration Assistant import flow.](screenshots/wordpress-wxr-source-selection.png)
 
-### How to match categories and fields
+### How to review WordPress metadata
 
-1. In the import, open the mapping step.
-2. Match old WordPress categories to your Capell ones.
-3. Match the post fields (title, body, date) to Capell fields.
-4. Save the mapping.
+1. Preview the import.
+2. Review the parsed title, body, date, categories, tags, author, permalink, and media references.
+3. Use the preserved WordPress metadata to decide how imported content should be organised after import.
 
 ### How to import posts and media
 
@@ -43,10 +42,10 @@ This guide is for editors moving a site from WordPress and owners planning the m
 
 ### Add when needed
 
-| Need                          | Enable                                      |
-| ----------------------------- | ------------------------------------------- |
-| Move an entire WordPress site | A full import once a test batch looks right |
-| Keep your old structure       | Careful category mapping before running     |
+| Need                          | Enable                                                    |
+| ----------------------------- | --------------------------------------------------------- |
+| Move an entire WordPress site | A full import once a test batch looks right               |
+| Keep your old structure       | Review preserved category and tag metadata before running |
 
 ### Don't enable yet
 
@@ -61,9 +60,9 @@ This guide is for editors moving a site from WordPress and owners planning the m
 
 ## Troubleshooting for editors
 
-| What you see                         | What it means                                       | What to do                                                     |
-| ------------------------------------ | --------------------------------------------------- | -------------------------------------------------------------- |
-| WordPress isn't offered as a source  | Migration Assistant or the importer isn't installed | Install Migration Assistant first, then the WordPress Importer |
-| Categories landed in the wrong place | The category mapping was off                        | Fix the mapping and re-run                                     |
-| Images are missing                   | Media wasn't included or mapped                     | Confirm media is part of the export and re-import              |
-| Some posts didn't import             | They were skipped due to errors                     | Review **Results** and re-import the affected posts            |
+| What you see                        | What it means                                            | What to do                                                     |
+| ----------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
+| WordPress isn't offered as a source | Migration Assistant or the importer isn't installed      | Install Migration Assistant first, then the WordPress Importer |
+| Categories need follow-up           | WordPress categories and tags were preserved as metadata | Review the imported content and organise it in Capell          |
+| Images are missing                  | Media wasn't included or mapped                          | Confirm media is part of the export and re-import              |
+| Some posts didn't import            | They were skipped due to errors                          | Review **Results** and re-import the affected posts            |
