@@ -8,7 +8,6 @@ use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
 use Capell\MigrationAssistant\Actions\ExecuteImportRollbackAction;
-use Capell\MigrationAssistant\Actions\Imports\ExecuteExternalPageImportAction;
 use Capell\MigrationAssistant\Enums\ImportSessionStatus;
 use Capell\MigrationAssistant\Models\ImportRollbackReport;
 use Capell\MigrationAssistant\Services\Import\XmlReader;
@@ -16,6 +15,8 @@ use Capell\MigrationAssistant\Support\ImportSourceRegistry;
 use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
 use Capell\UrlManager\Models\RedirectRule;
 use Capell\WordPressImporter\Actions\BuildWordPressImportPreviewAction;
+use Capell\WordPressImporter\Actions\ExecuteWordPressWxrImportAction;
+use Capell\WordPressImporter\Actions\ReadWordPressWxrAction;
 use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Services\WxrReader;
 use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
@@ -131,6 +132,35 @@ XML);
         ->and($result->rows[1]['post_content_raw'])->toBe('<!-- wp:paragraph --><p>News body</p><!-- /wp:paragraph -->[gallery ids="1,2"]')
         ->and($result->rows[1]['contains_gutenberg_blocks'])->toBeTrue()
         ->and($result->rows[1]['shortcodes'])->toBe(['gallery']);
+});
+
+it('reads WordPress WXR exports through an action boundary', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-read-action-');
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+    xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Action WordPress Site</title>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <item>
+            <title>Action page</title>
+            <content:encoded><![CDATA[<p>Action body</p>]]></content:encoded>
+            <wp:post_id>10</wp:post_id>
+            <wp:post_name>action-page</wp:post_name>
+            <wp:post_type>page</wp:post_type>
+            <wp:status>publish</wp:status>
+        </item>
+    </channel>
+</rss>
+XML);
+
+    $result = ReadWordPressWxrAction::run($path);
+
+    expect($result->path)->toBe(realpath($path))
+        ->and($result->readResult->sourceType)->toBe('wordpress-wxr')
+        ->and($result->readResult->rows)->toHaveCount(1);
 });
 
 it('streams WordPress WXR exports larger than the migration assistant DOM safety cap', function (): void {
@@ -405,16 +435,11 @@ it('executes a WordPress WXR preview through migration-assistant into a page ses
 </rss>
 XML);
 
-    $wordpressPreview = BuildWordPressImportPreviewAction::run($path);
-    $result = ExecuteExternalPageImportAction::run(
-        $wordpressPreview->preview,
-        [
-            'layout_id' => $layout->getKey(),
-            'blueprint_id' => $type->getKey(),
-            'site_id' => $site->getKey(),
-        ],
-        sourceFilename: basename($path),
-        targetLabel: 'WordPress WXR import',
+    $result = ExecuteWordPressWxrImportAction::run(
+        $path,
+        (int) $site->getKey(),
+        (int) $layout->getKey(),
+        (int) $type->getKey(),
     );
 
     $parentPage = Page::query()

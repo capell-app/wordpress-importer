@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Console\Commands;
 
-use Capell\MigrationAssistant\Actions\Imports\ExecuteExternalPageImportAction;
 use Capell\WordPressImporter\Actions\BuildWordPressImportPreviewAction;
+use Capell\WordPressImporter\Actions\ExecuteWordPressWxrImportAction;
 use Illuminate\Console\Command;
 use Override;
 use RuntimeException;
@@ -76,25 +76,12 @@ final class ImportWordPressWxrCommand extends Command
 
     private function executeImport(string $path): int
     {
-        $importPreview = BuildWordPressImportPreviewAction::run($path);
-
-        $defaultPageAttributes = [
-            'site_id' => $this->requiredIntOption('site-id'),
-            'layout_id' => $this->requiredIntOption('layout-id'),
-            'blueprint_id' => $this->requiredIntOption('type-id'),
-        ];
-
-        $languageId = $this->optionalIntOption('language-id');
-
-        if ($languageId !== null) {
-            $defaultPageAttributes['language_id'] = $languageId;
-        }
-
-        $result = ExecuteExternalPageImportAction::run(
-            $importPreview->preview,
-            $defaultPageAttributes,
-            sourceFilename: basename((string) $importPreview->path),
-            targetLabel: 'WordPress WXR import',
+        $result = ExecuteWordPressWxrImportAction::run(
+            $path,
+            $this->requiredIntOption('site-id'),
+            $this->requiredIntOption('layout-id'),
+            $this->requiredIntOption('type-id'),
+            $this->optionalIntOption('language-id'),
         );
 
         $isSuccess = $result->report->errors === [];
