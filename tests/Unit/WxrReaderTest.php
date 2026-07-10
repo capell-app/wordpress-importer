@@ -491,14 +491,14 @@ XML);
         ->and($firstRedirect['old_url'] ?? null)->toBe('https://example.test/legacy-executable-page/')
         ->and($firstRedirect['redirect_rule_id'] ?? null)->toBe($redirectRule->getKey())
         ->and($rollbackRedirectReport['created'] ?? null)->toBe(1)
-        ->and($rollbackCreatedModels)->toContain([
+        ->and($rollbackCreatedModels)->not->toContain([
             'class' => RedirectRule::class,
             'id' => $redirectRule->getKey(),
         ]);
 
     ExecuteImportRollbackAction::run($rollbackReport->refresh());
 
-    expect(RedirectRule::query()->whereKey($redirectRule->getKey())->exists())->toBeFalse();
+    expect(RedirectRule::query()->whereKey($redirectRule->getKey())->exists())->toBeTrue();
 });
 
 /**

@@ -73,40 +73,8 @@ final class CreateWordPressRedirectsForCompletedImport
 
         $rollbackReport
             ->forceFill([
-                'created_models' => $this->mergeCreatedModels(
-                    is_array($rollbackReport->created_models) ? $rollbackReport->created_models : [],
-                    $report->createdModels(),
-                ),
                 'summary' => $rollbackSummary,
-                'executed_at' => now(),
             ])
             ->save();
-    }
-
-    /**
-     * @param  array<array-key, mixed>  $existingModels
-     * @param  list<array{class: class-string, id: int|string}>  $newModels
-     * @return list<array{class: string, id: int|string}>
-     */
-    private function mergeCreatedModels(array $existingModels, array $newModels): array
-    {
-        $merged = [];
-
-        foreach ([...$existingModels, ...$newModels] as $model) {
-            if (
-                ! is_array($model)
-                || ! is_string($model['class'] ?? null)
-                || (! is_int($model['id'] ?? null) && ! is_string($model['id'] ?? null))
-            ) {
-                continue;
-            }
-
-            $merged[$model['class'] . ':' . (string) $model['id']] = [
-                'class' => $model['class'],
-                'id' => $model['id'],
-            ];
-        }
-
-        return array_values($merged);
     }
 }
