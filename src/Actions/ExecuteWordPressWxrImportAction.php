@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Actions;
 
+use Capell\MigrationAssistant\Actions\Imports\AuthorizeExternalPageImportTargetAction;
 use Capell\MigrationAssistant\Contracts\PageImportTargetResolver;
+use Capell\MigrationAssistant\Data\ExternalPageImportTargetData;
 use Capell\MigrationAssistant\Data\Imports\ExternalPageImportExecutionResult;
 use Capell\MigrationAssistant\Enums\ImportSessionKind;
 use Capell\MigrationAssistant\Enums\ImportSessionStatus;
 use Capell\MigrationAssistant\Events\ImportFailed;
 use Capell\MigrationAssistant\Models\ImportSession;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Str;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Throwable;
 
 /**
- * @method static ExternalPageImportExecutionResult run(string $path, int $siteId, int $layoutId, int $typeId, ?int $languageId = null)
+ * @method static ExternalPageImportExecutionResult run(string $path, ExternalPageImportTargetData $requestedTarget, ?Authenticatable $actor = null)
  */
 final class ExecuteWordPressWxrImportAction
 {
@@ -23,28 +26,19 @@ final class ExecuteWordPressWxrImportAction
 
     public function handle(
         string $path,
-        int $siteId,
-        int $layoutId,
-        int $typeId,
-        ?int $languageId = null,
+        ExternalPageImportTargetData $requestedTarget,
+        ?Authenticatable $actor = null,
     ): ExternalPageImportExecutionResult {
+        $targetData = AuthorizeExternalPageImportTargetAction::run($requestedTarget, $actor);
         $spool = SpoolWordPressWxrAction::run($path);
-        $defaultPageAttributes = [
-            'site_id' => $siteId,
-            'layout_id' => $layoutId,
-            'blueprint_id' => $typeId,
-        ];
-
-        if ($languageId !== null) {
-            $defaultPageAttributes['language_id'] = $languageId;
-        }
+        $defaultPageAttributes = $targetData->pageAttributes();
 
         $target = resolve(PageImportTargetResolver::class)->create(
             (string) __('capell-wordpress-importer::commands.import.target_label'),
         );
         $session = ImportSession::query()->create([
             'uuid' => (string) Str::uuid(),
-            'user_id' => auth()->id(),
+            'user_id' => $actor?->getAuthIdentifier() ?? auth()->id(),
             'target_type' => $target->type,
             'target_id' => is_int($target->id) ? $target->id : null,
             'target_label' => $target->label,

@@ -8,6 +8,7 @@ use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
 use Capell\MigrationAssistant\Actions\RetryImportSessionAction;
+use Capell\MigrationAssistant\Data\ExternalPageImportTargetData;
 use Capell\MigrationAssistant\Enums\ImportSessionStatus;
 use Capell\MigrationAssistant\Jobs\ExecuteImportPlanJob;
 use Capell\MigrationAssistant\Models\ImportSession;
@@ -16,6 +17,7 @@ use Capell\MigrationAssistant\Services\Import\PackageReader;
 use Capell\MigrationAssistant\Services\Import\PageImportService;
 use Capell\MigrationAssistant\Services\Import\SiteImportService;
 use Capell\MigrationAssistant\Support\ImportSessionExecutorRegistry;
+use Capell\Tests\Fixtures\Models\User;
 use Capell\UrlManager\Models\RedirectRule;
 use Capell\WordPressImporter\Actions\ExecuteWordPressWxrImportAction;
 use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
@@ -23,11 +25,17 @@ use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function (): void {
+    Notification::fake();
+    Role::findOrCreate('super_admin', 'web');
+    $this->actingAs(User::factory()->create()->assignRole('super_admin'));
+
     if (! Schema::hasTable('url_manager_redirect_rules')) {
         (require dirname(__DIR__, 3) . '/url-manager/database/migrations/2026_05_31_000001_create_url_manager_redirect_rules_table.php')->up();
     }
@@ -42,7 +50,8 @@ beforeEach(function (): void {
 });
 
 it('executes a WordPress WXR import through the console command into pages and redirects', function (): void {
-    $actor = $this->actingAsAdmin()->authenticatedUser();
+    $actor = auth()->user();
+    throw_unless($actor instanceof User, RuntimeException::class, 'Expected an authenticated admin user.');
     $layout = Layout::factory()->create();
     $type = Blueprint::factory()->page()->create();
     $site = Site::factory()->create();
@@ -153,9 +162,7 @@ XML);
 
     $result = ExecuteWordPressWxrImportAction::run(
         $path,
-        (int) $site->getKey(),
-        (int) $layout->getKey(),
-        (int) $type->getKey(),
+        wordpressImportTarget($site, $layout, $type),
     );
     $parent = Page::query()->withoutGlobalScopes()->where('name', 'Parent page')->firstOrFail();
     $child = Page::query()->withoutGlobalScopes()->where('name', 'Child page')->firstOrFail();
@@ -199,9 +206,7 @@ XML);
     try {
         ExecuteWordPressWxrImportAction::run(
             $path,
-            (int) $site->getKey(),
-            (int) $layout->getKey(),
-            (int) $type->getKey(),
+            wordpressImportTarget($site, $layout, $type),
         );
     } catch (RuntimeException $runtimeException) {
         expect($runtimeException->getMessage())->toContain('pending download');
@@ -238,3 +243,13 @@ XML);
         ->and($session->result_summary['wordpress_media']['imported_count'] ?? null)->toBe(1)
         ->and(Page::query()->withoutGlobalScopes()->where('name', 'Resume page')->count())->toBe(1);
 });
+
+function wordpressImportTarget(Site $site, Layout $layout, Blueprint $blueprint): ExternalPageImportTargetData
+{
+    return new ExternalPageImportTargetData(
+        siteId: (int) $site->getKey(),
+        layoutId: (int) $layout->getKey(),
+        blueprintId: (int) $blueprint->getKey(),
+        languageId: (int) $site->language_id,
+    );
+}
