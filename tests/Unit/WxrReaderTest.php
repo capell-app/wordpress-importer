@@ -9,6 +9,7 @@ use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
 use Capell\MigrationAssistant\Actions\ExecuteImportRollbackAction;
 use Capell\MigrationAssistant\Enums\ImportSessionStatus;
+use Capell\MigrationAssistant\Data\ExternalPageImportTargetData;
 use Capell\MigrationAssistant\Models\ImportRollbackReport;
 use Capell\MigrationAssistant\Services\Import\XmlReader;
 use Capell\MigrationAssistant\Support\ImportSourceRegistry;
@@ -380,6 +381,7 @@ XML);
 });
 
 it('executes a WordPress WXR preview through migration-assistant into a page session', function (): void {
+    $this->actingAsAdmin();
     ensureWordPressImporterUrlManagerRedirectRulesTable();
     Storage::fake('public');
     Http::fake([
@@ -437,9 +439,12 @@ XML);
 
     $result = ExecuteWordPressWxrImportAction::run(
         $path,
-        (int) $site->getKey(),
-        (int) $layout->getKey(),
-        (int) $type->getKey(),
+        new ExternalPageImportTargetData(
+            siteId: (int) $site->getKey(),
+            layoutId: (int) $layout->getKey(),
+            blueprintId: (int) $type->getKey(),
+            languageId: (int) $site->language_id,
+        ),
     );
 
     $parentPage = Page::query()
@@ -499,6 +504,46 @@ XML);
     ExecuteImportRollbackAction::run($rollbackReport->refresh());
 
     expect(RedirectRule::query()->whereKey($redirectRule->getKey())->exists())->toBeFalse();
+});
+
+it('rejects a WordPress WXR import target outside the actor site scope', function (): void {
+    $authorizedSite = Site::factory()->create();
+    $otherSite = Site::factory()->create();
+    $otherLayout = Layout::factory()->site($otherSite)->create();
+    $type = Blueprint::factory()->page()->create();
+    $actor = $this->actingAsUser()->authenticatedUser();
+    $actor->assignedSiteIds = collect([(int) $authorizedSite->getKey()]);
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-unauthorized-target-');
+
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Unauthorized WordPress Site</title>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <item>
+            <title>Unauthorized page</title>
+            <content:encoded><![CDATA[<p>Blocked.</p>]]></content:encoded>
+            <wp:post_id>901</wp:post_id>
+            <wp:post_name>unauthorized-page</wp:post_name>
+            <wp:post_type>page</wp:post_type>
+            <wp:status>publish</wp:status>
+        </item>
+    </channel>
+</rss>
+XML);
+
+    expect(fn (): mixed => ExecuteWordPressWxrImportAction::run(
+        $path,
+        new ExternalPageImportTargetData(
+            siteId: (int) $otherSite->getKey(),
+            layoutId: (int) $otherLayout->getKey(),
+            blueprintId: (int) $type->getKey(),
+            languageId: (int) $otherSite->language_id,
+        ),
+    ))->toThrow(\Illuminate\Auth\Access\AuthorizationException::class, 'not authorized');
+
+    expect(Page::query()->withoutGlobalScopes()->where('site_id', $otherSite->getKey())->exists())->toBeFalse();
 });
 
 /**

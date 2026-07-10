@@ -42,6 +42,7 @@ beforeEach(function (): void {
 });
 
 it('executes a WordPress WXR import through the console command into pages and redirects', function (): void {
+    $actor = $this->actingAsAdmin()->authenticatedUser();
     $layout = Layout::factory()->create();
     $type = Blueprint::factory()->page()->create();
     $site = Site::factory()->create();
@@ -85,6 +86,7 @@ XML);
         '--site-id' => $site->getKey(),
         '--layout-id' => $layout->getKey(),
         '--type-id' => $type->getKey(),
+        '--actor-id' => $actor->getKey(),
     ]);
 
     $output = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);

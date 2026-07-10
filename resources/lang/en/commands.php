@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 return [
     'import' => [
+        'actor_not_found' => 'The selected import actor could not be found.',
+        'target_site_not_found' => 'The selected import site could not be found.',
         'description' => 'Read a WordPress WXR export and build a Migration Assistant preview.',
         'path_required' => 'A WordPress WXR export path is required.',
         'path_missing' => 'WordPress export [:path] could not be found.',
