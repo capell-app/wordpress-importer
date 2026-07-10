@@ -7,6 +7,8 @@ namespace Capell\WordPressImporter\Support;
 use Capell\MigrationAssistant\Contracts\ImportSessionExecutor;
 use Capell\MigrationAssistant\Models\ImportSession;
 use Capell\WordPressImporter\Actions\ExecuteWordPressSpoolSessionAction;
+use Capell\WordPressImporter\Actions\ReauthorizeWordPressWxrSessionAction;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Storage;
 
 final class WordPressWxrSessionExecutor implements ImportSessionExecutor
@@ -32,6 +34,9 @@ final class WordPressWxrSessionExecutor implements ImportSessionExecutor
 
     public function execute(ImportSession $session): void
     {
+        $actor = auth()->user();
+        ReauthorizeWordPressWxrSessionAction::run($session, $actor instanceof Authenticatable ? $actor : null);
+
         ExecuteWordPressSpoolSessionAction::run($session);
     }
 }
