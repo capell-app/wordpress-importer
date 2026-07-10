@@ -7,13 +7,23 @@ use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
+use Capell\MigrationAssistant\Actions\RetryImportSessionAction;
 use Capell\MigrationAssistant\Enums\ImportSessionStatus;
+use Capell\MigrationAssistant\Jobs\ExecuteImportPlanJob;
 use Capell\MigrationAssistant\Models\ImportSession;
+use Capell\MigrationAssistant\Services\Import\MediaIngestService;
+use Capell\MigrationAssistant\Services\Import\PackageReader;
+use Capell\MigrationAssistant\Services\Import\PageImportService;
+use Capell\MigrationAssistant\Services\Import\SiteImportService;
+use Capell\MigrationAssistant\Support\ImportSessionExecutorRegistry;
 use Capell\UrlManager\Models\RedirectRule;
+use Capell\WordPressImporter\Actions\ExecuteWordPressWxrImportAction;
 use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
+use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -87,7 +97,12 @@ XML);
         ->and($output['report']['pages_created'] ?? null)->toBe(1)
         ->and(PageUrl::query()->where('pageable_id', $page->getKey())->where('url', '/executable-wp-page')->exists())->toBeTrue()
         ->and($redirectRule->target_url)->toBe('/executable-wp-page')
-        ->and($session->status)->toBe(ImportSessionStatus::Completed);
+        ->and($session->status)->toBe(ImportSessionStatus::Completed)
+        ->and($session->source_environment)->toBe('wordpress-wxr')
+        ->and($session->result_summary['wordpress_checkpoint']['next_chunk_index'] ?? null)
+        ->toBe($session->result_summary['wordpress_checkpoint']['total_chunks'] ?? null)
+        ->and($session->result_summary['wordpress_media']['imported_count'] ?? null)->toBe(1)
+        ->and($page->refresh()->meta['content'] ?? null)->not->toContain('https://example.test/uploads/executable.jpg');
 });
 
 it('requires target ids when executing', function (): void {
@@ -107,3 +122,117 @@ XML);
         '--execute' => true,
     ]);
 })->throws(RuntimeException::class);
+
+it('imports parent relationships across spool chunk boundaries', function (): void {
+    config()->set('wordpress-importer.spool.chunk_rows', 1);
+    $layout = Layout::factory()->create();
+    $type = Blueprint::factory()->page()->create();
+    $site = Site::factory()->create();
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-parent-chunks-');
+    throw_unless(is_string($path), RuntimeException::class, 'Expected a temporary WXR path.');
+
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Chunk Parent Site</title>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <item>
+            <title>Parent page</title><wp:post_id>201</wp:post_id><wp:post_name>parent</wp:post_name>
+            <wp:post_type>page</wp:post_type><wp:post_parent>0</wp:post_parent>
+        </item>
+        <item>
+            <title>Child page</title><wp:post_id>202</wp:post_id><wp:post_name>child</wp:post_name>
+            <wp:post_type>page</wp:post_type><wp:post_parent>201</wp:post_parent>
+        </item>
+    </channel>
+</rss>
+XML);
+
+    $result = ExecuteWordPressWxrImportAction::run(
+        $path,
+        (int) $site->getKey(),
+        (int) $layout->getKey(),
+        (int) $type->getKey(),
+    );
+    $parent = Page::query()->withoutGlobalScopes()->where('name', 'Parent page')->firstOrFail();
+    $child = Page::query()->withoutGlobalScopes()->where('name', 'Child page')->firstOrFail();
+
+    expect($result->session->status)->toBe(ImportSessionStatus::Completed)
+        ->and($result->session->result_summary['wordpress_checkpoint']['total_chunks'] ?? null)->toBe(2)
+        ->and((int) $child->parent_id)->toBe((int) $parent->getKey());
+});
+
+it('resumes failed media downloads from the persisted session checkpoint', function (): void {
+    $attempt = 0;
+    Http::fake(function () use (&$attempt): PromiseInterface {
+        $attempt++;
+
+        return $attempt === 1
+            ? Http::response('', 503)
+            : Http::response('retry image bytes', 200, ['Content-Type' => 'image/jpeg']);
+    });
+    $layout = Layout::factory()->create();
+    $type = Blueprint::factory()->page()->create();
+    $site = Site::factory()->create();
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-media-resume-');
+    throw_unless(is_string($path), RuntimeException::class, 'Expected a temporary WXR path.');
+
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Resume Media Site</title>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <item>
+            <title>Resume page</title>
+            <content:encoded><![CDATA[<p><img src="https://example.test/uploads/resume.jpg"></p>]]></content:encoded>
+            <wp:post_id>301</wp:post_id><wp:post_name>resume</wp:post_name><wp:post_type>page</wp:post_type>
+            <wp:attachment_url>https://example.test/uploads/resume.jpg</wp:attachment_url>
+        </item>
+    </channel>
+</rss>
+XML);
+
+    try {
+        ExecuteWordPressWxrImportAction::run(
+            $path,
+            (int) $site->getKey(),
+            (int) $layout->getKey(),
+            (int) $type->getKey(),
+        );
+    } catch (RuntimeException $runtimeException) {
+        expect($runtimeException->getMessage())->toContain('pending download');
+    }
+
+    $session = ImportSession::query()->where('source_environment', 'wordpress-wxr')->latest('id')->firstOrFail();
+
+    expect($session->status)->toBe(ImportSessionStatus::Failed)
+        ->and($session->result_summary['wordpress_checkpoint']['next_chunk_index'] ?? null)
+        ->toBe($session->result_summary['wordpress_checkpoint']['total_chunks'] ?? null)
+        ->and(RetryImportSessionAction::canRetry($session))->toBeTrue();
+
+    Queue::fake();
+    RetryImportSessionAction::run($session);
+    $queuedJob = null;
+
+    Queue::assertPushed(ExecuteImportPlanJob::class, function (ExecuteImportPlanJob $job) use (&$queuedJob, $session): bool {
+        $queuedJob = $job;
+
+        return $job->importSessionId === $session->getKey();
+    });
+
+    expect($queuedJob)->toBeInstanceOf(ExecuteImportPlanJob::class);
+
+    $queuedJob->handle(
+        resolve(PackageReader::class),
+        resolve(PageImportService::class),
+        resolve(MediaIngestService::class),
+        resolve(SiteImportService::class),
+        resolve(ImportSessionExecutorRegistry::class),
+    );
+
+    expect($session->refresh()->status)->toBe(ImportSessionStatus::Completed)
+        ->and($session->result_summary['wordpress_media']['imported_count'] ?? null)->toBe(1)
+        ->and(Page::query()->withoutGlobalScopes()->where('name', 'Resume page')->count())->toBe(1);
+});

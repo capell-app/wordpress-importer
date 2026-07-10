@@ -6,6 +6,7 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\Core\Contracts\Media\MediaContract;
 use Capell\Core\Models\Page;
+use Capell\MigrationAssistant\Models\ImportSession;
 use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Data\ResolvedWordPressMediaEndpointData;
 use Illuminate\Http\Client\Factory as HttpFactory;
@@ -16,10 +17,11 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Lorisleiva\Actions\Concerns\AsObject;
+use RuntimeException;
 use Throwable;
 
 /**
- * @method static int run(iterable<array-key, mixed> $pages)
+ * @method static int run(iterable<array-key, mixed> $pages, ?ImportSession $session = null)
  */
 final class ImportWordPressMediaForPagesAction
 {
@@ -35,22 +37,31 @@ final class ImportWordPressMediaForPagesAction
     /**
      * @param  iterable<array-key, mixed>  $pages
      */
-    public function handle(iterable $pages): int
+    public function handle(iterable $pages, ?ImportSession $session = null): int
     {
         $imported = 0;
+        $failedUrls = [];
 
         foreach ($pages as $page) {
             if (! $page instanceof Page) {
                 continue;
             }
 
-            $imported += $this->importForPage($page);
+            $imported += $this->importForPage($page, $session, $failedUrls);
+        }
+
+        if ($session instanceof ImportSession && $failedUrls !== []) {
+            throw new RuntimeException(sprintf(
+                'WordPress media import has %d pending download(s); retry the import session to resume.',
+                count($failedUrls),
+            ));
         }
 
         return $imported;
     }
 
-    private function importForPage(Page $page): int
+    /** @param list<string> $failedUrls */
+    private function importForPage(Page $page, ?ImportSession $session, array &$failedUrls): int
     {
         $meta = is_array($page->getAttribute('meta')) ? $page->getAttribute('meta') : [];
         $wordpress = is_array($meta['wordpress'] ?? null) ? $meta['wordpress'] : [];
@@ -61,12 +72,28 @@ final class ImportWordPressMediaForPagesAction
         }
 
         $content = is_string($meta['content'] ?? null) ? $meta['content'] : null;
-        $importedMedia = [];
+        $importedMedia = array_values(array_filter(
+            Arr::wrap($wordpress['imported_media'] ?? []),
+            static fn (mixed $entry): bool => is_array($entry)
+                && is_string($entry['source_url'] ?? null)
+                && is_string($entry['media_url'] ?? null),
+        ));
+        $importedSourceUrls = array_column($importedMedia, 'source_url');
+        $newlyImported = 0;
 
         foreach ($mediaUrls as $mediaUrl) {
+            if (in_array($mediaUrl, $importedSourceUrls, true)) {
+                $this->recordMediaCheckpoint($session, $page, $mediaUrl, successful: true, newlyImported: false);
+
+                continue;
+            }
+
             $media = $this->downloadAndAttach($page, $mediaUrl);
 
             if (! $media instanceof MediaContract) {
+                $failedUrls[] = $mediaUrl;
+                $this->recordMediaCheckpoint($session, $page, $mediaUrl, successful: false, newlyImported: false);
+
                 continue;
             }
 
@@ -75,27 +102,30 @@ final class ImportWordPressMediaForPagesAction
                 'source_url' => $mediaUrl,
                 'media_url' => $localUrl,
             ];
+            $importedSourceUrls[] = $mediaUrl;
+            $newlyImported++;
 
             if ($content !== null && $localUrl !== '') {
                 $content = str_replace($mediaUrl, $localUrl, $content);
             }
+
+            if ($content !== null) {
+                $meta['content'] = $content;
+            }
+
+            $meta['wordpress'] = array_replace($wordpress, [
+                'imported_media' => $importedMedia,
+            ]);
+
+            $page->forceFill(['meta' => $meta])->save();
+            $this->recordMediaCheckpoint($session, $page, $mediaUrl, successful: true, newlyImported: true);
         }
 
-        if ($importedMedia === []) {
-            return 0;
+        if (count($importedSourceUrls) === count($mediaUrls)) {
+            $this->recordCompletedPageCheckpoint($session, $page);
         }
 
-        if ($content !== null) {
-            $meta['content'] = $content;
-        }
-
-        $meta['wordpress'] = array_replace($wordpress, [
-            'imported_media' => $importedMedia,
-        ]);
-
-        $page->forceFill(['meta' => $meta])->save();
-
-        return count($importedMedia);
+        return $newlyImported;
     }
 
     /**
@@ -123,23 +153,59 @@ final class ImportWordPressMediaForPagesAction
         try {
             $endpoint = $this->endpoint($mediaUrl);
             $response = ($this->http ?? resolve(HttpFactory::class))
-                ->timeout(20)
+                ->timeout($this->timeoutSeconds())
                 ->withoutRedirecting()
                 ->withHeaders(['Host' => $endpoint->hostHeader()])
-                ->withOptions($this->requestOptions($endpoint))
+                ->withOptions([
+                    ...$this->requestOptions($endpoint),
+                    'sink' => $temporaryPath,
+                ])
                 ->get($endpoint->url);
 
-            if (! $response->successful() || $response->body() === '') {
+            if (! $response->successful()) {
                 Log::warning('WordPress media import download failed.', [
                     ...$this->failureContext($mediaUrl),
                     'status' => $response->status(),
-                    'empty_body' => $response->body() === '',
                 ]);
 
                 return null;
             }
 
-            File::put($temporaryPath, $response->body());
+            $contentLength = $response->header('Content-Length');
+
+            if (is_numeric($contentLength) && (int) $contentLength > $this->maximumMediaBytes()) {
+                $this->logOversizedMedia($mediaUrl, (int) $contentLength);
+
+                return null;
+            }
+
+            if (! File::exists($temporaryPath) || File::size($temporaryPath) === 0) {
+                $body = $response->body();
+
+                if ($body === '') {
+                    Log::warning('WordPress media import download failed.', [
+                        ...$this->failureContext($mediaUrl),
+                        'status' => $response->status(),
+                        'empty_body' => true,
+                    ]);
+
+                    return null;
+                }
+
+                if (strlen($body) > $this->maximumMediaBytes()) {
+                    $this->logOversizedMedia($mediaUrl, strlen($body));
+
+                    return null;
+                }
+
+                File::put($temporaryPath, $body);
+            }
+
+            if (File::size($temporaryPath) > $this->maximumMediaBytes()) {
+                $this->logOversizedMedia($mediaUrl, File::size($temporaryPath));
+
+                return null;
+            }
 
             $uploadedFile = new UploadedFile(
                 path: $temporaryPath,
@@ -161,6 +227,79 @@ final class ImportWordPressMediaForPagesAction
         } finally {
             File::delete($temporaryPath);
         }
+    }
+
+    private function recordMediaCheckpoint(
+        ?ImportSession $session,
+        Page $page,
+        string $mediaUrl,
+        bool $successful,
+        bool $newlyImported,
+    ): void {
+        if (! $session instanceof ImportSession) {
+            return;
+        }
+
+        $summary = is_array($session->result_summary) ? $session->result_summary : [];
+        $checkpoint = is_array($summary['wordpress_media'] ?? null) ? $summary['wordpress_media'] : [];
+        $failedUrls = is_array($checkpoint['failed_urls'] ?? null) ? $checkpoint['failed_urls'] : [];
+        $checkpointKey = (string) $page->getKey() . ':' . hash('sha256', $mediaUrl);
+
+        if ($successful) {
+            unset($failedUrls[$checkpointKey]);
+        } else {
+            $failedUrls[$checkpointKey] = [
+                'page_id' => $page->getKey(),
+                'url' => $mediaUrl,
+            ];
+        }
+
+        $checkpoint['failed_urls'] = $failedUrls;
+
+        if ($newlyImported) {
+            $checkpoint['imported_count'] = (int) ($checkpoint['imported_count'] ?? 0) + 1;
+        }
+
+        $summary['wordpress_media'] = $checkpoint;
+        $session->forceFill(['result_summary' => $summary])->save();
+    }
+
+    private function recordCompletedPageCheckpoint(?ImportSession $session, Page $page): void
+    {
+        if (! $session instanceof ImportSession) {
+            return;
+        }
+
+        $summary = is_array($session->result_summary) ? $session->result_summary : [];
+        $checkpoint = is_array($summary['wordpress_media'] ?? null) ? $summary['wordpress_media'] : [];
+        $completedPageIds = is_array($checkpoint['completed_page_ids'] ?? null) ? $checkpoint['completed_page_ids'] : [];
+        $completedPageIds[] = $page->getKey();
+        $checkpoint['completed_page_ids'] = array_values(array_unique($completedPageIds, SORT_REGULAR));
+        $summary['wordpress_media'] = $checkpoint;
+        $session->forceFill(['result_summary' => $summary])->save();
+    }
+
+    private function logOversizedMedia(string $mediaUrl, int $bytes): void
+    {
+        Log::warning('WordPress media import download exceeded the configured size limit.', [
+            ...$this->failureContext($mediaUrl),
+            'bytes' => $bytes,
+            'max_bytes' => $this->maximumMediaBytes(),
+        ]);
+    }
+
+    private function timeoutSeconds(): int
+    {
+        $configured = config('wordpress-importer.media.timeout_seconds', 20);
+
+        return is_numeric($configured) ? max(1, (int) $configured) : 20;
+    }
+
+    private function maximumMediaBytes(): int
+    {
+        $configured = config('wordpress-importer.media.max_bytes', 50 * 1024 * 1024);
+
+        return is_numeric($configured) ? max(1, (int) $configured) : 50 * 1024 * 1024;
     }
 
     /**

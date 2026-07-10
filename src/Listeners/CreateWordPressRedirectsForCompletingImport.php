@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Capell\WordPressImporter\Listeners;
 
 use Capell\Core\Models\Page;
-use Capell\MigrationAssistant\Events\ImportCompleted;
+use Capell\MigrationAssistant\Events\ImportCompleting;
 use Capell\MigrationAssistant\Models\ImportRollbackReport;
 use Capell\WordPressImporter\Actions\CreateWordPressPermalinkRedirectsAction;
 use Capell\WordPressImporter\Data\WordPressPermalinkRedirectReportData;
 
-final class CreateWordPressRedirectsForCompletedImport
+final class CreateWordPressRedirectsForCompletingImport
 {
-    public function handle(ImportCompleted $event): void
+    public function handle(ImportCompleting $event): void
     {
         $createdPageIds = $this->createdPageIds($event);
 
@@ -34,7 +34,7 @@ final class CreateWordPressRedirectsForCompletedImport
     /**
      * @return list<int|string>
      */
-    private function createdPageIds(ImportCompleted $event): array
+    private function createdPageIds(ImportCompleting $event): array
     {
         $summary = is_array($event->session->result_summary) ? $event->session->result_summary : [];
         $createdPageIds = $summary['created_page_ids'] ?? [];
@@ -49,7 +49,7 @@ final class CreateWordPressRedirectsForCompletedImport
         ));
     }
 
-    private function storeReport(ImportCompleted $event, WordPressPermalinkRedirectReportData $report): void
+    private function storeReport(ImportCompleting $event, WordPressPermalinkRedirectReportData $report): void
     {
         $reportPayload = $report->toArray();
         $summary = is_array($event->session->result_summary) ? $event->session->result_summary : [];
