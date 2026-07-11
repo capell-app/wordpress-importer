@@ -4,8 +4,8 @@
     "slug": "wordpress-importer",
     "displayName": "WordPress Importer",
     "kind": "package",
-    "capellApiVersion": "^4.0",
-    "version": "4.x-dev",
+    "capellApiVersion": "^1.0",
+    "version": "1.x-dev",
     "description": "Preview WordPress WXR posts and pages in Capell Migration Assistant with permalink, taxonomy, author, media-reference, Gutenberg, and shortcode metadata preserved.",
     "product": {
         "group": "Capell Operations",
