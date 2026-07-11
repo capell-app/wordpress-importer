@@ -8,8 +8,8 @@ use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
 use Capell\MigrationAssistant\Actions\ExecuteImportRollbackAction;
-use Capell\MigrationAssistant\Enums\ImportSessionStatus;
 use Capell\MigrationAssistant\Data\ExternalPageImportTargetData;
+use Capell\MigrationAssistant\Enums\ImportSessionStatus;
 use Capell\MigrationAssistant\Models\ImportRollbackReport;
 use Capell\MigrationAssistant\Services\Import\XmlReader;
 use Capell\MigrationAssistant\Support\ImportSourceRegistry;
@@ -21,6 +21,7 @@ use Capell\WordPressImporter\Actions\ReadWordPressWxrAction;
 use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Services\WxrReader;
 use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Schema\Blueprint as SchemaBlueprint;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
@@ -541,7 +542,7 @@ XML);
             blueprintId: (int) $type->getKey(),
             languageId: (int) $otherSite->language_id,
         ),
-    ))->toThrow(\Illuminate\Auth\Access\AuthorizationException::class, 'not authorized');
+    ))->toThrow(AuthorizationException::class, 'not authorized');
 
     expect(Page::query()->withoutGlobalScopes()->where('site_id', $otherSite->getKey())->exists())->toBeFalse();
 });
