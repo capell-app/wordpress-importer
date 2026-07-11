@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Capell\WordPressImporter\Providers;
 
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
-use Capell\MigrationAssistant\Events\ImportCompleted;
+use Capell\MigrationAssistant\Events\ImportCompleting;
+use Capell\MigrationAssistant\Support\ImportSessionExecutorRegistry;
 use Capell\MigrationAssistant\Support\ImportSourceRegistry;
 use Capell\WordPressImporter\Console\Commands\ImportWordPressWxrCommand;
 use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
-use Capell\WordPressImporter\Listeners\CreateWordPressRedirectsForCompletedImport;
-use Capell\WordPressImporter\Listeners\ImportWordPressMediaForCompletedImport;
+use Capell\WordPressImporter\Listeners\CreateWordPressRedirectsForCompletingImport;
+use Capell\WordPressImporter\Listeners\ImportWordPressMediaForCompletingImport;
 use Capell\WordPressImporter\Services\WxrReader;
 use Capell\WordPressImporter\Support\DnsWordPressMediaHostResolver;
+use Capell\WordPressImporter\Support\WordPressWxrSessionExecutor;
 use Illuminate\Support\Facades\Event;
 use Spatie\LaravelPackageTools\Package;
 
@@ -26,6 +28,7 @@ final class WordPressImporterServiceProvider extends AbstractPackageServiceProvi
     {
         $package
             ->name(self::$name)
+            ->hasConfigFile('wordpress-importer')
             ->hasTranslations()
             ->hasCommand(ImportWordPressWxrCommand::class);
     }
@@ -40,11 +43,18 @@ final class WordPressImporterServiceProvider extends AbstractPackageServiceProvi
                 $registry->register(new WxrReader, prepend: true);
             },
         );
+
+        $this->app->afterResolving(
+            ImportSessionExecutorRegistry::class,
+            static function (ImportSessionExecutorRegistry $registry): void {
+                $registry->register(resolve(WordPressWxrSessionExecutor::class), prepend: true);
+            },
+        );
     }
 
     public function packageBooted(): void
     {
-        Event::listen(ImportCompleted::class, [CreateWordPressRedirectsForCompletedImport::class, 'handle']);
-        Event::listen(ImportCompleted::class, [ImportWordPressMediaForCompletedImport::class, 'handle']);
+        Event::listen(ImportCompleting::class, [ImportWordPressMediaForCompletingImport::class, 'handle']);
+        Event::listen(ImportCompleting::class, [CreateWordPressRedirectsForCompletingImport::class, 'handle']);
     }
 }

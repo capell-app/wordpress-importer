@@ -6,9 +6,7 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\MigrationAssistant\Services\Import\ExternalImportPreviewBuilder;
 use Capell\WordPressImporter\Data\WordPressImportPreviewData;
-use Capell\WordPressImporter\Services\WxrReader;
 use Lorisleiva\Actions\Concerns\AsObject;
-use RuntimeException;
 
 /**
  * @method static WordPressImportPreviewData run(string $path)
@@ -52,26 +50,14 @@ final class BuildWordPressImportPreviewAction
 
     public function handle(string $path): WordPressImportPreviewData
     {
-        $resolvedPath = realpath($path);
-
-        if ($resolvedPath === false) {
-            throw new RuntimeException((string) __('capell-wordpress-importer::commands.import.path_missing', ['path' => $path]));
-        }
-
-        $reader = resolve(WxrReader::class);
-
-        if (! $reader->supportsPath($resolvedPath)) {
-            throw new RuntimeException((string) __('capell-wordpress-importer::commands.import.invalid_wxr', ['path' => $path]));
-        }
-
-        $readResult = $reader->read($resolvedPath);
+        $wxr = ReadWordPressWxrAction::run($path);
         $preview = ApplyWordPressPreviewIdempotencyAction::run(
-            resolve(ExternalImportPreviewBuilder::class)->build($readResult, self::WXR_FIELD_MAPPING),
+            resolve(ExternalImportPreviewBuilder::class)->build($wxr->readResult, self::WXR_FIELD_MAPPING),
         );
 
         return new WordPressImportPreviewData(
-            path: $resolvedPath,
-            readResult: $readResult,
+            path: $wxr->path,
+            readResult: $wxr->readResult,
             preview: $preview,
         );
     }

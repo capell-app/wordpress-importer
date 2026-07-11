@@ -7,11 +7,19 @@ namespace Capell\WordPressImporter\Services;
 use Capell\MigrationAssistant\Contracts\PathAwareImportSourceReader;
 use Capell\MigrationAssistant\Data\ExternalImportReadResult;
 use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
+use Closure;
 use RuntimeException;
 use SimpleXMLElement;
 use Throwable;
 use XMLReader as NativeXmlReader;
 
+/**
+ * Registry adapter for Migration Assistant's source-reader contract.
+ *
+ * ReadWordPressWxrAction owns path resolution and import orchestration; this
+ * service stays focused on the streaming and DOM WXR parsing implementation
+ * required by the shared reader registry.
+ */
 final class WxrReader implements PathAwareImportSourceReader
 {
     /** @var list<string> */
@@ -64,6 +72,77 @@ final class WxrReader implements PathAwareImportSourceReader
         }
 
         return $this->readDom($path);
+    }
+
+    /**
+     * @param  Closure(array<string, mixed>, int): void  $onRow
+     * @return array{filename: string, site_title: string, wxr_version: string, attachment_count: int, skipped_item_count: int, item_errors: list<string>}
+     */
+    public function streamRows(string $path, Closure $onRow): array
+    {
+        throw_unless(class_exists(NativeXmlReader::class), RuntimeException::class, 'Streaming WordPress imports require XMLReader.');
+        throw_unless(is_readable($path) && ! is_dir($path), RuntimeException::class, sprintf('WordPress export [%s] is not readable.', $path));
+
+        $metadata = $this->streamMetadata($path);
+
+        if ($metadata['wxr_version'] === '') {
+            throw new RuntimeException(sprintf('WordPress export [%s] does not contain WXR metadata.', $path));
+        }
+
+        $attachmentsByParent = $this->streamAttachmentsByParent($path);
+        $itemErrors = [];
+        $itemIndex = 0;
+        $rowIndex = 0;
+        $skippedItemCount = 0;
+
+        $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$itemErrors, &$itemIndex, &$rowIndex, &$skippedItemCount, $attachmentsByParent, $onRow): void {
+            while ($reader->read()) {
+                $this->rejectDoctype($reader);
+
+                if ($reader->nodeType !== NativeXmlReader::ELEMENT || $reader->localName !== 'item') {
+                    continue;
+                }
+
+                $itemIndex++;
+                $item = $this->simpleXmlFromCurrentItem($reader);
+                $postType = trim((string) $item->children('wp', true)->post_type);
+
+                if (! in_array($postType, ['page', 'post'], true)) {
+                    continue;
+                }
+
+                try {
+                    $row = $this->rowFromItem($item, $attachmentsByParent);
+                } catch (Throwable $throwable) {
+                    $skippedItemCount++;
+
+                    if (count($itemErrors) < $this->maximumStoredItemErrors()) {
+                        $itemErrors[] = sprintf(
+                            'Item %d (%s) skipped: %s',
+                            $itemIndex,
+                            $this->itemLabel($item),
+                            $throwable->getMessage(),
+                        );
+                    }
+
+                    continue;
+                }
+
+                $rowIndex++;
+                $onRow($row, $rowIndex);
+            }
+        });
+
+        throw_if($itemIndex === 0, RuntimeException::class, 'WordPress export must contain a channel with item entries.');
+
+        return [
+            'filename' => basename($path),
+            'site_title' => $metadata['site_title'],
+            'wxr_version' => $metadata['wxr_version'],
+            'attachment_count' => array_sum(array_map(count(...), $attachmentsByParent)),
+            'skipped_item_count' => $skippedItemCount,
+            'item_errors' => $itemErrors,
+        ];
     }
 
     private function readDom(string $path): ExternalImportReadResult
@@ -120,50 +199,10 @@ final class WxrReader implements PathAwareImportSourceReader
 
     private function readStreaming(string $path): ExternalImportReadResult
     {
-        $metadata = $this->streamMetadata($path);
-
-        if ($metadata['wxr_version'] === '') {
-            throw new RuntimeException(sprintf('WordPress export [%s] does not contain WXR metadata.', $path));
-        }
-
-        $attachmentsByParent = $this->streamAttachmentsByParent($path);
         $rows = [];
-        $itemErrors = [];
-        $itemIndex = 0;
-
-        $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$rows, &$itemErrors, &$itemIndex, $attachmentsByParent): void {
-            while ($reader->read()) {
-                $this->rejectDoctype($reader);
-                if ($reader->nodeType !== NativeXmlReader::ELEMENT) {
-                    continue;
-                }
-
-                if ($reader->localName !== 'item') {
-                    continue;
-                }
-
-                $itemIndex++;
-                $item = $this->simpleXmlFromCurrentItem($reader);
-                $postType = trim((string) $item->children('wp', true)->post_type);
-
-                if (! in_array($postType, ['page', 'post'], true)) {
-                    continue;
-                }
-
-                try {
-                    $rows[] = $this->rowFromItem($item, $attachmentsByParent);
-                } catch (Throwable $throwable) {
-                    $itemErrors[] = sprintf(
-                        'Item %d (%s) skipped: %s',
-                        $itemIndex,
-                        $this->itemLabel($item),
-                        $throwable->getMessage(),
-                    );
-                }
-            }
+        $metadata = $this->streamRows($path, static function (array $row) use (&$rows): void {
+            $rows[] = $row;
         });
-
-        throw_if($itemIndex === 0, RuntimeException::class, 'WordPress export must contain a channel with item entries.');
 
         return new ExternalImportReadResult(
             sourceType: 'wordpress-wxr',
@@ -171,15 +210,18 @@ final class WxrReader implements PathAwareImportSourceReader
             rows: $rows,
             metadata: [
                 'filename' => basename($path),
-                'site_title' => $metadata['site_title'],
-                'wxr_version' => $metadata['wxr_version'],
+                ...$metadata,
                 'post_count' => count($rows),
-                'attachment_count' => array_sum(array_map(count(...), $attachmentsByParent)),
-                'skipped_item_count' => count($itemErrors),
-                'item_errors' => $itemErrors,
             ],
             suggestedTarget: 'page',
         );
+    }
+
+    private function maximumStoredItemErrors(): int
+    {
+        $configured = config('wordpress-importer.spool.max_stored_item_errors', 100);
+
+        return is_numeric($configured) ? max(1, (int) $configured) : 100;
     }
 
     private function isWordPressExport(mixed $channel): bool

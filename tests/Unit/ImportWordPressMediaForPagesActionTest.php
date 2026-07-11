@@ -80,3 +80,35 @@ it('does not follow imported WordPress media redirects to unchecked targets', fu
                 && ($context['status'] ?? null) === 302,
         ));
 });
+
+it('rejects remote media larger than the configured byte cap', function (): void {
+    config()->set('wordpress-importer.media.max_bytes', 4);
+    Log::spy();
+    Http::fake([
+        'https://media.example.test/large.jpg' => Http::response('12345', 200, [
+            'Content-Type' => 'image/jpeg',
+            'Content-Length' => '5',
+        ]),
+    ]);
+    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+        'media.example.test' => ['93.184.216.34'],
+    ]));
+
+    $page = Page::factory()->create([
+        'meta' => [
+            'content' => '<p><img src="https://media.example.test/large.jpg"></p>',
+            'wordpress' => [
+                'media_urls' => ['https://media.example.test/large.jpg'],
+            ],
+        ],
+    ]);
+
+    expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(0);
+
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->with('WordPress media import download exceeded the configured size limit.', Mockery::on(
+            fn (array $context): bool => ($context['bytes'] ?? null) === 5
+                && ($context['max_bytes'] ?? null) === 4,
+        ));
+});
