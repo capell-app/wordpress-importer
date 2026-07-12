@@ -36,4 +36,4 @@ All notable changes to `capell-app/wordpress-importer` will be documented in thi
 
 ### Earlier
 
-- Prepared package metadata and documentation for ongoing Capell 4.x package work.
+- Prepared package metadata and documentation for ongoing Capell 0.0.x package work.
