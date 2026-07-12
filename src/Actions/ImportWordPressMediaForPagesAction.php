@@ -207,10 +207,21 @@ final class ImportWordPressMediaForPagesAction
                 return null;
             }
 
+            $imageInfo = @getimagesize($temporaryPath);
+            $detectedMime = is_array($imageInfo) && is_string($imageInfo['mime'] ?? null) ? $imageInfo['mime'] : null;
+            if (! in_array($detectedMime, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'], true)) {
+                Log::warning('WordPress media import rejected non-image content.', [
+                    ...$this->failureContext($mediaUrl),
+                    'detected_mime' => $detectedMime ?? 'unknown',
+                ]);
+
+                return null;
+            }
+
             $uploadedFile = new UploadedFile(
                 path: $temporaryPath,
                 originalName: $this->fileName($mediaUrl),
-                mimeType: $response->header('Content-Type') ?: null,
+                mimeType: $detectedMime,
                 error: null,
                 test: true,
             );
@@ -250,7 +261,7 @@ final class ImportWordPressMediaForPagesAction
         } else {
             $failedUrls[$checkpointKey] = [
                 'page_id' => $page->getKey(),
-                'url' => $mediaUrl,
+                'source_hash' => hash('sha256', $mediaUrl),
             ];
         }
 

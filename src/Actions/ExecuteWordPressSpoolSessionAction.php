@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Actions;
 
+use Capell\Core\Models\User;
 use Capell\MigrationAssistant\Actions\CreateImportRollbackReportAction;
 use Capell\MigrationAssistant\Actions\Imports\ExecuteExternalPageImportAction;
 use Capell\MigrationAssistant\Data\ExternalImportReadResult;
@@ -26,11 +27,11 @@ final class ExecuteWordPressSpoolSessionAction
 
     public function handle(ImportSession $session): ImportExecutionReport
     {
+        $actor = is_numeric($session->user_id) ? User::query()->find((int) $session->user_id) : null;
+        $authorizedTarget = ReauthorizeWordPressWxrSessionAction::run($session, $actor);
         $manifest = $this->wordpressManifest($session);
         $chunkPaths = $this->chunkPaths($manifest);
-        $defaultPageAttributes = is_array($manifest['default_page_attributes'] ?? null)
-            ? $manifest['default_page_attributes']
-            : [];
+        $defaultPageAttributes = $authorizedTarget->pageAttributes();
         $siteId = is_numeric($defaultPageAttributes['site_id'] ?? null) ? (int) $defaultPageAttributes['site_id'] : null;
         $disk = Storage::disk($this->diskName($manifest));
         $summary = is_array($session->result_summary) ? $session->result_summary : [];

@@ -112,3 +112,21 @@ it('rejects remote media larger than the configured byte cap', function (): void
                 && ($context['max_bytes'] ?? null) === 4,
         ));
 });
+
+it('rejects non-image bytes even when the response claims an image MIME type', function (): void {
+    Log::spy();
+    Http::fake([
+        'https://media.example.test/fake.jpg' => Http::response('<html>not an image</html>', 200, ['Content-Type' => 'image/jpeg']),
+    ]);
+    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+        'media.example.test' => ['93.184.216.34'],
+    ]));
+    $page = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => ['https://media.example.test/fake.jpg']]]]);
+
+    expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(0);
+
+    Log::shouldHaveReceived('warning')->once()->with(
+        'WordPress media import rejected non-image content.',
+        Mockery::on(fn (array $context): bool => ($context['detected_mime'] ?? null) === 'unknown'),
+    );
+});
