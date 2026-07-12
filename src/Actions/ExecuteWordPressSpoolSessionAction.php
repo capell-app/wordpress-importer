@@ -1,0 +1,252 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Capell\WordPressImporter\Actions;
+
+use Capell\MigrationAssistant\Actions\CreateImportRollbackReportAction;
+use Capell\MigrationAssistant\Actions\Imports\ExecuteExternalPageImportAction;
+use Capell\MigrationAssistant\Data\ExternalImportReadResult;
+use Capell\MigrationAssistant\Enums\ImportSessionStatus;
+use Capell\MigrationAssistant\Events\ImportCompleted;
+use Capell\MigrationAssistant\Events\ImportCompleting;
+use Capell\MigrationAssistant\Events\ImportFailed;
+use Capell\MigrationAssistant\Models\ImportSession;
+use Capell\MigrationAssistant\Services\Import\ExternalImportPreviewBuilder;
+use Capell\MigrationAssistant\Services\Import\ImportExecutionReport;
+use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Storage;
+use Lorisleiva\Actions\Concerns\AsAction;
+use RuntimeException;
+
+/** @method static ImportExecutionReport run(ImportSession $session) */
+final class ExecuteWordPressSpoolSessionAction
+{
+    use AsAction;
+
+    public function handle(ImportSession $session): ImportExecutionReport
+    {
+        $manifest = $this->wordpressManifest($session);
+        $chunkPaths = $this->chunkPaths($manifest);
+        $defaultPageAttributes = is_array($manifest['default_page_attributes'] ?? null)
+            ? $manifest['default_page_attributes']
+            : [];
+        $siteId = is_numeric($defaultPageAttributes['site_id'] ?? null) ? (int) $defaultPageAttributes['site_id'] : null;
+        $disk = Storage::disk($this->diskName($manifest));
+        $summary = is_array($session->result_summary) ? $session->result_summary : [];
+        $checkpoint = is_array($summary['wordpress_checkpoint'] ?? null) ? $summary['wordpress_checkpoint'] : [];
+        $nextChunkIndex = is_numeric($checkpoint['next_chunk_index'] ?? null) ? (int) $checkpoint['next_chunk_index'] : 0;
+
+        for ($chunkIndex = $nextChunkIndex; $chunkIndex < count($chunkPaths); $chunkIndex++) {
+            $rows = $this->readChunk($disk, $chunkPaths[$chunkIndex]);
+            $summary = $this->markActiveChunk($session, $summary, $chunkIndex, count($chunkPaths));
+            $readResult = new ExternalImportReadResult(
+                sourceType: 'wordpress-wxr-spool',
+                columns: array_keys(BuildWordPressImportPreviewAction::fieldMapping()),
+                rows: $rows,
+                metadata: is_array($manifest['metadata'] ?? null) ? $manifest['metadata'] : [],
+                suggestedTarget: 'page',
+            );
+            $preview = ApplyWordPressPreviewIdempotencyAction::run(
+                resolve(ExternalImportPreviewBuilder::class)->build(
+                    $readResult,
+                    BuildWordPressImportPreviewAction::fieldMapping(),
+                ),
+            );
+            $chunkResult = ExecuteExternalPageImportAction::run(
+                preview: $preview,
+                defaultPageAttributes: $defaultPageAttributes,
+                existingSession: $session,
+                finalize: false,
+            );
+            $recoveredPageIds = ResolveWordPressImportedPageIdsAction::run($rows, $session, $siteId);
+            $summary = $this->mergeChunkResult(
+                $summary,
+                $chunkResult->report,
+                $preview->skips,
+                $recoveredPageIds,
+                $chunkIndex + 1,
+                count($chunkPaths),
+            );
+            $session->forceFill(['result_summary' => $summary])->save();
+        }
+
+        $report = $this->reportFromSummary($summary);
+        $parentUpdates = ResolveWordPressParentPagesAction::run($report->createdPageIds);
+        $persistedSummary = is_array($session->result_summary) ? $session->result_summary : [];
+        $summary = [
+            ...$persistedSummary,
+            ...$report->toArray(),
+        ];
+        $summary['wordpress_checkpoint'] = [
+            ...(is_array($session->result_summary['wordpress_checkpoint'] ?? null) ? $session->result_summary['wordpress_checkpoint'] : []),
+            'next_chunk_index' => count($chunkPaths),
+            'total_chunks' => count($chunkPaths),
+            'active_chunk_index' => null,
+            'parent_links_resolved' => $parentUpdates,
+        ];
+
+        $session->forceFill([
+            'result_summary' => $summary,
+            'failure_reason' => $report->isSuccess() ? null : implode(' / ', array_slice($report->errors, 0, 5)),
+        ])->save();
+
+        if (! $report->isSuccess()) {
+            $reason = (string) $session->failure_reason;
+            $session->forceFill([
+                'status' => ImportSessionStatus::Failed,
+                'executed_at' => now(),
+            ])->save();
+            event(new ImportFailed($session, $reason));
+
+            return $report;
+        }
+
+        if ($report->createdPageIds !== [] && ! $session->rollbackReports()->exists()) {
+            CreateImportRollbackReportAction::run($session, $report);
+        }
+
+        event(new ImportCompleting($session->refresh()));
+
+        $session->forceFill([
+            'status' => ImportSessionStatus::Completed,
+            'failure_reason' => null,
+            'executed_at' => now(),
+        ])->save();
+        event(new ImportCompleted($session));
+
+        return $report;
+    }
+
+    /** @return array<string, mixed> */
+    private function wordpressManifest(ImportSession $session): array
+    {
+        $manifest = is_array($session->manifest) ? $session->manifest : [];
+        $wordpressManifest = is_array($manifest['wordpress_wxr'] ?? null) ? $manifest['wordpress_wxr'] : [];
+
+        throw_unless(($wordpressManifest['format'] ?? null) === 'capell-wordpress-wxr-spool-v1', RuntimeException::class, 'Import session does not contain a supported WordPress spool manifest.');
+
+        return $wordpressManifest;
+    }
+
+    /** @param array<string, mixed> $manifest
+     * @return list<string>
+     */
+    private function chunkPaths(array $manifest): array
+    {
+        $chunkPaths = $manifest['chunk_paths'] ?? [];
+
+        throw_unless(is_array($chunkPaths), RuntimeException::class, 'WordPress spool chunk paths are invalid.');
+
+        return array_values(array_filter($chunkPaths, is_string(...)));
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function readChunk(Filesystem $disk, string $chunkPath): array
+    {
+        throw_unless($disk->exists($chunkPath), RuntimeException::class, sprintf('WordPress spool chunk [%s] is missing.', $chunkPath));
+        $decoded = json_decode($disk->get($chunkPath), true, 512, JSON_THROW_ON_ERROR);
+
+        throw_unless(is_array($decoded), RuntimeException::class, sprintf('WordPress spool chunk [%s] is invalid.', $chunkPath));
+
+        return array_values(array_filter($decoded, is_array(...)));
+    }
+
+    /**
+     * @param  array<string, mixed>  $summary
+     * @return array<string, mixed>
+     */
+    private function markActiveChunk(ImportSession $session, array $summary, int $chunkIndex, int $totalChunks): array
+    {
+        $checkpoint = is_array($summary['wordpress_checkpoint'] ?? null) ? $summary['wordpress_checkpoint'] : [];
+        $checkpoint['active_chunk_index'] = $chunkIndex;
+        $checkpoint['total_chunks'] = $totalChunks;
+        $summary['wordpress_checkpoint'] = $checkpoint;
+        $session->forceFill(['result_summary' => $summary])->save();
+
+        return $summary;
+    }
+
+    /**
+     * @param  array<string, mixed>  $summary
+     * @param  list<int|string>  $recoveredPageIds
+     * @return array<string, mixed>
+     */
+    private function mergeChunkResult(
+        array $summary,
+        ImportExecutionReport $chunkReport,
+        int $previewSkips,
+        array $recoveredPageIds,
+        int $nextChunkIndex,
+        int $totalChunks,
+    ): array {
+        $createdPageIds = array_values(array_unique([
+            ...$this->ids($summary['created_page_ids'] ?? []),
+            ...$chunkReport->createdPageIds,
+            ...$recoveredPageIds,
+        ], SORT_REGULAR));
+        $errors = array_values(array_merge($this->strings($summary['errors'] ?? []), $chunkReport->errors));
+        $structuredErrors = array_values(array_merge(
+            is_array($summary['structured_errors'] ?? null) ? $summary['structured_errors'] : [],
+            $chunkReport->structuredErrors,
+        ));
+        $checkpoint = is_array($summary['wordpress_checkpoint'] ?? null) ? $summary['wordpress_checkpoint'] : [];
+
+        return [
+            ...$summary,
+            'pages_created' => count($createdPageIds),
+            'pages_skipped' => (int) ($summary['pages_skipped'] ?? 0) + $chunkReport->pagesSkipped + $previewSkips,
+            'page_urls_created' => (int) ($summary['page_urls_created'] ?? 0) + $chunkReport->pageUrlsCreated,
+            'media_reassigned' => (int) ($summary['media_reassigned'] ?? 0) + $chunkReport->mediaReassigned,
+            'created_page_ids' => $createdPageIds,
+            'created_site_ids' => [],
+            'created_site_domain_ids' => [],
+            'errors' => $errors,
+            'structured_errors' => $structuredErrors,
+            'wordpress_checkpoint' => [
+                ...$checkpoint,
+                'next_chunk_index' => $nextChunkIndex,
+                'total_chunks' => $totalChunks,
+                'active_chunk_index' => null,
+            ],
+        ];
+    }
+
+    /** @param array<string, mixed> $summary */
+    private function reportFromSummary(array $summary): ImportExecutionReport
+    {
+        return new ImportExecutionReport(
+            pagesCreated: count($this->ids($summary['created_page_ids'] ?? [])),
+            pagesSkipped: (int) ($summary['pages_skipped'] ?? 0),
+            createdPageIds: $this->ids($summary['created_page_ids'] ?? []),
+            errors: $this->strings($summary['errors'] ?? []),
+            pageUrlsCreated: (int) ($summary['page_urls_created'] ?? 0),
+            mediaReassigned: (int) ($summary['media_reassigned'] ?? 0),
+            structuredErrors: is_array($summary['structured_errors'] ?? null) ? $summary['structured_errors'] : [],
+        );
+    }
+
+    /** @return list<int|string> */
+    private function ids(mixed $value): array
+    {
+        return is_array($value)
+            ? array_values(array_filter($value, static fn (mixed $id): bool => is_int($id) || is_string($id)))
+            : [];
+    }
+
+    /** @return list<string> */
+    private function strings(mixed $value): array
+    {
+        return is_array($value) ? array_values(array_filter($value, is_string(...))) : [];
+    }
+
+    /** @param array<string, mixed> $manifest */
+    private function diskName(array $manifest): string
+    {
+        $disk = $manifest['disk'] ?? config('migration-assistant.disk', 'local');
+
+        return is_string($disk) && $disk !== '' ? $disk : 'local';
+    }
+}

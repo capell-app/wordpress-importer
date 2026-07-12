@@ -1,0 +1,170 @@
+{
+    "manifest-version": 3,
+    "name": "capell-app/wordpress-importer",
+    "slug": "wordpress-importer",
+    "displayName": "WordPress Importer",
+    "kind": "package",
+    "capellApiVersion": "^0.0.1",
+    "version": "0.0.x-dev",
+    "description": "Preview WordPress WXR posts and pages in Capell Migration Assistant with permalink, taxonomy, author, media-reference, Gutenberg, and shortcode metadata preserved.",
+    "product": {
+        "group": "Capell Operations",
+        "tier": "premium",
+        "bundle": "operations"
+    },
+    "namespace": "Capell\\WordPressImporter",
+    "surfaces": ["admin", "console"],
+    "dependencies": {
+        "requires": [
+            "capell-app/admin",
+            "capell-app/core",
+            "capell-app/migration-assistant"
+        ],
+        "supports": ["capell-app/url-manager", "capell-app/seo-suite"],
+        "conflicts": []
+    },
+    "providers": {
+        "metadata": [],
+        "install": [],
+        "runtime": [
+            "Capell\\WordPressImporter\\Providers\\WordPressImporterServiceProvider"
+        ],
+        "admin": [],
+        "frontend": []
+    },
+    "contributes": [
+        {
+            "type": "console-command",
+            "class": "Capell\\WordPressImporter\\Manifest\\WordPressImporterConsoleCommandContribution",
+            "commands": ["wordpress-importer:import"],
+            "commandClasses": [
+                "Capell\\WordPressImporter\\Console\\Commands\\ImportWordPressWxrCommand"
+            ]
+        },
+        {
+            "type": "health-check",
+            "class": "Capell\\WordPressImporter\\Health\\WordpressImporterHealthCheck"
+        }
+    ],
+    "database": {
+        "migrations": false,
+        "settings": false,
+        "requiredTables": []
+    },
+    "commands": {
+        "install": null,
+        "setup": null,
+        "demo": null,
+        "doctor": null,
+        "import": "wordpress-importer:import"
+    },
+    "settings": [],
+    "permissions": [],
+    "capabilities": [
+        "wordpress-wxr-reader",
+        "wordpress-wxr-preview",
+        "wordpress-wxr-media-references",
+        "wordpress-permalink-metadata",
+        "wordpress-permalink-redirects",
+        "wordpress-permalink-redirect-reports",
+        "wordpress-idempotent-preview",
+        "wordpress-wxr-item-isolation",
+        "wordpress-gutenberg-detection",
+        "wordpress-shortcode-detection",
+        "wordpress-wxr-streaming-reader",
+        "wordpress-content-normalization",
+        "wordpress-headless-preview"
+    ],
+    "security": {
+        "riskTier": "sensitive",
+        "publicSurface": {
+            "routeNames": [],
+            "auth": "none",
+            "csrfExemptRoutes": [],
+            "signedRoutes": [],
+            "tokenizedRoutes": [],
+            "webhookRoutes": [],
+            "throttledRoutes": []
+        },
+        "sensitiveData": {
+            "encryptedFields": [],
+            "hashedTokenFields": [],
+            "redactedOutputClasses": [],
+            "plaintextJustifications": []
+        },
+        "publicOutput": {
+            "cacheSafe": true,
+            "forbidAuthoringSurface": true,
+            "forbidSecrets": true,
+            "forbidPublicBladeQueries": true
+        },
+        "externalHttpClients": {
+            "requiresTimeouts": true,
+            "requiresSecretRedaction": true,
+            "clients": [
+                "Capell\\WordPressImporter\\Actions\\ImportWordPressMediaForPagesAction"
+            ]
+        },
+        "adminSurface": {
+            "authorization": "panel-auth",
+            "permissions": []
+        }
+    },
+    "performance": {
+        "frontendRenderBudgetMs": 0,
+        "adminQueryBudget": 40,
+        "cacheTags": [],
+        "cacheSafety": {
+            "cacheable": false,
+            "variesBy": [],
+            "sensitiveOutput": false,
+            "invalidationSources": [],
+            "queueInvalidation": false
+        }
+    },
+    "healthChecks": [
+        {
+            "key": "wordpress-importer.package-health",
+            "label": "WordPress Importer WXR reader registration and XML parser dependencies are available to Migration Assistant.",
+            "class": "Capell\\WordPressImporter\\Health\\WordpressImporterHealthCheck",
+            "severity": "critical",
+            "surface": "admin"
+        }
+    ],
+    "commercial": {
+        "proposedLicense": "free",
+        "requestedCertification": "first-party",
+        "supportPolicy": "priority",
+        "privateDocsRequested": true
+    },
+    "marketplace": {
+        "summary": "Preview WordPress WXR posts and pages in Capell with durable metadata ready for Migration Assistant mapping.",
+        "description": "WordPress Importer turns a standard WordPress WXR export into a Capell Migration Assistant source. It reads posts and pages, preserves source identity, old permalinks, taxonomy labels, author logins, media URLs, Gutenberg markers, and shortcode names, then builds a preview operators can inspect before execution. Completed imports can download referenced media, create URL Manager redirects for changed WordPress permalinks, and store redirect reports on the Migration Assistant session and rollback report for SEO review. A headless console command produces the same Migration Assistant preview as JSON for scripted migration audits.",
+        "screenshots": [
+            {
+                "path": "docs/assets/marketplace/extension-card.jpg",
+                "alt": "WordPress Importer extension preview image",
+                "caption": "WordPress Importer extension preview"
+            },
+            {
+                "path": "docs/screenshots/wordpress-wxr-source-selection.png",
+                "alt": "Migration Assistant source selection with WordPress WXR available",
+                "caption": "Select WordPress WXR as a Migration Assistant source"
+            },
+            {
+                "path": "docs/screenshots/wordpress-wxr-preview.png",
+                "alt": "WordPress WXR rows previewed before import",
+                "caption": "Preview parsed posts, pages, and preserved metadata"
+            },
+            {
+                "path": "docs/screenshots/wordpress-import-session.png",
+                "alt": "WordPress import session metadata handoff",
+                "caption": "Review the Migration Assistant session handoff"
+            }
+        ],
+        "categories": ["admin", "console", "operations"]
+    },
+    "contributionTraceability": {
+        "deferredContributions": []
+    }
+}

@@ -1,0 +1,68 @@
+{
+    "name": "capell-app/wordpress-importer",
+    "description": "Migrate your WordPress site into Capell with guided WXR import previews and rollback-safe Migration Assistant handoff.",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.4",
+        "ext-simplexml": "*",
+        "capell-app/admin": "self.version",
+        "capell-app/core": "self.version",
+        "capell-app/migration-assistant": "self.version",
+        "illuminate/support": "^11.0|^12.0|^13.0",
+        "spatie/laravel-package-tools": "^1.15"
+    },
+    "autoload": {
+        "psr-4": {
+            "Capell\\WordPressImporter\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Capell\\WordPressImporter\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Capell\\WordPressImporter\\Providers\\WordPressImporterServiceProvider"
+            ]
+        },
+        "branch-alias": {
+            "dev-main": "0.0.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "homepage": "https://github.com/capell-app/wordpress-importer",
+    "keywords": [
+        "capell",
+        "cms",
+        "laravel",
+        "wordpress",
+        "migration",
+        "wxr",
+        "importer",
+        "cms-migration",
+        "content-migration",
+        "posts",
+        "pages",
+        "gutenberg",
+        "permalinks",
+        "seo-redirects"
+    ],
+    "authors": [
+        {
+            "name": "Capell Team",
+            "email": "team@capell.app",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "source": "https://github.com/capell-app/capell-packages",
+        "docs": "https://docs.capell.app/packages/wordpress-importer"
+    }
+}

@@ -1,0 +1,81 @@
+{
+    "package": "wordpress-importer",
+    "composerName": "capell-app/wordpress-importer",
+    "generatedFor": "deployment-screenshot-runner",
+    "requiresInstalledPackage": true,
+    "outputDirectory": "packages/wordpress-importer/docs/screenshots",
+    "entries": [
+        {
+            "id": "wordpress-wxr-source-selection",
+            "title": "Migration Assistant import flow with WordPress WXR available as an import source.",
+            "package": "wordpress-importer",
+            "surface": "admin",
+            "targetType": "admin-route",
+            "target": "/admin/migration-assistant/recovery-center/import-pages",
+            "required": true,
+            "notes": "Install Migration Assistant first, then WordPress Importer. Capture the source selection state where the WXR reader is visible.",
+            "useCase": "An operator sees WordPress WXR as an available source in the Migration Assistant import flow.",
+            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-wxr-source-selection.png"
+        },
+        {
+            "id": "wordpress-wxr-preview",
+            "title": "Parsed WordPress WXR rows previewed in Migration Assistant.",
+            "package": "wordpress-importer",
+            "surface": "admin",
+            "targetType": "admin-workflow",
+            "target": "/admin/migration-assistant/recovery-center/import-pages",
+            "required": true,
+            "notes": "Use a small WXR fixture with at least one post and one page to show extracted title, slug, status, date, categories, tags, and author fields.",
+            "useCase": "An operator previews parsed WXR posts/pages with title, slug, status, date, categories, tags, and author fields.",
+            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-wxr-preview.png"
+        },
+        {
+            "id": "wordpress-import-session",
+            "title": "Import session detail for a WordPress WXR import.",
+            "package": "wordpress-importer",
+            "surface": "admin",
+            "targetType": "admin-resource",
+            "target": "/admin/migration-assistant/import-sessions/{record}",
+            "required": false,
+            "notes": "Migration Assistant owns the page; include this screenshot when a demo import session can be created.",
+            "useCase": "An operator reviews the Migration Assistant import session created for a WordPress WXR import.",
+            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-session.png"
+        },
+        {
+            "id": "wordpress-import-completed-report",
+            "title": "Completed WordPress import report.",
+            "package": "wordpress-importer",
+            "surface": "admin",
+            "targetType": "admin-workflow",
+            "target": "/admin/migration-assistant/import-sessions/{record}",
+            "required": false,
+            "notes": "Capture a completed WXR import with created pages/posts, skipped rows, media references, and taxonomy mapping summary.",
+            "useCase": "An operator confirms what the WordPress import created before publishing migrated content.",
+            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-completed-report.png"
+        },
+        {
+            "id": "wordpress-import-validation-errors",
+            "title": "WordPress import validation errors.",
+            "package": "wordpress-importer",
+            "surface": "admin",
+            "targetType": "admin-workflow",
+            "target": "/admin/migration-assistant/recovery-center/import-pages",
+            "required": false,
+            "notes": "Capture invalid WXR parsing or unsupported row warnings with fixture data, including safe row-level messages and recovery affordances.",
+            "useCase": "An operator fixes or skips problematic WordPress rows before running an import.",
+            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-validation-errors.png"
+        },
+        {
+            "id": "wordpress-import-rollback",
+            "title": "WordPress import rollback state.",
+            "package": "wordpress-importer",
+            "surface": "admin",
+            "targetType": "admin-workflow",
+            "target": "/admin/migration-assistant/import-sessions/{record}",
+            "required": false,
+            "notes": "Capture rollback/recovery state when Migration Assistant can seed a WordPress import session with created content references.",
+            "useCase": "An operator understands how to recover from a WordPress import that should not be kept.",
+            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-rollback.png"
+        }
+    ]
+}
