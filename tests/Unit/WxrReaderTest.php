@@ -25,6 +25,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Schema\Blueprint as SchemaBlueprint;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -36,6 +37,26 @@ it('registers the WordPress WXR reader ahead of migration-assistant XML readers'
         ->and(resolve(ImportSourceRegistry::class)->readerFor('export.xml'))
         ->toBeInstanceOf(XmlReader::class);
 });
+
+function wordpressWxrSiteId(mixed $identifier): int
+{
+    if (! is_int($identifier)) {
+        throw new RuntimeException('Expected an integer site identifier.');
+    }
+
+    return $identifier;
+}
+
+function wordpressWxrImageBytes(): string
+{
+    $bytes = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true);
+
+    if (! is_string($bytes)) {
+        throw new RuntimeException('Expected valid PNG fixture bytes.');
+    }
+
+    return $bytes;
+}
 
 it('supports readable WordPress WXR XML files', function (): void {
     $path = tempnam(sys_get_temp_dir(), 'capell-wxr-support-') . '.xml';
@@ -382,11 +403,12 @@ XML);
 });
 
 it('executes a WordPress WXR preview through migration-assistant into a page session', function (): void {
+    Notification::fake();
     $this->actingAsAdmin();
     ensureWordPressImporterUrlManagerRedirectRulesTable();
     Storage::fake('public');
     Http::fake([
-        'https://example.test/uploads/executable.jpg' => Http::response('fake image bytes', 200, ['Content-Type' => 'image/jpeg']),
+        'https://example.test/uploads/executable.jpg' => Http::response(wordpressWxrImageBytes(), 200, ['Content-Type' => 'image/png']),
     ]);
     app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
         'example.test' => ['93.184.216.34'],
@@ -513,7 +535,7 @@ it('rejects a WordPress WXR import target outside the actor site scope', functio
     $otherLayout = Layout::factory()->site($otherSite)->create();
     $type = Blueprint::factory()->page()->create();
     $actor = $this->actingAsUser()->authenticatedUser();
-    $actor->assignedSiteIds = collect([(int) $authorizedSite->getKey()]);
+    $actor->setAttribute('assignedSiteIds', collect([wordpressWxrSiteId($authorizedSite->getKey())]));
     $path = tempnam(sys_get_temp_dir(), 'capell-wxr-unauthorized-target-');
 
     file_put_contents($path, <<<'XML'

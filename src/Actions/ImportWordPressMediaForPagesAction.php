@@ -208,7 +208,7 @@ final class ImportWordPressMediaForPagesAction
             }
 
             $imageInfo = @getimagesize($temporaryPath);
-            $detectedMime = is_array($imageInfo) && is_string($imageInfo['mime'] ?? null) ? $imageInfo['mime'] : null;
+            $detectedMime = is_array($imageInfo) ? $imageInfo['mime'] : null;
             if (! in_array($detectedMime, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'], true)) {
                 Log::warning('WordPress media import rejected non-image content.', [
                     ...$this->failureContext($mediaUrl),
@@ -254,7 +254,8 @@ final class ImportWordPressMediaForPagesAction
         $summary = is_array($session->result_summary) ? $session->result_summary : [];
         $checkpoint = is_array($summary['wordpress_media'] ?? null) ? $summary['wordpress_media'] : [];
         $failedUrls = is_array($checkpoint['failed_urls'] ?? null) ? $checkpoint['failed_urls'] : [];
-        $checkpointKey = (string) $page->getKey() . ':' . hash('sha256', $mediaUrl);
+        $pageKey = $page->getKey();
+        $checkpointKey = (is_int($pageKey) || is_string($pageKey) ? (string) $pageKey : 'unknown') . ':' . hash('sha256', $mediaUrl);
 
         if ($successful) {
             unset($failedUrls[$checkpointKey]);
@@ -268,7 +269,8 @@ final class ImportWordPressMediaForPagesAction
         $checkpoint['failed_urls'] = $failedUrls;
 
         if ($newlyImported) {
-            $checkpoint['imported_count'] = (int) ($checkpoint['imported_count'] ?? 0) + 1;
+            $importedCount = $checkpoint['imported_count'] ?? 0;
+            $checkpoint['imported_count'] = (is_int($importedCount) ? $importedCount : 0) + 1;
         }
 
         $summary['wordpress_media'] = $checkpoint;

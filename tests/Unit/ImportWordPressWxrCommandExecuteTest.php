@@ -42,7 +42,7 @@ beforeEach(function (): void {
 
     Storage::fake('public');
     Http::fake([
-        'https://example.test/uploads/executable.jpg' => Http::response('fake image bytes', 200, ['Content-Type' => 'image/jpeg']),
+        'https://example.test/uploads/executable.jpg' => Http::response(wordpressTestImageBytes(), 200, ['Content-Type' => 'image/png']),
     ]);
     app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
         'example.test' => ['93.184.216.34'],
@@ -102,17 +102,17 @@ XML);
 
     $page = Page::query()->withoutGlobalScopes()->where('name', 'Executable WP page')->firstOrFail();
     $redirectRule = RedirectRule::query()->where('source_url', '/legacy-executable-page')->firstOrFail();
-    $session = ImportSession::query()->whereKey($output['session']['id'] ?? null)->firstOrFail();
+    $session = ImportSession::query()->whereKey(data_get($output, 'session.id'))->firstOrFail();
 
     expect($exitCode)->toBe(0)
-        ->and($output['report']['pages_created'] ?? null)->toBe(1)
+        ->and(data_get($output, 'report.pages_created'))->toBe(1)
         ->and(PageUrl::query()->where('pageable_id', $page->getKey())->where('url', '/executable-wp-page')->exists())->toBeTrue()
         ->and($redirectRule->target_url)->toBe('/executable-wp-page')
         ->and($session->status)->toBe(ImportSessionStatus::Completed)
         ->and($session->source_environment)->toBe('wordpress-wxr')
-        ->and($session->result_summary['wordpress_checkpoint']['next_chunk_index'] ?? null)
-        ->toBe($session->result_summary['wordpress_checkpoint']['total_chunks'] ?? null)
-        ->and($session->result_summary['wordpress_media']['imported_count'] ?? null)->toBe(1)
+        ->and(data_get($session->result_summary, 'wordpress_checkpoint.next_chunk_index'))
+        ->toBe(data_get($session->result_summary, 'wordpress_checkpoint.total_chunks'))
+        ->and(data_get($session->result_summary, 'wordpress_media.imported_count'))->toBe(1)
         ->and($page->refresh()->meta['content'] ?? null)->not->toContain('https://example.test/uploads/executable.jpg');
 });
 
@@ -168,8 +168,8 @@ XML);
     $child = Page::query()->withoutGlobalScopes()->where('name', 'Child page')->firstOrFail();
 
     expect($result->session->status)->toBe(ImportSessionStatus::Completed)
-        ->and($result->session->result_summary['wordpress_checkpoint']['total_chunks'] ?? null)->toBe(2)
-        ->and((int) $child->parent_id)->toBe((int) $parent->getKey());
+        ->and(data_get($result->session->result_summary, 'wordpress_checkpoint.total_chunks'))->toBe(2)
+        ->and($child->parent_id)->toBe($parent->getKey());
 });
 
 it('resumes failed media downloads from the persisted session checkpoint', function (): void {
@@ -179,7 +179,7 @@ it('resumes failed media downloads from the persisted session checkpoint', funct
 
         return $attempt === 1
             ? Http::response('', 503)
-            : Http::response('retry image bytes', 200, ['Content-Type' => 'image/jpeg']);
+            : Http::response(wordpressTestImageBytes(), 200, ['Content-Type' => 'image/png']);
     });
     $layout = Layout::factory()->create();
     $type = Blueprint::factory()->page()->create();
@@ -215,8 +215,8 @@ XML);
     $session = ImportSession::query()->where('source_environment', 'wordpress-wxr')->latest('id')->firstOrFail();
 
     expect($session->status)->toBe(ImportSessionStatus::Failed)
-        ->and($session->result_summary['wordpress_checkpoint']['next_chunk_index'] ?? null)
-        ->toBe($session->result_summary['wordpress_checkpoint']['total_chunks'] ?? null)
+        ->and(data_get($session->result_summary, 'wordpress_checkpoint.next_chunk_index'))
+        ->toBe(data_get($session->result_summary, 'wordpress_checkpoint.total_chunks'))
         ->and(RetryImportSessionAction::canRetry($session))->toBeTrue();
 
     Queue::fake();
@@ -230,6 +230,7 @@ XML);
     });
 
     expect($queuedJob)->toBeInstanceOf(ExecuteImportPlanJob::class);
+    throw_unless($queuedJob instanceof ExecuteImportPlanJob, RuntimeException::class, 'Expected a queued import plan job.');
 
     $queuedJob->handle(
         resolve(PackageReader::class),
@@ -240,16 +241,36 @@ XML);
     );
 
     expect($session->refresh()->status)->toBe(ImportSessionStatus::Completed)
-        ->and($session->result_summary['wordpress_media']['imported_count'] ?? null)->toBe(1)
+        ->and(data_get($session->result_summary, 'wordpress_media.imported_count'))->toBe(1)
         ->and(Page::query()->withoutGlobalScopes()->where('name', 'Resume page')->count())->toBe(1);
 });
 
 function wordpressImportTarget(Site $site, Layout $layout, Blueprint $blueprint): ExternalPageImportTargetData
 {
     return new ExternalPageImportTargetData(
-        siteId: (int) $site->getKey(),
-        layoutId: (int) $layout->getKey(),
-        blueprintId: (int) $blueprint->getKey(),
-        languageId: (int) $site->language_id,
+        siteId: wordpressIntegerId($site->getKey()),
+        layoutId: wordpressIntegerId($layout->getKey()),
+        blueprintId: wordpressIntegerId($blueprint->getKey()),
+        languageId: wordpressIntegerId($site->language_id),
     );
+}
+
+function wordpressIntegerId(mixed $identifier): int
+{
+    if (! is_int($identifier)) {
+        throw new RuntimeException('Expected an integer identifier.');
+    }
+
+    return $identifier;
+}
+
+function wordpressTestImageBytes(): string
+{
+    $bytes = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true);
+
+    if (! is_string($bytes)) {
+        throw new RuntimeException('Expected valid PNG fixture bytes.');
+    }
+
+    return $bytes;
 }

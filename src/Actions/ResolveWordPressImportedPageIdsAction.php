@@ -34,7 +34,7 @@ final class ResolveWordPressImportedPageIdsAction
             return [];
         }
 
-        return Page::query()
+        return array_values(Page::query()
             ->withoutGlobalScopes()
             ->whereIn('meta->wordpress->source_identity', $sourceIdentities)
             ->where('created_at', '>=', $session->created_at?->subSecond() ?? now()->subSecond())
@@ -42,6 +42,6 @@ final class ResolveWordPressImportedPageIdsAction
             ->pluck((new Page)->getKeyName())
             ->filter(static fn (mixed $pageId): bool => is_int($pageId) || is_string($pageId))
             ->values()
-            ->all();
+            ->all());
     }
 }

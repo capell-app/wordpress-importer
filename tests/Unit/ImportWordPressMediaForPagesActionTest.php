@@ -10,6 +10,7 @@ use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Mockery\MockInterface;
 
 it('does not request imported WordPress media from private hosts', function (): void {
     Http::fake();
@@ -31,7 +32,7 @@ it('does not request imported WordPress media from private hosts', function (): 
     expect($imported)->toBe(0);
 
     Http::assertNothingSent();
-    Log::shouldHaveReceived('warning')
+    wordpressImporterLogger()->shouldHaveReceived('warning')
         ->once()
         ->with('WordPress media import attachment failed.', Mockery::on(
             fn (array $context): bool => ($context['url_host'] ?? null) === '127.0.0.1'
@@ -39,6 +40,17 @@ it('does not request imported WordPress media from private hosts', function (): 
                 && ($context['exception'] ?? null) === InvalidArgumentException::class,
         ));
 });
+
+function wordpressImporterLogger(): MockInterface
+{
+    $logger = Log::getFacadeRoot();
+
+    if (! $logger instanceof MockInterface) {
+        throw new RuntimeException('Expected a spied logger.');
+    }
+
+    return $logger;
+}
 
 it('does not follow imported WordPress media redirects to unchecked targets', function (): void {
     Log::spy();
@@ -72,7 +84,7 @@ it('does not follow imported WordPress media redirects to unchecked targets', fu
         ->and(data_get($requestOptions, 'curl.' . CURLOPT_RESOLVE))->toBe(['media.example.test:443:93.184.216.34']);
 
     Http::assertSentCount(1);
-    Log::shouldHaveReceived('warning')
+    wordpressImporterLogger()->shouldHaveReceived('warning')
         ->once()
         ->with('WordPress media import download failed.', Mockery::on(
             fn (array $context): bool => ($context['url_host'] ?? null) === 'media.example.test'
@@ -105,7 +117,7 @@ it('rejects remote media larger than the configured byte cap', function (): void
 
     expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(0);
 
-    Log::shouldHaveReceived('warning')
+    wordpressImporterLogger()->shouldHaveReceived('warning')
         ->once()
         ->with('WordPress media import download exceeded the configured size limit.', Mockery::on(
             fn (array $context): bool => ($context['bytes'] ?? null) === 5
@@ -125,7 +137,7 @@ it('rejects non-image bytes even when the response claims an image MIME type', f
 
     expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(0);
 
-    Log::shouldHaveReceived('warning')->once()->with(
+    wordpressImporterLogger()->shouldHaveReceived('warning')->once()->with(
         'WordPress media import rejected non-image content.',
         Mockery::on(fn (array $context): bool => ($context['detected_mime'] ?? null) === 'unknown'),
     );

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Actions;
 
-use Capell\Core\Models\User;
 use Capell\MigrationAssistant\Actions\CreateImportRollbackReportAction;
 use Capell\MigrationAssistant\Actions\Imports\ExecuteExternalPageImportAction;
 use Capell\MigrationAssistant\Data\ExternalImportReadResult;
@@ -15,7 +14,9 @@ use Capell\MigrationAssistant\Events\ImportFailed;
 use Capell\MigrationAssistant\Models\ImportSession;
 use Capell\MigrationAssistant\Services\Import\ExternalImportPreviewBuilder;
 use Capell\MigrationAssistant\Services\Import\ImportExecutionReport;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Lorisleiva\Actions\Concerns\AsAction;
 use RuntimeException;
@@ -27,8 +28,8 @@ final class ExecuteWordPressSpoolSessionAction
 
     public function handle(ImportSession $session): ImportExecutionReport
     {
-        $actor = is_numeric($session->user_id) ? User::query()->find((int) $session->user_id) : null;
-        $authorizedTarget = ReauthorizeWordPressWxrSessionAction::run($session, $actor);
+        $actor = $this->actor($session->user_id);
+        $authorizedTarget = app(ReauthorizeWordPressWxrSessionAction::class)->handle($session, $actor);
         $manifest = $this->wordpressManifest($session);
         $chunkPaths = $this->chunkPaths($manifest);
         $defaultPageAttributes = $authorizedTarget->pageAttributes();
@@ -73,7 +74,7 @@ final class ExecuteWordPressSpoolSessionAction
         }
 
         $report = $this->reportFromSummary($summary);
-        $parentUpdates = ResolveWordPressParentPagesAction::run($report->createdPageIds);
+        $parentUpdates = ResolveWordPressParentPagesAction::run(array_values($report->createdPageIds));
         $persistedSummary = is_array($session->result_summary) ? $session->result_summary : [];
         $summary = [
             ...$persistedSummary,
@@ -148,11 +149,29 @@ final class ExecuteWordPressSpoolSessionAction
     private function readChunk(Filesystem $disk, string $chunkPath): array
     {
         throw_unless($disk->exists($chunkPath), RuntimeException::class, sprintf('WordPress spool chunk [%s] is missing.', $chunkPath));
-        $decoded = json_decode($disk->get($chunkPath), true, 512, JSON_THROW_ON_ERROR);
+        $contents = $disk->get($chunkPath);
+        throw_unless(is_string($contents), RuntimeException::class, sprintf('WordPress spool chunk [%s] could not be read.', $chunkPath));
+        $decoded = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
 
         throw_unless(is_array($decoded), RuntimeException::class, sprintf('WordPress spool chunk [%s] is invalid.', $chunkPath));
 
-        return array_values(array_filter($decoded, is_array(...)));
+        $rows = [];
+
+        foreach ($decoded as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $normalized = [];
+            foreach ($row as $key => $value) {
+                if (is_string($key)) {
+                    $normalized[$key] = $value;
+                }
+            }
+            $rows[] = $normalized;
+        }
+
+        return $rows;
     }
 
     /**
@@ -190,7 +209,7 @@ final class ExecuteWordPressSpoolSessionAction
         ], SORT_REGULAR));
         $errors = array_values(array_merge($this->strings($summary['errors'] ?? []), $chunkReport->errors));
         $structuredErrors = array_values(array_merge(
-            is_array($summary['structured_errors'] ?? null) ? $summary['structured_errors'] : [],
+            $this->structuredErrors($summary['structured_errors'] ?? null),
             $chunkReport->structuredErrors,
         ));
         $checkpoint = is_array($summary['wordpress_checkpoint'] ?? null) ? $summary['wordpress_checkpoint'] : [];
@@ -198,9 +217,9 @@ final class ExecuteWordPressSpoolSessionAction
         return [
             ...$summary,
             'pages_created' => count($createdPageIds),
-            'pages_skipped' => (int) ($summary['pages_skipped'] ?? 0) + $chunkReport->pagesSkipped + $previewSkips,
-            'page_urls_created' => (int) ($summary['page_urls_created'] ?? 0) + $chunkReport->pageUrlsCreated,
-            'media_reassigned' => (int) ($summary['media_reassigned'] ?? 0) + $chunkReport->mediaReassigned,
+            'pages_skipped' => $this->integer($summary['pages_skipped'] ?? null) + $chunkReport->pagesSkipped + $previewSkips,
+            'page_urls_created' => $this->integer($summary['page_urls_created'] ?? null) + $chunkReport->pageUrlsCreated,
+            'media_reassigned' => $this->integer($summary['media_reassigned'] ?? null) + $chunkReport->mediaReassigned,
             'created_page_ids' => $createdPageIds,
             'created_site_ids' => [],
             'created_site_domain_ids' => [],
@@ -220,12 +239,12 @@ final class ExecuteWordPressSpoolSessionAction
     {
         return new ImportExecutionReport(
             pagesCreated: count($this->ids($summary['created_page_ids'] ?? [])),
-            pagesSkipped: (int) ($summary['pages_skipped'] ?? 0),
+            pagesSkipped: $this->integer($summary['pages_skipped'] ?? null),
             createdPageIds: $this->ids($summary['created_page_ids'] ?? []),
             errors: $this->strings($summary['errors'] ?? []),
-            pageUrlsCreated: (int) ($summary['page_urls_created'] ?? 0),
-            mediaReassigned: (int) ($summary['media_reassigned'] ?? 0),
-            structuredErrors: is_array($summary['structured_errors'] ?? null) ? $summary['structured_errors'] : [],
+            pageUrlsCreated: $this->integer($summary['page_urls_created'] ?? null),
+            mediaReassigned: $this->integer($summary['media_reassigned'] ?? null),
+            structuredErrors: $this->structuredErrors($summary['structured_errors'] ?? null),
         );
     }
 
@@ -241,6 +260,48 @@ final class ExecuteWordPressSpoolSessionAction
     private function strings(mixed $value): array
     {
         return is_array($value) ? array_values(array_filter($value, is_string(...))) : [];
+    }
+
+    private function integer(mixed $value): int
+    {
+        return is_int($value) ? $value : 0;
+    }
+
+    /** @return list<array{entry: string, phase: string, message: string}> */
+    private function structuredErrors(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $errors = [];
+
+        foreach ($value as $error) {
+            if (! is_array($error) || ! is_string($error['entry'] ?? null) || ! is_string($error['phase'] ?? null) || ! is_string($error['message'] ?? null)) {
+                continue;
+            }
+
+            $errors[] = [
+                'entry' => $error['entry'],
+                'phase' => $error['phase'],
+                'message' => $error['message'],
+            ];
+        }
+
+        return $errors;
+    }
+
+    private function actor(mixed $identifier): ?Authenticatable
+    {
+        $modelClass = config('auth.providers.users.model');
+
+        if ((! is_int($identifier) && ! is_string($identifier)) || ! is_string($modelClass) || ! is_a($modelClass, Model::class, true)) {
+            return null;
+        }
+
+        $actor = $modelClass::query()->find($identifier);
+
+        return $actor instanceof Authenticatable ? $actor : null;
     }
 
     /** @param array<string, mixed> $manifest */

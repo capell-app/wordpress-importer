@@ -35,7 +35,9 @@ XML);
 
     foreach ($spool->chunkPaths as $chunkPath) {
         Storage::disk('local')->assertExists($chunkPath);
-        $rows = json_decode(Storage::disk('local')->get($chunkPath), true, flags: JSON_THROW_ON_ERROR);
+        $contents = Storage::disk('local')->get($chunkPath);
+        throw_unless(is_string($contents), RuntimeException::class, 'Expected readable spool contents.');
+        $rows = json_decode($contents, true, flags: JSON_THROW_ON_ERROR);
 
         expect($rows)->toHaveCount(1);
     }

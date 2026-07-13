@@ -112,17 +112,23 @@ final class ImportWordPressWxrCommand extends Command
             return $isSuccess ? SymfonyCommand::SUCCESS : SymfonyCommand::FAILURE;
         }
 
-        $this->components->info((string) __('capell-wordpress-importer::commands.import.executed_summary', [
+        $summary = __('capell-wordpress-importer::commands.import.executed_summary', [
             'pages' => $result->report->pagesCreated,
             'page_urls' => $result->report->pageUrlsCreated,
-            'session' => (string) $result->session->getKey(),
-        ]));
+            'session' => $this->stringableKey($result->session->getKey()),
+        ]);
+        $this->components->info(is_string($summary) ? $summary : '');
 
         foreach ($result->report->errors as $error) {
             $this->components->error($error);
         }
 
         return $isSuccess ? SymfonyCommand::SUCCESS : SymfonyCommand::FAILURE;
+    }
+
+    private function stringableKey(mixed $key): string
+    {
+        return is_int($key) || is_string($key) ? (string) $key : '';
     }
 
     private function requiredIntOption(string $option): int
