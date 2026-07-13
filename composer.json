@@ -6,9 +6,9 @@
     "require": {
         "php": "^8.4",
         "ext-simplexml": "*",
-        "capell-app/admin": "^1.0",
-        "capell-app/core": "^1.0",
-        "capell-app/migration-assistant": "^1.0",
+        "capell-app/admin": "^4.0",
+        "capell-app/core": "^4.0",
+        "capell-app/migration-assistant": "^4.0",
         "illuminate/support": "^11.0|^12.0|^13.0",
         "spatie/laravel-package-tools": "^1.15"
     },
