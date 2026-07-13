@@ -2,7 +2,7 @@
 
 <!-- prettier-ignore-start -->
 
-## What This Extension Adds
+## What This Plugin Adds
 
 WordPress Importer is an **Available**, **No schema impact** Capell package in the **Capell Operations** product group. It ships as `capell-app/wordpress-importer` and extends these surfaces: admin, console.
 
@@ -32,13 +32,17 @@ Screenshot contract: `docs/screenshots.json`.
 - Migration Assistant import flow with WordPress WXR available as an import source (admin, required).
 - Parsed WordPress WXR rows previewed in Migration Assistant (admin, required).
 - Import session detail for a WordPress WXR import (admin, optional).
+- Completed WordPress import report (admin, optional).
+- WordPress import validation errors (admin, optional).
+- WordPress import rollback state (admin, optional).
 
 ## Technical Shape
 
 - Service providers: `Capell\WordPressImporter\Providers\WordPressImporterServiceProvider`.
-- Listeners: `CreateWordPressRedirectsForCompletedImport`, `ImportWordPressMediaForCompletedImport`.
-- Actions: `ApplyWordPressPreviewIdempotencyAction`, `BuildWordPressImportPreviewAction`, `CreateWordPressPermalinkRedirectsAction`, `ImportWordPressMediaForPagesAction`.
-- Data objects: `ResolvedWordPressMediaEndpointData`, `WordPressImportPreviewData`, `WordPressPermalinkRedirectReportData`.
+- Config files: `packages/wordpress-importer/config/wordpress-importer.php`.
+- Listeners: `CreateWordPressRedirectsForCompletingImport`, `ImportWordPressMediaForCompletingImport`.
+- Actions: `ApplyWordPressPreviewIdempotencyAction`, `BuildWordPressImportPreviewAction`, `CreateWordPressPermalinkRedirectsAction`, `ExecuteWordPressSpoolSessionAction`, `ExecuteWordPressWxrImportAction`, `ImportWordPressMediaForPagesAction`, `ReadWordPressWxrAction`, `ReauthorizeWordPressWxrSessionAction`, `ResolveWordPressImportedPageIdsAction`, `ResolveWordPressParentPagesAction`, `SpoolWordPressWxrAction`.
+- Data objects: `ResolvedWordPressMediaEndpointData`, `WordPressImportPreviewData`, `WordPressPermalinkRedirectReportData`, `WordPressWxrReadData`, `WordPressWxrSpoolData`.
 - Command signatures: `wordpress-importer:import`.
 - Console command classes: `ImportWordPressWxrCommand`.
 - Manifest contributions: `console-command: Capell\WordPressImporter\Manifest\WordPressImporterConsoleCommandContribution`, `health-check: Capell\WordPressImporter\Health\WordpressImporterHealthCheck`.
