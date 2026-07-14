@@ -1,0 +1,39 @@
+{
+    "whatThisPluginAdds": {
+        "text": "WordPress Importer reads WXR exports, builds an import preview, and imports WordPress content, authors, taxonomies, media references, and source metadata through Migration Assistant. It can also create old-permalink redirects when the URL Manager integration is available.",
+        "evidence": [
+            "src/Services/WxrReader.php",
+            "src/Actions/BuildWordPressImportPreviewAction.php",
+            "src/Actions/ExecuteWordPressWxrImportAction.php",
+            "src/Actions/CreateWordPressPermalinkRedirectsAction.php"
+        ]
+    },
+    "surfaceOutcome": {
+        "text": "Operators can preview a WXR migration and run it from the package command, including supported media and permalink handling.",
+        "evidence": [
+            "src/Console/Commands/ImportWordPressWxrCommand.php",
+            "src/Actions/ImportWordPressMediaForPagesAction.php",
+            "tests/Unit/ImportWordPressWxrCommandExecuteTest.php",
+            "tests/Unit/ImportWordPressMediaForPagesActionTest.php"
+        ]
+    },
+    "whyItMatters": {
+        "developers": {
+            "text": "WXR parsing, preview construction, execution, media import, and redirect creation are separated into testable services and Actions.",
+            "evidence": [
+                "src/Services/WxrReader.php",
+                "src/Actions/ExecuteWordPressWxrImportAction.php",
+                "tests/Unit/WxrReaderTest.php",
+                "tests/Unit/WordPressWxrSpoolTest.php"
+            ]
+        },
+        "teams": {
+            "text": "Migration teams can inspect the proposed move before execution and retain important source relationships and legacy URLs during the transition.",
+            "evidence": [
+                "src/Actions/BuildWordPressImportPreviewAction.php",
+                "src/Actions/CreateWordPressPermalinkRedirectsAction.php",
+                "tests/Unit/ImportWordPressWxrCommandExecuteTest.php"
+            ]
+        }
+    }
+}

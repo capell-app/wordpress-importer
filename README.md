@@ -6,9 +6,11 @@
 
 WordPress Importer is an **Available**, **No schema impact** Capell package in the **Capell Operations** product group. It ships as `capell-app/wordpress-importer` and extends these surfaces: admin, console.
 
-Preview WordPress WXR posts and pages in Capell Migration Assistant with permalink, taxonomy, author, media-reference, Gutenberg, and shortcode metadata preserved.
+WordPress Importer reads WXR exports, builds an import preview, and imports WordPress content, authors, taxonomies, media references, and source metadata through Migration Assistant. It can also create old-permalink redirects when the URL Manager integration is available.
 
-After install, the package contributes admin-facing extension points. Docs gap: no concrete Filament resource or page was detected.
+Operators can preview a WXR migration and run it from the package command, including supported media and permalink handling.
+
+Evidence: [`src/Services/WxrReader.php`](src/Services/WxrReader.php), [`src/Actions/BuildWordPressImportPreviewAction.php`](src/Actions/BuildWordPressImportPreviewAction.php), [`src/Actions/ExecuteWordPressWxrImportAction.php`](src/Actions/ExecuteWordPressWxrImportAction.php), [`src/Actions/CreateWordPressPermalinkRedirectsAction.php`](src/Actions/CreateWordPressPermalinkRedirectsAction.php), [`src/Console/Commands/ImportWordPressWxrCommand.php`](src/Console/Commands/ImportWordPressWxrCommand.php), [`src/Actions/ImportWordPressMediaForPagesAction.php`](src/Actions/ImportWordPressMediaForPagesAction.php), [`tests/Unit/ImportWordPressWxrCommandExecuteTest.php`](tests/Unit/ImportWordPressWxrCommandExecuteTest.php), [`tests/Unit/ImportWordPressMediaForPagesActionTest.php`](tests/Unit/ImportWordPressMediaForPagesActionTest.php).
 
 Status details:
 
@@ -21,9 +23,11 @@ Status details:
 
 ## Why It Matters
 
-**For developers:** The package gives developers package-owned service providers, Actions, and Data objects instead of pushing this behaviour into core or application code.
+**For developers:** WXR parsing, preview construction, execution, media import, and redirect creation are separated into testable services and Actions.
 
-**For teams:** Preview WordPress WXR posts and pages in Capell with durable metadata ready for Migration Assistant mapping.
+**For teams:** Migration teams can inspect the proposed move before execution and retain important source relationships and legacy URLs during the transition.
+
+Evidence: [`src/Services/WxrReader.php`](src/Services/WxrReader.php), [`src/Actions/ExecuteWordPressWxrImportAction.php`](src/Actions/ExecuteWordPressWxrImportAction.php), [`tests/Unit/WxrReaderTest.php`](tests/Unit/WxrReaderTest.php), [`tests/Unit/WordPressWxrSpoolTest.php`](tests/Unit/WordPressWxrSpoolTest.php), [`src/Actions/BuildWordPressImportPreviewAction.php`](src/Actions/BuildWordPressImportPreviewAction.php), [`src/Actions/CreateWordPressPermalinkRedirectsAction.php`](src/Actions/CreateWordPressPermalinkRedirectsAction.php), [`tests/Unit/ImportWordPressWxrCommandExecuteTest.php`](tests/Unit/ImportWordPressWxrCommandExecuteTest.php).
 
 ## Screens And Workflow
 
@@ -44,6 +48,7 @@ Screenshot contract: `docs/screenshots.json`.
 
 - Service providers: `Capell\WordPressImporter\Providers\WordPressImporterServiceProvider`.
 - Config files: `packages/wordpress-importer/config/wordpress-importer.php`.
+- Extension contracts: `WordPressMediaHostResolver`.
 - Listeners: `CreateWordPressRedirectsForCompletingImport`, `ImportWordPressMediaForCompletingImport`.
 - Actions: `ApplyWordPressPreviewIdempotencyAction`, `BuildWordPressImportPreviewAction`, `CreateWordPressPermalinkRedirectsAction`, `ExecuteWordPressSpoolSessionAction`, `ExecuteWordPressWxrImportAction`, `ImportWordPressMediaForPagesAction`, `ReadWordPressWxrAction`, `ReauthorizeWordPressWxrSessionAction`, `ResolveWordPressImportedPageIdsAction`, `ResolveWordPressParentPagesAction`, `SpoolWordPressWxrAction`.
 - Data objects: `ResolvedWordPressMediaEndpointData`, `WordPressImportPreviewData`, `WordPressPermalinkRedirectReportData`, `WordPressWxrReadData`, `WordPressWxrSpoolData`.
@@ -54,43 +59,46 @@ Screenshot contract: `docs/screenshots.json`.
 
 ## Data Model
 
-This package has no schema impact. It does not declare package-owned migrations or required tables.
-
-Docs gap: document extension points here if the package delegates persistence to a host package.
+This package has no schema impact. It extends Capell through `console-command` contributions and `health-check` contributions instead of declaring package-owned tables.
 
 ## Install Impact
 
-- Admin navigation: admin-facing extension points are declared, but no concrete Filament class was detected.
+- Required packages: `capell-app/admin`, `capell-app/core`, `capell-app/migration-assistant`.
+- Admin navigation: no admin page or resource contribution is declared.
+- Admin/editor extensions: none declared.
 - Permissions: none declared in `capell.json`.
-- Public routes: none detected in package route files.
+- Public routes: none declared.
 - Database changes: no package migrations declared.
+- Config: `config/wordpress-importer.php`.
 - Settings: no package settings declared.
-- Queues or schedules: none detected in standard package paths.
+- Queues or schedules: none declared.
 - Cache tags: none declared.
 - Commands: `wordpress-importer:import`.
 
 ## Common Pitfalls
 
-- Run package commands from the host app; in this repository use `vendor/bin/pest` for package tests.
-- Keep `composer.json`, `composer.local.json`, `capell.json`, docs, screenshots, and tests aligned when the package surface changes.
+- Keep required Capell packages on compatible v4 releases: `capell-app/admin`, `capell-app/core`, `capell-app/migration-assistant`.
+- Review package configuration before production-like verification: `config/wordpress-importer.php`.
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Check | Fix |
 | --- | --- | --- | --- |
 | Package surface is missing after install | Provider or manifest is not loaded | Confirm `capell.json`, package `composer.json`, and provider registration | Reinstall the package, refresh Composer autoload, and clear host caches |
-| Background work does not run | Queue worker or scheduled command is not active | Check package jobs, commands, and host scheduler configuration | Start the queue or scheduler, then run the focused command or package test |
 
 ## Quick Start
 
 1. Install the package: `composer require capell-app/wordpress-importer`.
-2. Run the required setup: no package migrations are declared; clear cached config and routes if the host app uses caches.
-3. Verify the package provider is registered and the related frontend, command, or extension point is active.
+2. Review `config/wordpress-importer.php` before enabling the package.
+3. Open the Migration Assistant import flow with WordPress WXR available as an import source and confirm the admin workflow loads.
 
 ## Next Steps
 
 - [Package docs](docs/README.md)
 - [Overview](docs/overview.md)
+- [Admin guide](docs/admin-guide.md)
+- Configuration files: [`config/wordpress-importer.php`](config/wordpress-importer.php).
+- [Troubleshooting](#troubleshooting)
 - [Screenshot contract](docs/screenshots.json)
 - [Marketplace assets](docs/assets/marketplace/)
 - [Capell content language plan](../../docs/CONTENT_LANGUAGE_PLAN.md)
