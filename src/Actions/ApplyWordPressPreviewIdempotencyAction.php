@@ -6,6 +6,7 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\Core\Models\Page;
 use Capell\MigrationAssistant\Data\ExternalImportPreview;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -13,6 +14,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
  */
 final class ApplyWordPressPreviewIdempotencyAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(ExternalImportPreview $preview): ExternalImportPreview

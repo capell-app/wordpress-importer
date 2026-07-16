@@ -14,7 +14,8 @@ use Capell\MigrationAssistant\Events\ImportFailed;
 use Capell\MigrationAssistant\Models\ImportSession;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Str;
-use Lorisleiva\Actions\Concerns\AsAction;
+use Lorisleiva\Actions\Concerns\AsFake;
+use Lorisleiva\Actions\Concerns\AsObject;
 use Throwable;
 
 /**
@@ -22,7 +23,8 @@ use Throwable;
  */
 final class ExecuteWordPressWxrImportAction
 {
-    use AsAction;
+    use AsFake;
+    use AsObject;
 
     public function handle(
         string $path,

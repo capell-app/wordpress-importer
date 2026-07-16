@@ -10,6 +10,7 @@ use Capell\WordPressImporter\Data\WordPressPermalinkRedirectReportData;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 use RuntimeException;
 
@@ -18,6 +19,7 @@ use RuntimeException;
  */
 final class CreateWordPressPermalinkRedirectsAction
 {
+    use AsFake;
     use AsObject;
 
     private const string REDIRECT_RULE_DATA = 'Capell\\UrlManager\\Data\\RedirectRuleData';

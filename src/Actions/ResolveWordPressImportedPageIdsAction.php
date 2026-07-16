@@ -7,14 +7,16 @@ namespace Capell\WordPressImporter\Actions;
 use Capell\Core\Models\Page;
 use Capell\MigrationAssistant\Models\ImportSession;
 use Illuminate\Database\Eloquent\Builder;
-use Lorisleiva\Actions\Concerns\AsAction;
+use Lorisleiva\Actions\Concerns\AsFake;
+use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
  * @method static list<int|string> run(list<array<string, mixed>> $rows, ImportSession $session, ?int $siteId = null)
  */
 final class ResolveWordPressImportedPageIdsAction
 {
-    use AsAction;
+    use AsFake;
+    use AsObject;
 
     /**
      * @param  list<array<string, mixed>>  $rows

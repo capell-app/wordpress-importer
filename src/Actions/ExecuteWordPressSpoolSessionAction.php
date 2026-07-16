@@ -18,18 +18,20 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use Lorisleiva\Actions\Concerns\AsAction;
+use Lorisleiva\Actions\Concerns\AsFake;
+use Lorisleiva\Actions\Concerns\AsObject;
 use RuntimeException;
 
 /** @method static ImportExecutionReport run(ImportSession $session) */
 final class ExecuteWordPressSpoolSessionAction
 {
-    use AsAction;
+    use AsFake;
+    use AsObject;
 
     public function handle(ImportSession $session): ImportExecutionReport
     {
         $actor = $this->actor($session->user_id);
-        $authorizedTarget = app(ReauthorizeWordPressWxrSessionAction::class)->handle($session, $actor);
+        $authorizedTarget = ReauthorizeWordPressWxrSessionAction::run($session, $actor);
         $manifest = $this->wordpressManifest($session);
         $chunkPaths = $this->chunkPaths($manifest);
         $defaultPageAttributes = $authorizedTarget->pageAttributes();

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 use RuntimeException;
 use Throwable;
@@ -25,6 +26,7 @@ use Throwable;
  */
 final class ImportWordPressMediaForPagesAction
 {
+    use AsFake;
     use AsObject;
 
     private const string COLLECTION = 'wordpress-import';

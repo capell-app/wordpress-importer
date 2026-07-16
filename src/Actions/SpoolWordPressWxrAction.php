@@ -10,13 +10,15 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use JsonException;
-use Lorisleiva\Actions\Concerns\AsAction;
+use Lorisleiva\Actions\Concerns\AsFake;
+use Lorisleiva\Actions\Concerns\AsObject;
 use RuntimeException;
 
 /** @method static WordPressWxrSpoolData run(string $path) */
 final class SpoolWordPressWxrAction
 {
-    use AsAction;
+    use AsFake;
+    use AsObject;
 
     public function handle(string $path): WordPressWxrSpoolData
     {

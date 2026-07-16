@@ -10,11 +10,13 @@ use Capell\MigrationAssistant\Exceptions\ImportExecutionAuthorizationException;
 use Capell\MigrationAssistant\Models\ImportSession;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 use RuntimeException;
 
 final class ReauthorizeWordPressWxrSessionAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(ImportSession $session, ?Authenticatable $actor): ExternalPageImportTargetData

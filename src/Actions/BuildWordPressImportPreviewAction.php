@@ -6,6 +6,7 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\MigrationAssistant\Services\Import\ExternalImportPreviewBuilder;
 use Capell\WordPressImporter\Data\WordPressImportPreviewData;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -13,6 +14,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
  */
 final class BuildWordPressImportPreviewAction
 {
+    use AsFake;
     use AsObject;
 
     /** @var array<string, string> */

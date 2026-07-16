@@ -6,6 +6,7 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\WordPressImporter\Data\WordPressWxrReadData;
 use Capell\WordPressImporter\Services\WxrReader;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 use RuntimeException;
 
@@ -14,6 +15,7 @@ use RuntimeException;
  */
 final class ReadWordPressWxrAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(string $path): WordPressWxrReadData

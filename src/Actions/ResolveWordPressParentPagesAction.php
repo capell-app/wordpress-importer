@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Capell\WordPressImporter\Actions;
 
 use Capell\Core\Models\Page;
-use Lorisleiva\Actions\Concerns\AsAction;
+use Lorisleiva\Actions\Concerns\AsFake;
+use Lorisleiva\Actions\Concerns\AsObject;
 
 /** @method static int run(list<int|string> $pageIds) */
 final class ResolveWordPressParentPagesAction
 {
-    use AsAction;
+    use AsFake;
+    use AsObject;
 
     /** @param list<int|string> $pageIds */
     public function handle(array $pageIds): int
