@@ -89,7 +89,9 @@
         "sensitiveData": {
             "encryptedFields": [],
             "hashedTokenFields": [],
-            "redactedOutputClasses": [],
+            "redactedOutputClasses": [
+                "Capell\\WordPressImporter\\Console\\Commands\\ImportWordPressWxrCommand"
+            ],
             "plaintextJustifications": []
         },
         "publicOutput": {
