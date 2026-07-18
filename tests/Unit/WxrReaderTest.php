@@ -151,10 +151,73 @@ XML);
         ])
         ->and($result->rows[0]['featured_media_url'])->toBe('https://example.test/about-hero.jpg')
         ->and($result->rows[1]['parent_id'])->toBe('10')
-        ->and($result->rows[1]['post_content'])->toBe('<p>News body</p><div class="capell-wordpress-shortcode-placeholder" data-shortcode="gallery" data-attributes="ids=&quot;1,2&quot;"></div>')
+        ->and($result->rows[1]['post_content'])->toBe('<p>News body</p>')
         ->and($result->rows[1]['post_content_raw'])->toBe('<!-- wp:paragraph --><p>News body</p><!-- /wp:paragraph -->[gallery ids="1,2"]')
         ->and($result->rows[1]['contains_gutenberg_blocks'])->toBeTrue()
         ->and($result->rows[1]['shortcodes'])->toBe(['gallery']);
+});
+
+it('preserves safe enclosed shortcode text without package-specific public markers', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-shortcode-');
+    throw_unless(is_string($path), RuntimeException::class, 'Expected shortcode WXR fixture path.');
+
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+    xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Shortcode Site</title>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <item>
+            <title>Portable shortcode</title>
+            <content:encoded><![CDATA[<p>Before</p>[notice tone="info"]Keep <strong>this useful text</strong>[/notice][gallery ids="1,2"]<p>After</p>]]></content:encoded>
+            <wp:post_id>50</wp:post_id>
+            <wp:post_name>portable-shortcode</wp:post_name>
+            <wp:post_type>page</wp:post_type>
+            <wp:status>publish</wp:status>
+        </item>
+    </channel>
+</rss>
+XML);
+
+    try {
+        $result = (new WxrReader)->read($path);
+
+        expect($result->rows[0]['post_content'])
+            ->toBe('<p>Before</p>Keep this useful text<p>After</p>')
+            ->not->toContain('capell-wordpress', 'data-shortcode', 'data-attributes')
+            ->and($result->rows[0]['post_content_raw'])->toContain('[notice tone="info"]')
+            ->and($result->rows[0]['shortcodes'])->toBe(['notice', 'gallery']);
+    } finally {
+        unlink($path);
+    }
+});
+
+it('fails closed when the streamed attachment index exceeds its configured bound', function (): void {
+    config()->set('wordpress-importer.spool.max_indexed_attachments', 1);
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-attachments-');
+    throw_unless(is_string($path), RuntimeException::class, 'Expected attachment WXR fixture path.');
+
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Attachment Site</title>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <item><title>One</title><wp:post_type>attachment</wp:post_type><wp:post_parent>50</wp:post_parent><wp:attachment_url>https://example.test/one.jpg</wp:attachment_url></item>
+        <item><title>Two</title><wp:post_type>attachment</wp:post_type><wp:post_parent>50</wp:post_parent><wp:attachment_url>https://example.test/two.jpg</wp:attachment_url></item>
+        <item><title>Page</title><wp:post_id>50</wp:post_id><wp:post_type>page</wp:post_type></item>
+    </channel>
+</rss>
+XML);
+
+    try {
+        expect(fn () => (new WxrReader)->read($path))
+            ->toThrow(RuntimeException::class, 'attachment index limit');
+    } finally {
+        unlink($path);
+    }
 });
 
 it('reads WordPress WXR exports through an action boundary', function (): void {

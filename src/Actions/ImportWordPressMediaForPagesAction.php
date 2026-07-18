@@ -9,6 +9,8 @@ use Capell\Core\Models\Page;
 use Capell\MigrationAssistant\Models\ImportSession;
 use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Data\ResolvedWordPressMediaEndpointData;
+use Capell\WordPressImporter\Exceptions\WordPressMediaSizeLimitExceeded;
+use Closure;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
@@ -161,6 +163,7 @@ final class ImportWordPressMediaForPagesAction
                 ->withOptions([
                     ...$this->requestOptions($endpoint),
                     'sink' => $temporaryPath,
+                    'progress' => $this->transferProgressGuard(),
                 ])
                 ->get($endpoint->url);
 
@@ -229,6 +232,10 @@ final class ImportWordPressMediaForPagesAction
             );
 
             return $page->addMediaFromUploadedFile($uploadedFile, self::COLLECTION);
+        } catch (WordPressMediaSizeLimitExceeded $exception) {
+            $this->logOversizedMedia($mediaUrl, $exception->bytes);
+
+            return null;
         } catch (Throwable $throwable) {
             Log::warning('WordPress media import attachment failed.', [
                 ...$this->failureContext($mediaUrl),
@@ -315,6 +322,26 @@ final class ImportWordPressMediaForPagesAction
         $configured = config('wordpress-importer.media.max_bytes', 50 * 1024 * 1024);
 
         return is_numeric($configured) ? max(1, (int) $configured) : 50 * 1024 * 1024;
+    }
+
+    private function transferProgressGuard(): Closure
+    {
+        $maximumBytes = $this->maximumMediaBytes();
+
+        return static function (
+            int $downloadTotal,
+            int $downloadedBytes,
+            int $uploadTotal,
+            int $uploadedBytes,
+        ) use ($maximumBytes): void {
+            unset($uploadTotal, $uploadedBytes);
+
+            $observedBytes = max($downloadTotal, $downloadedBytes);
+
+            if ($observedBytes > $maximumBytes) {
+                throw new WordPressMediaSizeLimitExceeded($observedBytes);
+            }
+        };
     }
 
     /**

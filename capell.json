@@ -134,7 +134,7 @@
         }
     ],
     "commercial": {
-        "proposedLicense": "free",
+        "proposedLicense": "paid",
         "requestedCertification": "first-party",
         "supportPolicy": "priority",
         "privateDocsRequested": true

@@ -7,6 +7,7 @@ namespace Capell\WordPressImporter\Services;
 use Capell\MigrationAssistant\Contracts\PathAwareImportSourceReader;
 use Capell\MigrationAssistant\Data\ExternalImportReadResult;
 use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
+use Capell\WordPressImporter\Support\WordPressAttachmentIndex;
 use Closure;
 use RuntimeException;
 use SimpleXMLElement;
@@ -89,60 +90,68 @@ final class WxrReader implements PathAwareImportSourceReader
             throw new RuntimeException(sprintf('WordPress export [%s] does not contain WXR metadata.', $path));
         }
 
-        $attachmentsByParent = $this->streamAttachmentsByParent($path);
+        $attachmentIndex = $this->streamAttachmentIndex($path);
         $itemErrors = [];
         $itemIndex = 0;
         $rowIndex = 0;
         $skippedItemCount = 0;
 
-        $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$itemErrors, &$itemIndex, &$rowIndex, &$skippedItemCount, $attachmentsByParent, $onRow): void {
-            while ($reader->read()) {
-                $this->rejectDoctype($reader);
+        try {
+            $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$itemErrors, &$itemIndex, &$rowIndex, &$skippedItemCount, $attachmentIndex, $onRow): void {
+                while ($reader->read()) {
+                    $this->rejectDoctype($reader);
 
-                if ($reader->nodeType !== NativeXmlReader::ELEMENT || $reader->localName !== 'item') {
-                    continue;
-                }
-
-                $itemIndex++;
-                $item = $this->simpleXmlFromCurrentItem($reader);
-                $postType = trim((string) $item->children('wp', true)->post_type);
-
-                if (! in_array($postType, ['page', 'post'], true)) {
-                    continue;
-                }
-
-                try {
-                    $row = $this->rowFromItem($item, $attachmentsByParent);
-                } catch (Throwable $throwable) {
-                    $skippedItemCount++;
-
-                    if (count($itemErrors) < $this->maximumStoredItemErrors()) {
-                        $itemErrors[] = sprintf(
-                            'Item %d (%s) skipped: %s',
-                            $itemIndex,
-                            $this->itemLabel($item),
-                            $throwable->getMessage(),
-                        );
+                    if ($reader->nodeType !== NativeXmlReader::ELEMENT || $reader->localName !== 'item') {
+                        continue;
                     }
 
-                    continue;
+                    $itemIndex++;
+                    $item = $this->simpleXmlFromCurrentItem($reader);
+                    $wp = $item->children('wp', true);
+                    $postType = trim((string) $wp->post_type);
+
+                    if (! in_array($postType, ['page', 'post'], true)) {
+                        continue;
+                    }
+
+                    try {
+                        $row = $this->rowFromItem(
+                            $item,
+                            $attachmentIndex->forParent(trim((string) $wp->post_id)),
+                        );
+                    } catch (Throwable $throwable) {
+                        $skippedItemCount++;
+
+                        if (count($itemErrors) < $this->maximumStoredItemErrors()) {
+                            $itemErrors[] = sprintf(
+                                'Item %d (%s) skipped: %s',
+                                $itemIndex,
+                                $this->itemLabel($item),
+                                $throwable->getMessage(),
+                            );
+                        }
+
+                        continue;
+                    }
+
+                    $rowIndex++;
+                    $onRow($row, $rowIndex);
                 }
+            });
 
-                $rowIndex++;
-                $onRow($row, $rowIndex);
-            }
-        });
+            throw_if($itemIndex === 0, RuntimeException::class, 'WordPress export must contain a channel with item entries.');
 
-        throw_if($itemIndex === 0, RuntimeException::class, 'WordPress export must contain a channel with item entries.');
-
-        return [
-            'filename' => basename($path),
-            'site_title' => $metadata['site_title'],
-            'wxr_version' => $metadata['wxr_version'],
-            'attachment_count' => array_sum(array_map(count(...), $attachmentsByParent)),
-            'skipped_item_count' => $skippedItemCount,
-            'item_errors' => $itemErrors,
-        ];
+            return [
+                'filename' => basename($path),
+                'site_title' => $metadata['site_title'],
+                'wxr_version' => $metadata['wxr_version'],
+                'attachment_count' => $attachmentIndex->count(),
+                'skipped_item_count' => $skippedItemCount,
+                'item_errors' => $itemErrors,
+            ];
+        } finally {
+            $attachmentIndex->close();
+        }
     }
 
     private function readDom(string $path): ExternalImportReadResult
@@ -169,7 +178,8 @@ final class WxrReader implements PathAwareImportSourceReader
             }
 
             try {
-                $rows[] = $this->rowFromItem($item, $attachmentsByParent);
+                $postId = trim((string) $wp->post_id);
+                $rows[] = $this->rowFromItem($item, $attachmentsByParent[$postId] ?? []);
             } catch (Throwable $throwable) {
                 $itemErrors[] = sprintf(
                     'Item %d (%s) skipped: %s',
@@ -338,54 +348,49 @@ final class WxrReader implements PathAwareImportSourceReader
         return $metadata;
     }
 
-    /**
-     * @return array<string, list<array{url: string, title: string}>>
-     */
-    private function streamAttachmentsByParent(string $path): array
+    private function streamAttachmentIndex(string $path): WordPressAttachmentIndex
     {
-        $attachments = [];
+        $index = new WordPressAttachmentIndex(
+            maximumAttachments: $this->maximumIndexedAttachments(),
+            maximumAttachmentsPerParent: $this->maximumAttachmentsPerParent(),
+            maximumBytes: $this->maximumAttachmentIndexBytes(),
+        );
 
-        $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$attachments): void {
-            while ($reader->read()) {
-                $this->rejectDoctype($reader);
-                if ($reader->nodeType !== NativeXmlReader::ELEMENT) {
-                    continue;
+        try {
+            $this->withXmlReader($path, function (NativeXmlReader $reader) use ($index): void {
+                while ($reader->read()) {
+                    $this->rejectDoctype($reader);
+                    if ($reader->nodeType !== NativeXmlReader::ELEMENT) {
+                        continue;
+                    }
+
+                    if ($reader->localName !== 'item') {
+                        continue;
+                    }
+
+                    $item = $this->simpleXmlFromCurrentItem($reader);
+                    $wp = $item->children('wp', true);
+
+                    if (trim((string) $wp->post_type) !== 'attachment') {
+                        continue;
+                    }
+
+                    $parentId = trim((string) $wp->post_parent);
+                    $url = trim((string) $wp->attachment_url);
+                    if ($parentId === '' || $parentId === '0' || $url === '') {
+                        continue;
+                    }
+
+                    $index->add($parentId, $url, trim((string) $item->title));
                 }
+            });
+        } catch (Throwable $throwable) {
+            $index->close();
 
-                if ($reader->localName !== 'item') {
-                    continue;
-                }
+            throw $throwable;
+        }
 
-                $item = $this->simpleXmlFromCurrentItem($reader);
-                $wp = $item->children('wp', true);
-
-                if (trim((string) $wp->post_type) !== 'attachment') {
-                    continue;
-                }
-
-                $parentId = trim((string) $wp->post_parent);
-                $url = trim((string) $wp->attachment_url);
-                if ($parentId === '') {
-                    continue;
-                }
-
-                if ($parentId === '0') {
-                    continue;
-                }
-
-                if ($url === '') {
-                    continue;
-                }
-
-                $attachments[$parentId] ??= [];
-                $attachments[$parentId][] = [
-                    'url' => $url,
-                    'title' => trim((string) $item->title),
-                ];
-            }
-        });
-
-        return $attachments;
+        return $index;
     }
 
     private function simpleXmlFromCurrentItem(NativeXmlReader $reader): SimpleXMLElement
@@ -432,10 +437,10 @@ final class WxrReader implements PathAwareImportSourceReader
     }
 
     /**
-     * @param  array<string, list<array{url: string, title: string}>>  $attachmentsByParent
+     * @param  list<array{url: string, title: string}>  $parentAttachments
      * @return array<string, mixed>
      */
-    private function rowFromItem(SimpleXMLElement $item, array $attachmentsByParent): array
+    private function rowFromItem(SimpleXMLElement $item, array $parentAttachments): array
     {
         $wp = $item->children('wp', true);
         $content = $item->children('content', true);
@@ -450,7 +455,7 @@ final class WxrReader implements PathAwareImportSourceReader
         $postContent = $this->normalizeContent($postContentRaw);
         $attachments = array_values(array_merge(
             $this->inlineAttachments($wp, $postTitle),
-            $attachmentsByParent[$postId] ?? [],
+            $parentAttachments,
         ));
         $mediaUrls = array_values(array_unique(array_map(
             static fn (array $attachment): string => $attachment['url'],
@@ -589,28 +594,43 @@ final class WxrReader implements PathAwareImportSourceReader
         $content = preg_replace('/<!--\s*\/?wp:[^>]*-->/', '', $content) ?? $content;
 
         $content = preg_replace_callback(
-            '/\[([a-zA-Z][a-zA-Z0-9_-]*)\b([^\]]*)\](?:.*?)\[\/\1\]|\[([a-zA-Z][a-zA-Z0-9_-]*)\b([^\]]*)\/?\]/s',
+            '/\[([a-zA-Z][a-zA-Z0-9_-]*)\b([^\]]*)\](.*?)\[\/\1\]|\[([a-zA-Z][a-zA-Z0-9_-]*)\b([^\]]*)\/?\]/s',
             function (array $matches): string {
                 $openingShortcode = $matches[1] ?? '';
-                $openingAttributes = $matches[2] ?? '';
-                $selfClosingShortcode = $matches[3] ?? '';
-                $selfClosingAttributes = $matches[4] ?? '';
-                $shortcode = strtolower((string) ($openingShortcode !== '' ? $openingShortcode : $selfClosingShortcode));
-                $attributes = trim((string) ($openingAttributes !== '' ? $openingAttributes : $selfClosingAttributes));
+                $enclosedContent = (string) ($matches[3] ?? '');
 
-                if ($shortcode === 'caption') {
-                    return trim(strip_tags((string) ($matches[0] ?? ''), '<a><br><em><img><p><strong>'));
+                if ($openingShortcode === '') {
+                    return '';
                 }
 
-                return sprintf(
-                    '<div class="capell-wordpress-shortcode-placeholder" data-shortcode="%s"%s></div>',
-                    e($shortcode),
-                    $attributes === '' ? '' : ' data-attributes="' . e($attributes) . '"',
-                );
+                $plainText = html_entity_decode(strip_tags($enclosedContent), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+                return htmlspecialchars(trim($plainText), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8');
             },
             $content,
         ) ?? $content;
 
         return trim($content);
+    }
+
+    private function maximumIndexedAttachments(): int
+    {
+        $configured = config('wordpress-importer.spool.max_indexed_attachments', 100000);
+
+        return is_numeric($configured) ? max(1, (int) $configured) : 100000;
+    }
+
+    private function maximumAttachmentsPerParent(): int
+    {
+        $configured = config('wordpress-importer.spool.max_attachments_per_parent', 1000);
+
+        return is_numeric($configured) ? max(1, (int) $configured) : 1000;
+    }
+
+    private function maximumAttachmentIndexBytes(): int
+    {
+        $configured = config('wordpress-importer.spool.max_attachment_index_bytes', 100 * 1024 * 1024);
+
+        return is_numeric($configured) ? max(1, (int) $configured) : 100 * 1024 * 1024;
     }
 }

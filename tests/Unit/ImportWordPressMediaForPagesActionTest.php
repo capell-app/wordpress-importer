@@ -125,6 +125,45 @@ it('rejects remote media larger than the configured byte cap', function (): void
         ));
 });
 
+it('aborts chunked media during transfer when content length is unavailable', function (): void {
+    config()->set('wordpress-importer.media.max_bytes', 4);
+    Log::spy();
+
+    Http::fake(function (Request $request, array $options): PromiseInterface {
+        expect($request->url())->toBe('https://media.example.test/chunked.jpg')
+            ->and($options)->toHaveKey('sink')
+            ->toHaveKey('progress');
+
+        $progress = $options['progress'];
+        throw_unless(is_callable($progress), RuntimeException::class, 'Expected a transfer progress callback.');
+        $progress(0, 3, 0, 0);
+        $progress(0, 5, 0, 0);
+
+        return Http::response('unreachable', 200, ['Transfer-Encoding' => 'chunked']);
+    });
+
+    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+        'media.example.test' => ['93.184.216.34'],
+    ]));
+
+    $page = Page::factory()->create([
+        'meta' => [
+            'wordpress' => [
+                'media_urls' => ['https://media.example.test/chunked.jpg'],
+            ],
+        ],
+    ]);
+
+    expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(0);
+
+    wordpressImporterLogger()->shouldHaveReceived('warning')
+        ->once()
+        ->with('WordPress media import download exceeded the configured size limit.', Mockery::on(
+            fn (array $context): bool => ($context['bytes'] ?? null) === 5
+                && ($context['max_bytes'] ?? null) === 4,
+        ));
+});
+
 it('rejects non-image bytes even when the response claims an image MIME type', function (): void {
     Log::spy();
     Http::fake([
