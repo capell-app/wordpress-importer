@@ -111,9 +111,7 @@ final class WordPressAttachmentIndex
         }
 
         foreach (glob($this->directory . DIRECTORY_SEPARATOR . '*.jsonl') ?: [] as $path) {
-            if (is_string($path)) {
-                @unlink($path);
-            }
+            @unlink($path);
         }
 
         @rmdir($this->directory);
