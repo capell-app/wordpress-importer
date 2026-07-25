@@ -7,15 +7,18 @@
     "entries": [
         {
             "id": "wordpress-wxr-source-selection",
-            "title": "Migration Assistant import flow with WordPress WXR available as an import source.",
+            "title": "Illustrative migration assistant import flow with wordpress wxr available as an import source preview.",
             "package": "wordpress-importer",
-            "surface": "admin",
-            "targetType": "admin-route",
-            "target": "/admin/migration-assistant/recovery-center/import-pages",
+            "surface": "frontend",
+            "targetType": "frontend-url",
+            "target": "/screenshot-fixtures/catalogue/wordpress-importer/wordpress-wxr-source-selection",
             "required": true,
-            "notes": "Install Migration Assistant first, then WordPress Importer. Capture the source selection state where the WXR reader is visible.",
+            "notes": "Illustrative deterministic catalogue fixture, not a live package UI capture. Install Migration Assistant first, then WordPress Importer. Capture the source selection state where the WXR reader is visible.",
             "useCase": "An operator sees WordPress WXR as an available source in the Migration Assistant import flow.",
-            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-wxr-source-selection.png"
+            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-wxr-source-selection.png",
+            "url": "/screenshot-fixtures/catalogue/wordpress-importer/wordpress-wxr-source-selection",
+            "colorSchemes": ["light", "dark"],
+            "fixtureKind": "illustrative-catalogue"
         },
         {
             "id": "wordpress-wxr-preview",
