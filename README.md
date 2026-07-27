@@ -35,11 +35,10 @@ Screenshot contract: `docs/screenshots.json`.
 
 ![Migration Assistant import flow with WordPress WXR available as an import source](docs/screenshots/wordpress-wxr-source-selection.png)
 
-![Parsed WordPress WXR rows previewed in Migration Assistant](docs/screenshots/wordpress-wxr-preview.png)
+![Completed WordPress WXR import session in Migration Assistant](docs/screenshots/wordpress-import-session.png)
 
 - Migration Assistant import flow with WordPress WXR available as an import source (admin, required).
-- Parsed WordPress WXR rows previewed in Migration Assistant (admin, required).
-- Import session detail for a WordPress WXR import (admin, optional).
+- Import session detail for a WordPress WXR import (admin, required).
 - Completed WordPress import report (frontend, optional).
 - WordPress import validation errors (frontend, optional).
 - WordPress import rollback state (frontend, optional).

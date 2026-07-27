@@ -154,14 +154,9 @@
                 "caption": "Select WordPress WXR as a Migration Assistant source"
             },
             {
-                "path": "docs/screenshots/wordpress-wxr-preview.png",
-                "alt": "WordPress WXR rows previewed before import",
-                "caption": "Preview parsed posts, pages, and preserved metadata"
-            },
-            {
                 "path": "docs/screenshots/wordpress-import-session.png",
-                "alt": "WordPress import session metadata handoff",
-                "caption": "Review the Migration Assistant session handoff"
+                "alt": "Completed WordPress WXR import session in Migration Assistant",
+                "caption": "Review imported pages, URLs, validation, and session status"
             }
         ],
         "categories": ["admin", "console", "operations"]

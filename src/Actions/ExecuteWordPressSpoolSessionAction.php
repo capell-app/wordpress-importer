@@ -62,6 +62,7 @@ final class ExecuteWordPressSpoolSessionAction
                 defaultPageAttributes: $defaultPageAttributes,
                 existingSession: $session,
                 finalize: false,
+                actor: $actor,
             );
             $recoveredPageIds = ResolveWordPressImportedPageIdsAction::run($rows, $session, $siteId);
             $summary = $this->mergeChunkResult(

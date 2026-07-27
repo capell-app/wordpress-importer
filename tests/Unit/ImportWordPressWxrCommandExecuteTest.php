@@ -55,6 +55,7 @@ it('executes a WordPress WXR import through the console command into pages and r
     $layout = Layout::factory()->create();
     $type = Blueprint::factory()->page()->create();
     $site = Site::factory()->create();
+    auth()->logout();
 
     $path = tempnam(sys_get_temp_dir(), 'capell-wxr-command-execute-');
     file_put_contents($path, <<<'XML'

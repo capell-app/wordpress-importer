@@ -23,8 +23,6 @@ This guide is for editors moving a site from WordPress and owners planning the m
 1. Preview the import to check the result. The preview lists the parsed posts and pages with their title, slug, status, date, categories, tags, and author.
 2. Run the import to bring across posts, pages, and media.
 
-![An operator previews parsed posts and pages with title, slug, status, date, categories, tags, and author fields.](screenshots/wordpress-wxr-preview.png)
-
 ### How to verify the import
 
 1. Open the **Results**.
@@ -32,7 +30,7 @@ This guide is for editors moving a site from WordPress and owners planning the m
 3. Check that images appear; re-import any that were skipped.
 4. Open the import session that Migration Assistant created to review the full record of what was imported.
 
-![An operator reviews the Migration Assistant import session created for a WordPress import.](screenshots/wordpress-import-session.png)
+![An operator reviews the completed Migration Assistant import session and result summary created for a WordPress import.](screenshots/wordpress-import-session.png)
 
 ## Rolling out WordPress Importer (for owners)
 

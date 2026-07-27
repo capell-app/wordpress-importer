@@ -21,28 +21,17 @@
             "fixtureKind": "illustrative-catalogue"
         },
         {
-            "id": "wordpress-wxr-preview",
-            "title": "Parsed WordPress WXR rows previewed in Migration Assistant.",
-            "package": "wordpress-importer",
-            "surface": "admin",
-            "targetType": "admin-workflow",
-            "target": "/admin/migration-assistant/recovery-center/import-pages",
-            "required": true,
-            "notes": "Use a small WXR fixture with at least one post and one page to show extracted title, slug, status, date, categories, tags, and author fields.",
-            "useCase": "An operator previews parsed WXR posts/pages with title, slug, status, date, categories, tags, and author fields.",
-            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-wxr-preview.png"
-        },
-        {
             "id": "wordpress-import-session",
             "title": "Import session detail for a WordPress WXR import.",
             "package": "wordpress-importer",
             "surface": "admin",
             "targetType": "admin-resource",
             "target": "/admin/migration-assistant/import-sessions/{record}",
-            "required": false,
-            "notes": "Migration Assistant owns the page; include this screenshot when a demo import session can be created.",
-            "useCase": "An operator reviews the Migration Assistant import session created for a WordPress WXR import.",
-            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-session.png"
+            "required": true,
+            "notes": "Capture the real Migration Assistant session created by wordpress-importer:import --execute from a small WXR fixture. The page must show source filename, completed status, validation state, and imported page/URL counts.",
+            "useCase": "An operator reviews the completed Migration Assistant session and result summary created by a WordPress WXR import.",
+            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-session.png",
+            "darkScreenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-session-dark.png"
         },
         {
             "id": "wordpress-import-completed-report",
