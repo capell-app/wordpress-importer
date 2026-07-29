@@ -35,7 +35,7 @@ final class ExecuteWordPressSpoolSessionAction
         $manifest = $this->wordpressManifest($session);
         $chunkPaths = $this->chunkPaths($manifest);
         $defaultPageAttributes = $authorizedTarget->pageAttributes();
-        $siteId = is_numeric($defaultPageAttributes['site_id'] ?? null) ? (int) $defaultPageAttributes['site_id'] : null;
+        $siteId = is_numeric($defaultPageAttributes['site_id']) ? (int) $defaultPageAttributes['site_id'] : null;
         $disk = Storage::disk($this->diskName($manifest));
         $summary = is_array($session->result_summary) ? $session->result_summary : [];
         $checkpoint = is_array($summary['wordpress_checkpoint'] ?? null) ? $summary['wordpress_checkpoint'] : [];
