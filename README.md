@@ -33,15 +33,15 @@ Evidence: [`src/Services/WxrReader.php`](src/Services/WxrReader.php), [`src/Acti
 
 Screenshot contract: `docs/screenshots.json`.
 
-![Migration Assistant import flow with WordPress WXR available as an import source](docs/screenshots/wordpress-wxr-source-selection.png)
+![Illustrative migration assistant import flow with wordpress wxr available as an import source preview](docs/screenshots/wordpress-wxr-source-selection.png)
 
-![Completed WordPress WXR import session in Migration Assistant](docs/screenshots/wordpress-import-session.png)
+![Import session detail for a WordPress WXR import](docs/screenshots/wordpress-import-session.png)
 
-- Migration Assistant import flow with WordPress WXR available as an import source (admin, required).
-- Import session detail for a WordPress WXR import (admin, required).
-- Completed WordPress import report (frontend, optional).
-- WordPress import validation errors (frontend, optional).
-- WordPress import rollback state (frontend, optional).
+- Illustrative migration assistant import flow with wordpress wxr available as an import source preview (frontend, required evidence).
+- Import session detail for a WordPress WXR import (admin, required evidence).
+- Completed WordPress import report (frontend, supplementary evidence).
+- WordPress import validation errors (frontend, supplementary evidence).
+- WordPress import rollback state (frontend, supplementary evidence).
 
 ## Technical Shape
 
@@ -89,7 +89,7 @@ This package has no schema impact. It extends Capell through `console-command` c
 
 1. Install the package: `composer require capell-app/wordpress-importer`.
 2. Review `config/wordpress-importer.php` before enabling the package.
-3. Open the Migration Assistant import flow with WordPress WXR available as an import source and confirm the admin workflow loads.
+3. Open a verified package admin surface and confirm WordPress Importer is available.
 
 ## Next Steps
 
