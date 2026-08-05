@@ -15,7 +15,7 @@ Evidence: [`src/Services/WxrReader.php`](src/Services/WxrReader.php), [`src/Acti
 Status details:
 
 - Status: Available
-- Tier: premium
+- Tier: free
 - Bundle: operations
 - Composer package: `capell-app/wordpress-importer`
 - Namespace: `Capell\WordPressImporter`

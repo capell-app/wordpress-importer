@@ -9,7 +9,7 @@
     "description": "Preview WordPress WXR posts and pages in Capell Migration Assistant with permalink, taxonomy, author, media-reference, Gutenberg, and shortcode metadata preserved.",
     "product": {
         "group": "Capell Operations",
-        "tier": "premium",
+        "tier": "free",
         "bundle": "operations"
     },
     "namespace": "Capell\\WordPressImporter",
@@ -134,7 +134,7 @@
         }
     ],
     "commercial": {
-        "proposedLicense": "paid",
+        "proposedLicense": "free",
         "requestedCertification": "first-party",
         "supportPolicy": "priority",
         "privateDocsRequested": true
