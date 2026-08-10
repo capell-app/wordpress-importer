@@ -24,6 +24,7 @@ use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Schema\Blueprint as SchemaBlueprint;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
@@ -523,15 +524,23 @@ it('executes a WordPress WXR preview through migration-assistant into a page ses
 </rss>
 XML);
 
-    $result = ExecuteWordPressWxrImportAction::run(
-        $path,
-        new ExternalPageImportTargetData(
-            siteId: (int) $site->getKey(),
-            layoutId: (int) $layout->getKey(),
-            blueprintId: (int) $type->getKey(),
-            languageId: (int) $site->language_id,
-        ),
-    );
+    // URL Manager intentionally rejects redirect writes inside a transaction.
+    // RefreshDatabase holds the test in one, so suspend it around this import.
+    DB::commit();
+
+    try {
+        $result = ExecuteWordPressWxrImportAction::run(
+            $path,
+            new ExternalPageImportTargetData(
+                siteId: (int) $site->getKey(),
+                layoutId: (int) $layout->getKey(),
+                blueprintId: (int) $type->getKey(),
+                languageId: (int) $site->language_id,
+            ),
+        );
+    } finally {
+        DB::beginTransaction();
+    }
 
     $parentPage = Page::query()
         ->withoutGlobalScopes()
@@ -675,4 +684,6 @@ function ensureWordPressImporterUrlManagerRedirectRulesTable(): void
         $table->unsignedBigInteger('created_by_user_id')->nullable();
         $table->timestamps();
     });
+
+    (require dirname(__DIR__, 3) . '/url-manager/database/migrations/2026_07_30_000001_add_normalized_scope_keys_to_url_manager_redirect_rules_table.php')->up();
 }

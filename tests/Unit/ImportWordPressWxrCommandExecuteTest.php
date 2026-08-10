@@ -24,6 +24,7 @@ use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
@@ -38,6 +39,10 @@ beforeEach(function (): void {
 
     if (! Schema::hasTable('url_manager_redirect_rules')) {
         (require dirname(__DIR__, 3) . '/url-manager/database/migrations/2026_05_31_000001_create_url_manager_redirect_rules_table.php')->up();
+    }
+
+    if (! Schema::hasColumn('url_manager_redirect_rules', 'site_scope_key')) {
+        (require dirname(__DIR__, 3) . '/url-manager/database/migrations/2026_07_30_000001_add_normalized_scope_keys_to_url_manager_redirect_rules_table.php')->up();
     }
 
     Storage::fake('public');
@@ -89,15 +94,23 @@ it('executes a WordPress WXR import through the console command into pages and r
 </rss>
 XML);
 
-    $exitCode = Artisan::call('wordpress-importer:import', [
-        'path' => $path,
-        '--execute' => true,
-        '--json' => true,
-        '--site-id' => $site->getKey(),
-        '--layout-id' => $layout->getKey(),
-        '--type-id' => $type->getKey(),
-        '--actor-id' => $actor->getKey(),
-    ]);
+    // URL Manager intentionally rejects redirect writes inside a transaction.
+    // RefreshDatabase holds the test in one, so suspend it around this command.
+    DB::commit();
+
+    try {
+        $exitCode = Artisan::call('wordpress-importer:import', [
+            'path' => $path,
+            '--execute' => true,
+            '--json' => true,
+            '--site-id' => $site->getKey(),
+            '--layout-id' => $layout->getKey(),
+            '--type-id' => $type->getKey(),
+            '--actor-id' => $actor->getKey(),
+        ]);
+    } finally {
+        DB::beginTransaction();
+    }
 
     $output = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
 
@@ -167,10 +180,15 @@ XML);
     );
     $parent = Page::query()->withoutGlobalScopes()->where('name', 'Parent page')->firstOrFail();
     $child = Page::query()->withoutGlobalScopes()->where('name', 'Child page')->firstOrFail();
+    $parentId = $parent->getKey();
+    $childParentId = $child->getAttribute('parent_id');
+
+    throw_unless(is_int($parentId) || is_string($parentId), RuntimeException::class, 'Expected a scalar parent page id.');
+    throw_unless(is_int($childParentId) || is_string($childParentId), RuntimeException::class, 'Expected a scalar child parent id.');
 
     expect($result->session->status)->toBe(ImportSessionStatus::Completed)
         ->and(data_get($result->session->result_summary, 'wordpress_checkpoint.total_chunks'))->toBe(2)
-        ->and($child->parent_id)->toBe($parent->getKey());
+        ->and($childParentId)->toBe($parentId);
 });
 
 it('resumes failed media downloads from the persisted session checkpoint', function (): void {

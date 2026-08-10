@@ -596,8 +596,8 @@ final class WxrReader implements PathAwareImportSourceReader
         $content = preg_replace_callback(
             '/\[([a-zA-Z][a-zA-Z0-9_-]*)\b([^\]]*)\](.*?)\[\/\1\]|\[([a-zA-Z][a-zA-Z0-9_-]*)\b([^\]]*)\/?\]/s',
             function (array $matches): string {
-                $openingShortcode = $matches[1] ?? '';
-                $enclosedContent = (string) ($matches[3] ?? '');
+                $openingShortcode = $matches[1];
+                $enclosedContent = (string) $matches[3];
 
                 if ($openingShortcode === '') {
                     return '';
