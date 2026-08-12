@@ -42,6 +42,7 @@ Screenshot contract: `docs/screenshots.json`.
 - Completed WordPress import report (frontend, supplementary evidence).
 - WordPress import validation errors (frontend, supplementary evidence).
 - WordPress import rollback state (frontend, supplementary evidence).
+- Import session detail for a WordPress WXR import with admin sidebar menu open (admin, supplementary evidence).
 
 ## Technical Shape
 
