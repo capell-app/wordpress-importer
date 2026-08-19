@@ -83,25 +83,13 @@
             "notes": "Capture rollback/recovery state when Migration Assistant can seed a WordPress import session with created content references.",
             "useCase": "An operator understands how to recover from a WordPress import that should not be kept.",
             "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-rollback.png"
-        },
+        }
+    ],
+    "notCaptured": [
         {
             "id": "wordpress-importer-admin-sidebar-menu-open",
-            "title": "Import session detail for a WordPress WXR import with admin sidebar menu open.",
-            "package": "wordpress-importer",
             "surface": "admin",
-            "targetType": "admin-resource",
-            "target": "/admin/migration-assistant/import-sessions/{record}",
-            "required": false,
-            "notes": "Capture the real Migration Assistant session created by wordpress-importer:import --execute from a small WXR fixture. The page must show source filename, completed status, validation state, and imported page/URL counts. Capture this same admin surface with the fully collapsible sidebar opened.",
-            "useCase": "An operator reviews the completed Migration Assistant session and result summary created by a WordPress WXR import.",
-            "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-importer-admin-sidebar-menu-open.png",
-            "darkScreenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-importer-admin-sidebar-menu-open-dark.png",
-            "beforeWait": [
-                {
-                    "type": "click",
-                    "selector": ".fi-layout-sidebar-toggle-btn"
-                }
-            ]
+            "reason": "Not captured: the real in-repo runner was blocked before navigation on 2026-08-16 when the all-package workbench install failed with missing Capell\\ThemeBistro\\ThemeBistroServiceProvider autoloading. This non-required light/dark pair was removed rather than fabricated."
         }
     ]
 }
