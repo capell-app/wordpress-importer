@@ -10,8 +10,6 @@ WordPress Importer reads WXR exports, builds an import preview, and imports Word
 
 Operators can preview a WXR migration and run it from the package command, including supported media and permalink handling.
 
-Evidence: [`src/Services/WxrReader.php`](src/Services/WxrReader.php), [`src/Actions/BuildWordPressImportPreviewAction.php`](src/Actions/BuildWordPressImportPreviewAction.php), [`src/Actions/ExecuteWordPressWxrImportAction.php`](src/Actions/ExecuteWordPressWxrImportAction.php), [`src/Actions/CreateWordPressPermalinkRedirectsAction.php`](src/Actions/CreateWordPressPermalinkRedirectsAction.php), [`src/Console/Commands/ImportWordPressWxrCommand.php`](src/Console/Commands/ImportWordPressWxrCommand.php), [`src/Actions/ImportWordPressMediaForPagesAction.php`](src/Actions/ImportWordPressMediaForPagesAction.php), [`tests/Unit/ImportWordPressWxrCommandExecuteTest.php`](tests/Unit/ImportWordPressWxrCommandExecuteTest.php), [`tests/Unit/ImportWordPressMediaForPagesActionTest.php`](tests/Unit/ImportWordPressMediaForPagesActionTest.php).
-
 Status details:
 
 - Status: Available
@@ -26,8 +24,6 @@ Status details:
 **For developers:** WXR parsing, preview construction, execution, media import, and redirect creation are separated into testable services and Actions.
 
 **For teams:** Migration teams can inspect the proposed move before execution and retain important source relationships and legacy URLs during the transition.
-
-Evidence: [`src/Services/WxrReader.php`](src/Services/WxrReader.php), [`src/Actions/ExecuteWordPressWxrImportAction.php`](src/Actions/ExecuteWordPressWxrImportAction.php), [`tests/Unit/WxrReaderTest.php`](tests/Unit/WxrReaderTest.php), [`tests/Unit/WordPressWxrSpoolTest.php`](tests/Unit/WordPressWxrSpoolTest.php), [`src/Actions/BuildWordPressImportPreviewAction.php`](src/Actions/BuildWordPressImportPreviewAction.php), [`src/Actions/CreateWordPressPermalinkRedirectsAction.php`](src/Actions/CreateWordPressPermalinkRedirectsAction.php), [`tests/Unit/ImportWordPressWxrCommandExecuteTest.php`](tests/Unit/ImportWordPressWxrCommandExecuteTest.php).
 
 ## Screens And Workflow
 
@@ -150,6 +146,5 @@ This package has no schema impact. It extends Capell through `console-command` c
 - [Capell documentation design system](../../docs/DESIGN_SYSTEM.md)
 - [Capell and package ERD notes](../../docs/erd/capell-and-package-erds.md)
 - Related packages: [Migration Assistant](../migration-assistant/README.md), [Url Manager](../url-manager/README.md), [Seo Suite](../seo-suite/README.md).
-- Focused tests: `vendor/bin/pest packages/wordpress-importer/tests --configuration=phpunit.xml`.
 
 <!-- prettier-ignore-end -->
