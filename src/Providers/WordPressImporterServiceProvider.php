@@ -16,6 +16,7 @@ use Capell\WordPressImporter\Services\WxrReader;
 use Capell\WordPressImporter\Support\DnsWordPressMediaHostResolver;
 use Capell\WordPressImporter\Support\WordPressWxrSessionExecutor;
 use Illuminate\Support\Facades\Event;
+use Override;
 use Spatie\LaravelPackageTools\Package;
 
 final class WordPressImporterServiceProvider extends AbstractPackageServiceProvider
@@ -24,6 +25,7 @@ final class WordPressImporterServiceProvider extends AbstractPackageServiceProvi
 
     public static string $packageName = 'capell-app/wordpress-importer';
 
+    #[Override]
     public function configurePackage(Package $package): void
     {
         $package
@@ -33,6 +35,7 @@ final class WordPressImporterServiceProvider extends AbstractPackageServiceProvi
             ->hasCommand(ImportWordPressWxrCommand::class);
     }
 
+    #[Override]
     public function packageRegistered(): void
     {
         $this->app->singleton(WordPressMediaHostResolver::class, DnsWordPressMediaHostResolver::class);
@@ -52,7 +55,8 @@ final class WordPressImporterServiceProvider extends AbstractPackageServiceProvi
         );
     }
 
-    public function packageBooted(): void
+    #[Override]
+    protected function bootInstalledRuntime(): void
     {
         Event::listen(ImportCompleting::class, [ImportWordPressMediaForCompletingImport::class, 'handle']);
         Event::listen(ImportCompleting::class, [CreateWordPressRedirectsForCompletingImport::class, 'handle']);
