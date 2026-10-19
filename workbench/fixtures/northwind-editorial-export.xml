@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Northwind editorial handbook</title>
+        <link>https://wordpress-screenshot.example.test</link>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <item>
+            <title>Studio publishing guide</title>
+            <link>https://wordpress-screenshot.example.test/screenshot-wordpress-guide/</link>
+            <content:encoded><![CDATA[<p>A small imported guide for the editorial team.</p>]]></content:encoded>
+            <wp:post_id>7101</wp:post_id>
+            <wp:post_name>screenshot-wordpress-guide</wp:post_name>
+            <wp:post_type>page</wp:post_type>
+            <wp:status>publish</wp:status>
+            <wp:post_date>2026-10-01 09:00:00</wp:post_date>
+            <dc:creator>Northwind editorial</dc:creator>
+        </item>
+        <item>
+            <title>Studio contact details</title>
+            <link>https://wordpress-screenshot.example.test/screenshot-wordpress-contact/</link>
+            <content:encoded><![CDATA[<p>Contact the studio team for publishing support.</p>]]></content:encoded>
+            <wp:post_id>7102</wp:post_id>
+            <wp:post_name>screenshot-wordpress-contact</wp:post_name>
+            <wp:post_type>page</wp:post_type>
+            <wp:status>publish</wp:status>
+            <wp:post_date>2026-10-02 09:00:00</wp:post_date>
+            <dc:creator>Northwind editorial</dc:creator>
+        </item>
+    </channel>
+</rss>

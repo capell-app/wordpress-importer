@@ -31,7 +31,28 @@
             "notes": "Capture the real Migration Assistant session created by wordpress-importer:import --execute from a small WXR fixture. The page must show source filename, completed status, validation state, and imported page/URL counts.",
             "useCase": "An operator reviews the completed Migration Assistant session and result summary created by a WordPress WXR import.",
             "screenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-session.png",
-            "darkScreenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-session-dark.png"
+            "darkScreenshotPath": "packages/wordpress-importer/docs/screenshots/wordpress-import-session-dark.png",
+            "scenario": "admin-index",
+            "url": "/migration-assistant/import-sessions",
+            "waitFor": ".fi-section:has-text(\"Result summary\")",
+            "fullPage": true,
+            "maxHeight": 2600,
+            "evidenceKind": "installed-app-filament-capture",
+            "user": "admin",
+            "requiresPackages": [
+                "capell-app/wordpress-importer",
+                "capell-app/migration-assistant"
+            ],
+            "beforeWait": [
+                {
+                    "type": "waitFor",
+                    "selector": ".fi-ta-row:has-text(\"northwind-editorial-export.xml\")"
+                },
+                {
+                    "type": "click",
+                    "selector": ".fi-ta-row:has-text(\"northwind-editorial-export.xml\") a:has-text(\"View\")"
+                }
+            ]
         },
         {
             "id": "wordpress-import-completed-report",
@@ -91,5 +112,8 @@
             "surface": "admin",
             "reason": "Not captured: the real in-repo runner was blocked before navigation on 2026-08-16 when the all-package workbench install failed with missing Capell\\ThemeBistro\\ThemeBistroServiceProvider autoloading. This non-required light/dark pair was removed rather than fabricated."
         }
+    ],
+    "fixtureCommands": [
+        "capell:screenshot-admin-fixture --package=wordpress-importer"
     ]
 }

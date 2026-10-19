@@ -4,8 +4,8 @@
     "scenarios": {
         "default": {
             "source": {
-                "ref": "63f03a6a2",
-                "commit": "63f03a6a2e08b0827365457dcf69efde6b663528",
+                "ref": "origin/main",
+                "commit": "efbc87535c86ad861e07bfeff04bd41a7dd340d2",
                 "providers": {
                     "Providers/WordPressImporterServiceProvider.php": "4053adcb20320a9de32ded3df800c3b4bced6e7a7eceeee469112d777fca4fca"
                 }
@@ -9233,6 +9233,7 @@
                     "migrate:status": "Illuminate\\Database\\Console\\Migrations\\StatusCommand",
                     "migration-assistant:export": "Capell\\MigrationAssistant\\Console\\Commands\\ExportMigrationAssistantPackageCommand",
                     "migration-assistant:import": "Capell\\MigrationAssistant\\Console\\Commands\\ImportMigrationAssistantPackageCommand",
+                    "migration-assistant:prune": "Capell\\MigrationAssistant\\Console\\Commands\\PruneImportEvidenceCommand",
                     "migration-assistant:reclaim-stale": "Capell\\MigrationAssistant\\Console\\Commands\\ReclaimStaleImportSessionsCommand",
                     "migration-assistant:rollback-execute": "Capell\\MigrationAssistant\\Console\\Commands\\ExecuteMigrationAssistantRollbackCommand",
                     "migration-assistant:rollback-report": "Capell\\MigrationAssistant\\Console\\Commands\\ShowMigrationAssistantRollbackReportCommand",
@@ -18502,8 +18503,7 @@
                     }
                 }
             },
-            "removableUninstalledSurfaces": [],
-            "installationReceiptEmissions": []
+            "removableUninstalledSurfaces": []
         }
     }
 }

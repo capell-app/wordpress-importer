@@ -34,7 +34,7 @@ Screenshot contract: `docs/screenshots.json`.
 ![Import session detail for a WordPress WXR import](docs/screenshots/wordpress-import-session.png)
 
 - Illustrative migration assistant import flow with wordpress wxr available as an import source preview (frontend, required evidence).
-- Import session detail for a WordPress WXR import (admin, required evidence).
+- Import session detail for a WordPress WXR import (admin, required authentic evidence).
 - Completed WordPress import report (frontend, supplementary evidence).
 - WordPress import validation errors (frontend, supplementary evidence).
 - WordPress import rollback state (frontend, supplementary evidence).
@@ -130,7 +130,7 @@ This package has no schema impact. It extends Capell through `console-command` c
 ## Quick Start
 
 1. Install the package: `composer require capell-app/wordpress-importer`.
-2. Open a verified package admin surface and confirm WordPress Importer is available.
+2. Open the package admin surface at `/admin/migration-assistant/import-sessions` and confirm WordPress Importer is available.
 
 ## Next Steps
 
