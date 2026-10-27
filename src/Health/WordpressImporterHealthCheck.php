@@ -52,6 +52,7 @@ final class WordpressImporterHealthCheck implements ChecksExtensionHealth
             remediation: $extensionLoaded
                 ? null
                 : (string) __('capell-wordpress-importer::health.simplexml.remediation'),
+            id: 'legacy.wordpress.wxr.xml.parser',
         );
     }
 
@@ -68,6 +69,7 @@ final class WordpressImporterHealthCheck implements ChecksExtensionHealth
             remediation: $registered
                 ? null
                 : (string) __('capell-wordpress-importer::health.reader.remediation'),
+            id: 'legacy.wordpress.wxr.source.reader',
         );
     }
 
@@ -86,6 +88,7 @@ final class WordpressImporterHealthCheck implements ChecksExtensionHealth
             remediation: $implementsContract
                 ? null
                 : (string) __('capell-wordpress-importer::health.contract.remediation'),
+            id: 'legacy.migration.assistant.reader.contract',
         );
     }
 

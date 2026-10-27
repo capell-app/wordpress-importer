@@ -132,6 +132,12 @@ This package has no schema impact. It extends Capell through `console-command` c
 1. Install the package: `composer require capell-app/wordpress-importer`.
 2. Open the package admin surface at `/admin/migration-assistant/import-sessions` and confirm WordPress Importer is available.
 
+## Upgrading
+
+No manual steps between minor versions.
+
+Read [CHANGELOG.md](CHANGELOG.md) before upgrading.
+
 ## Next Steps
 
 - [Package docs](docs/README.md)

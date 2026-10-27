@@ -149,11 +149,6 @@
                 "caption": "WordPress Importer extension preview"
             },
             {
-                "path": "docs/screenshots/wordpress-wxr-source-selection.png",
-                "alt": "Migration Assistant source selection with WordPress WXR available",
-                "caption": "Select WordPress WXR as a Migration Assistant source"
-            },
-            {
                 "path": "docs/screenshots/wordpress-import-session.png",
                 "alt": "Completed WordPress WXR import session in Migration Assistant",
                 "caption": "Review imported pages, URLs, validation, and session status"

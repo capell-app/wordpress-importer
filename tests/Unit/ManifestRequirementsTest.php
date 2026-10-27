@@ -108,6 +108,16 @@ it('declares committed marketplace assets for required wordpress importer screen
 
         throw_unless(is_string($screenshotPath), RuntimeException::class, 'Required WordPress Importer screenshot entries must have screenshot paths.');
 
+        // Every required capture must exist on disk, including illustrative ones kept out of the gallery.
+        expect(File::exists($packagePath . '/' . str_replace('packages/wordpress-importer/', '', $screenshotPath)))->toBeTrue();
+
+        // Match gallery-quality.cjs: illustrative captures are documentation only.
+        $fixtureKind = $contractEntry['fixtureKind'] ?? null;
+
+        if (is_string($fixtureKind) && str_starts_with($fixtureKind, 'illustrative-')) {
+            continue;
+        }
+
         $requiredScreenshotPaths[] = str_replace('packages/wordpress-importer/', '', $screenshotPath);
     }
 

@@ -7,7 +7,7 @@ This guide is for editors moving a site from WordPress and owners planning the m
 ### How to connect a WordPress export
 
 1. Export your content from WordPress (a WordPress export file).
-2. In **Migration Assistant**, start a new import and choose **WordPress** as the source.
+2. In Migration Assistant, start a new import and choose WordPress as the source.
 3. Provide your WordPress export.
 
 ![An operator sees WordPress as an available source in the Migration Assistant import flow.](screenshots/wordpress-wxr-source-selection.png)
@@ -36,7 +36,7 @@ This guide is for editors moving a site from WordPress and owners planning the m
 
 ### Turn on first
 
-- **Migration Assistant, then a test import.** Install Migration Assistant, back up, and import a few posts before bringing everything across.
+- Migration Assistant, then a test import. Install Migration Assistant, back up, and import a few posts before bringing everything across.
 
 ### Add when needed
 
@@ -51,10 +51,10 @@ This guide is for editors moving a site from WordPress and owners planning the m
 
 ### Who does what
 
-| Role       | First useful screen                             |
-| ---------- | ----------------------------------------------- |
-| Editor     | The WordPress import in **Migration Assistant** |
-| Site owner | **Results**: confirm the migration is complete  |
+| Role       | First useful screen                            |
+| ---------- | ---------------------------------------------- |
+| Editor     | The WordPress import in Migration Assistant    |
+| Site owner | **Results**: confirm the migration is complete |
 
 ## Troubleshooting for editors
 
