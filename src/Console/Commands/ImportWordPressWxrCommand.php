@@ -49,9 +49,12 @@ final class ImportWordPressWxrCommand extends Command
         $importPreview = BuildWordPressImportPreviewAction::run($path);
         $result = $importPreview->readResult;
         $preview = $importPreview->preview;
+        $omittedCount = is_numeric($result->metadata['skipped_item_count'] ?? null) ? (int) $result->metadata['skipped_item_count'] : 0;
+        $itemErrors = $result->metadata['item_errors'] ?? [];
+        $itemErrors = is_array($itemErrors) ? array_values(array_filter($itemErrors, is_string(...))) : [];
 
         if ((bool) $this->option('json')) {
-            $this->output->writeln(json_encode($preview->toArray(), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+            $this->output->writeln(json_encode([...$preview->toArray(), 'omitted_items' => ['count' => $omittedCount, 'errors' => $itemErrors]], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
 
             return SymfonyCommand::SUCCESS;
         }
@@ -62,6 +65,13 @@ final class ImportWordPressWxrCommand extends Command
                 ? (string) $result->metadata['filename']
                 : basename((string) $importPreview->path),
         ]));
+
+        if ($omittedCount > 0) {
+            $this->components->warn((string) __('capell-wordpress-importer::commands.import.omitted_summary', ['count' => $omittedCount, 'shown' => count($itemErrors)]));
+            foreach ($itemErrors as $itemError) {
+                $this->components->warn($itemError);
+            }
+        }
 
         foreach ($preview->errors as $error) {
             $this->components->warn($error);

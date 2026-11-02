@@ -123,12 +123,7 @@ final class WxrReader implements PathAwareImportSourceReader
                         $skippedItemCount++;
 
                         if (count($itemErrors) < $this->maximumStoredItemErrors()) {
-                            $itemErrors[] = sprintf(
-                                'Item %d (%s) skipped: %s',
-                                $itemIndex,
-                                $this->itemLabel($item),
-                                $throwable->getMessage(),
-                            );
+                            $itemErrors[] = $this->itemError($itemIndex, $throwable);
                         }
 
                         continue;
@@ -168,8 +163,11 @@ final class WxrReader implements PathAwareImportSourceReader
         $attachmentsByParent = $this->attachmentsByParent($channel);
         $rows = [];
         $itemErrors = [];
+        $itemIndex = 0;
+        $skippedItemCount = 0;
 
-        foreach ($channel->item as $itemIndex => $item) {
+        foreach ($channel->item as $item) {
+            $itemIndex++;
             $wp = $item->children('wp', true);
             $postType = trim((string) $wp->post_type);
 
@@ -181,12 +179,10 @@ final class WxrReader implements PathAwareImportSourceReader
                 $postId = trim((string) $wp->post_id);
                 $rows[] = $this->rowFromItem($item, $attachmentsByParent[$postId] ?? []);
             } catch (Throwable $throwable) {
-                $itemErrors[] = sprintf(
-                    'Item %d (%s) skipped: %s',
-                    ((int) $itemIndex) + 1,
-                    $this->itemLabel($item),
-                    $throwable->getMessage(),
-                );
+                $skippedItemCount++;
+                if (count($itemErrors) < $this->maximumStoredItemErrors()) {
+                    $itemErrors[] = $this->itemError($itemIndex, $throwable);
+                }
             }
         }
 
@@ -200,7 +196,7 @@ final class WxrReader implements PathAwareImportSourceReader
                 'wxr_version' => trim((string) $channel->children('wp', true)->wxr_version),
                 'post_count' => count($rows),
                 'attachment_count' => array_sum(array_map(count(...), $attachmentsByParent)),
-                'skipped_item_count' => count($itemErrors),
+                'skipped_item_count' => $skippedItemCount,
                 'item_errors' => $itemErrors,
             ],
             suggestedTarget: 'page',
@@ -493,21 +489,15 @@ final class WxrReader implements PathAwareImportSourceReader
         throw_if($postTitle === '', RuntimeException::class, 'missing title');
     }
 
-    private function itemLabel(SimpleXMLElement $item): string
+    private function itemError(int $itemIndex, Throwable $throwable): string
     {
-        $wp = $item->children('wp', true);
-        $postId = trim((string) $wp->post_id);
-        $title = trim((string) $item->title);
+        $reason = match ($throwable->getMessage()) {
+            'missing wp:post_id' => __('capell-wordpress-importer::commands.import.missing_id'),
+            'missing title' => __('capell-wordpress-importer::commands.import.missing_title'),
+            default => __('capell-wordpress-importer::commands.import.invalid_item'),
+        };
 
-        if ($postId !== '') {
-            return 'wp:post_id=' . $postId;
-        }
-
-        if ($title !== '') {
-            return $title;
-        }
-
-        return 'untitled';
+        return (string) __('capell-wordpress-importer::commands.import.item_omitted', ['item' => $itemIndex, 'reason' => $reason]);
     }
 
     /**

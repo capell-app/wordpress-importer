@@ -18,6 +18,13 @@ This guide is for editors moving a site from WordPress and owners planning the m
 2. Review the parsed title, body, date, categories, tags, author, permalink, and media references.
 3. Use the preserved WordPress metadata to decide how imported content should be organised after import.
 
+The command-line preview reports malformed page and post items separately from
+already-imported skips. Its omission count covers every malformed item; the
+diagnostic list is capped by `wordpress-importer.spool.max_stored_item_errors`.
+Repair the listed items in WordPress, export again, and repeat the preview before
+importing. JSON output includes the count and bounded diagnostics in
+`omitted_items`.
+
 ### How to import posts and media
 
 1. Preview the import to check the result. The preview lists the parsed posts and pages with their title, slug, status, date, categories, tags, and author.
