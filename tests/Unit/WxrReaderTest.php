@@ -636,7 +636,7 @@ XML);
             blueprintId: (int) $type->getKey(),
             languageId: (int) $otherSite->language_id,
         ),
-    ))->toThrow(AuthorizationException::class, 'not authorized');
+    ))->toThrow(AuthorizationException::class, __('migration-assistant::imports.external_target_site_not_authorized'));
 
     expect(Page::query()->withoutGlobalScopes()->where('site_id', $otherSite->getKey())->exists())->toBeFalse();
 });

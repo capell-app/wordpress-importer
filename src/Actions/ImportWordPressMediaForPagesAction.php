@@ -212,6 +212,7 @@ final class ImportWordPressMediaForPagesAction
                 return null;
             }
 
+            // capell-security-scan: local-stream reads the temporary file the download was written to
             $imageInfo = @getimagesize($temporaryPath);
             $detectedMime = is_array($imageInfo) ? $imageInfo['mime'] : null;
             if (! in_array($detectedMime, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'], true)) {
@@ -223,6 +224,7 @@ final class ImportWordPressMediaForPagesAction
                 return null;
             }
 
+            // capell-security-scan: local-stream reads the temporary file the download was written to
             $stream = fopen($temporaryPath, 'rb');
             throw_unless(is_resource($stream), RuntimeException::class, 'Failed to read downloaded WordPress media.');
 

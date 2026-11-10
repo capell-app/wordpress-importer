@@ -6,6 +6,9 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
+use Capell\Core\Support\TableName;
+use Capell\UrlManager\Actions\UpsertRedirectRuleAction;
+use Capell\UrlManager\Data\RedirectRuleData;
 use Capell\WordPressImporter\Data\WordPressPermalinkRedirectReportData;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
@@ -22,9 +25,9 @@ final class CreateWordPressPermalinkRedirectsAction
     use AsFake;
     use AsObject;
 
-    private const string REDIRECT_RULE_DATA = 'Capell\\UrlManager\\Data\\RedirectRuleData';
+    private const string REDIRECT_RULE_DATA = RedirectRuleData::class;
 
-    private const string UPSERT_REDIRECT_RULE_ACTION = 'Capell\\UrlManager\\Actions\\UpsertRedirectRuleAction';
+    private const string UPSERT_REDIRECT_RULE_ACTION = UpsertRedirectRuleAction::class;
 
     /**
      * @param  iterable<array-key, mixed>  $pages
@@ -34,7 +37,7 @@ final class CreateWordPressPermalinkRedirectsAction
         if (
             ! class_exists(self::REDIRECT_RULE_DATA)
             || ! class_exists(self::UPSERT_REDIRECT_RULE_ACTION)
-            || ! Schema::hasTable('url_manager_redirect_rules')
+            || ! Schema::hasTable(TableName::resolve('url_manager_redirect_rules'))
         ) {
             return WordPressPermalinkRedirectReportData::empty();
         }

@@ -70,6 +70,7 @@ final class WordPressAttachmentIndex
             return [];
         }
 
+        // capell-security-scan: local-stream reads the attachment index file in local storage, checked with is_file() above
         $handle = fopen($path, 'rb');
         throw_unless(is_resource($handle), RuntimeException::class, 'WordPress attachment index could not be read.');
 
@@ -124,6 +125,7 @@ final class WordPressAttachmentIndex
 
     private function lineCount(string $path): int
     {
+        // capell-security-scan: local-stream reads the attachment index file in local storage
         $handle = fopen($path, 'rb');
         throw_unless(is_resource($handle), RuntimeException::class, 'WordPress attachment index could not be read.');
 

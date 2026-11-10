@@ -53,7 +53,7 @@ XML);
             ->and($json['omitted_items'])->toBe(['count' => 2, 'errors' => ['Item 2 skipped: missing title']]);
         expect(Artisan::call('wordpress-importer:import', ['path' => $path]))->toBe(0);
         $output = Artisan::output();
-        expect($output)->toContain('2 malformed page or post item(s)', 'Item 2 skipped: missing title')
+        expect($output)->toContain(__('capell-wordpress-importer::commands.import.omitted_summary', ['count' => 2, 'shown' => 1]), 'Item 2 skipped: missing title')
             ->not->toContain('Private title');
         expect($writes)->toBe([]);
         config()->set('wordpress-importer.spool.max_stored_item_errors', 10);

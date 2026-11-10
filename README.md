@@ -2,105 +2,48 @@
 
 <!-- prettier-ignore-start -->
 
-## What This Plugin Adds
-
-WordPress Importer is an **Available**, **No schema impact** Capell package in the **Capell Operations** product group. It ships as `capell-app/wordpress-importer` and extends these surfaces: admin, console.
+## What It Does
 
 WordPress Importer reads WXR exports, builds an import preview, and imports WordPress content, authors, taxonomies, media references, and source metadata through Migration Assistant. It can also create old-permalink redirects when the URL Manager integration is available.
 
+- **Price and availability:** Check current availability and price on the [Capell Marketplace listing](https://capell.app/extensions/wordpress-importer).
+- **Licence:** Check the licence terms on the [Capell Marketplace listing](https://capell.app/extensions/wordpress-importer).
+- **Requires:** `PHP ^8.4`, `capell-app/admin ^1.0`, `capell-app/core ^1.0.75`, `capell-app/migration-assistant ^1.0`, `illuminate/support ^11.0|^12.0|^13.0`, `spatie/laravel-package-tools ^1.15`.
+- **Install:** `composer require capell-app/wordpress-importer`.
+
 Operators can preview a WXR migration and run it from the package command, including supported media and permalink handling.
 
-Status details:
-
-- Status: Available
-- Tier: free
-- Bundle: operations
-- Composer package: `capell-app/wordpress-importer`
-- Namespace: `Capell\WordPressImporter`
-- Theme key: not applicable
-
-## Why It Matters
+## Who It Is For
 
 **For developers:** WXR parsing, preview construction, execution, media import, and redirect creation are separated into testable services and Actions.
 
 **For teams:** Migration teams can inspect the proposed move before execution and retain important source relationships and legacy URLs during the transition.
 
-## Screens And Workflow
+## Quick Start
 
-Screenshot contract: `docs/screenshots.json`.
+1. Install the package: `composer require capell-app/wordpress-importer`.
+2. Open the package admin surface at `/admin/migration-assistant/import-sessions` and confirm WordPress Importer is available.
+
+## Configure
+
+- **Configuration files:** `config/wordpress-importer.php`.
+- **Commands:** `php artisan wordpress-importer:import`.
+
+## Limits And Pitfalls
+
+- Install the required Capell packages at the versions in `composer.json`: `capell-app/admin ^1.0`, `capell-app/core ^1.0.75`, `capell-app/migration-assistant ^1.0`.
+
+## Screens And Workflow
 
 ![Illustrative migration assistant import flow with wordpress wxr available as an import source preview](docs/screenshots/wordpress-wxr-source-selection.png)
 
 ![Import session detail for a WordPress WXR import](docs/screenshots/wordpress-import-session.png)
 
-- Illustrative migration assistant import flow with wordpress wxr available as an import source preview (frontend, required evidence).
-- Import session detail for a WordPress WXR import (admin, required authentic evidence).
-- Completed WordPress import report (frontend, supplementary evidence).
-- WordPress import validation errors (frontend, supplementary evidence).
-- WordPress import rollback state (frontend, supplementary evidence).
-
-## Technical Shape
-
-### Service providers
-
-- `Capell\WordPressImporter\Providers\WordPressImporterServiceProvider`
-
-### Config files
-
-- `packages/wordpress-importer/config/wordpress-importer.php`
-
-### Extension contracts
-
-- `WordPressMediaHostResolver`
-
-### Listeners
-
-- `CreateWordPressRedirectsForCompletingImport`
-- `ImportWordPressMediaForCompletingImport`
-
-### Actions
-
-- `ApplyWordPressPreviewIdempotencyAction`
-- `BuildWordPressImportPreviewAction`
-- `CreateWordPressPermalinkRedirectsAction`
-- `ExecuteWordPressSpoolSessionAction`
-- `ExecuteWordPressWxrImportAction`
-- `ImportWordPressMediaForPagesAction`
-- `ReadWordPressWxrAction`
-- `ReauthorizeWordPressWxrSessionAction`
-- `ResolveWordPressImportedPageIdsAction`
-- `ResolveWordPressParentPagesAction`
-- `SpoolWordPressWxrAction`
-
-### Data objects
-
-- `ResolvedWordPressMediaEndpointData`
-- `WordPressImportPreviewData`
-- `WordPressPermalinkRedirectReportData`
-- `WordPressWxrReadData`
-- `WordPressWxrSpoolData`
-
-### Command signatures
-
-- `wordpress-importer:import`
-
-### Console command classes
-
-- `ImportWordPressWxrCommand`
-
-### Manifest contributions
-
-- `console-command: Capell\WordPressImporter\Manifest\WordPressImporterConsoleCommandContribution`
-- `health-check: Capell\WordPressImporter\Health\WordpressImporterHealthCheck`
-
-### Health checks
-
-- `Capell\WordPressImporter\Health\WordpressImporterHealthCheck`
-
-
-## Data Model
-
-This package has no schema impact. It extends Capell through `console-command` contributions and `health-check` contributions instead of declaring package-owned tables.
+- Illustrative migration assistant import flow with wordpress wxr available as an import source preview (frontend).
+- Import session detail for a WordPress WXR import (admin).
+- Completed WordPress import report (frontend).
+- WordPress import validation errors (frontend).
+- WordPress import rollback state (frontend).
 
 ## Install Impact
 
@@ -116,21 +59,11 @@ This package has no schema impact. It extends Capell through `console-command` c
 - Cache tags: none declared.
 - Commands: `wordpress-importer:import`.
 
-## Common Pitfalls
-
-- Keep required Capell packages on compatible v4 releases: `capell-app/admin`, `capell-app/core`, `capell-app/migration-assistant`.
-- Review package configuration before production-like verification: `config/wordpress-importer.php`.
-
 ## Troubleshooting
 
 | Symptom | Likely cause | Check | Fix |
 | --- | --- | --- | --- |
 | Package surface is missing after install | Provider or manifest is not loaded | Confirm `capell.json`, package `composer.json`, and provider registration | Reinstall the package, refresh Composer autoload, and clear host caches |
-
-## Quick Start
-
-1. Install the package: `composer require capell-app/wordpress-importer`.
-2. Open the package admin surface at `/admin/migration-assistant/import-sessions` and confirm WordPress Importer is available.
 
 ## Upgrading
 
@@ -146,11 +79,11 @@ Read [CHANGELOG.md](CHANGELOG.md) before upgrading.
 - [Admin guide](docs/admin-guide.md)
 - Configuration files: [`config/wordpress-importer.php`](config/wordpress-importer.php).
 - [Troubleshooting](#troubleshooting)
-- [Screenshot contract](docs/screenshots.json)
+- [Developer reference](docs/reference.md)
 - [Marketplace assets](docs/assets/marketplace/)
 - [Capell content language plan](../../docs/CONTENT_LANGUAGE_PLAN.md)
 - [Capell documentation design system](../../docs/DESIGN_SYSTEM.md)
 - [Capell and package ERD notes](../../docs/erd/capell-and-package-erds.md)
-- Related packages: [Migration Assistant](../migration-assistant/README.md), [Url Manager](../url-manager/README.md), [Seo Suite](../seo-suite/README.md).
+- Related packages: [Migration Assistant](../migration-assistant/README.md), [URL Manager](../url-manager/README.md), [SEO Suite](../seo-suite/README.md).
 
 <!-- prettier-ignore-end -->
