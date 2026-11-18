@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 return [
     'import' => [
+        'update_fields_invalid' => 'Unknown update fields: :fields. Use :allowed.',
+        'taxonomy_names' => [
+            'category' => 'Categories',
+            'tag' => 'Tags',
+        ],
         'actor_not_found' => 'The selected import actor could not be found.',
         'target_site_not_found' => 'The selected import site could not be found.',
         'description' => 'Read a WordPress WXR export and build a Migration Assistant preview.',

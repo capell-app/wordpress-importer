@@ -6,7 +6,7 @@ Developer reference for `capell-app/wordpress-importer`. Start with the [README]
 
 ## Package Details
 
-WordPress Importer is an **Available**, **No schema impact** Capell package in the **Capell Operations** product group. It ships as `capell-app/wordpress-importer` and extends these surfaces: admin, console.
+WordPress Importer is an **Available** Capell package in the **Capell Operations** product group. It ships as `capell-app/wordpress-importer` and extends these surfaces: admin, console.
 
 - Status: Available
 - Tier: free
@@ -25,6 +25,11 @@ WordPress Importer is an **Available**, **No schema impact** Capell package in t
 
 - `packages/wordpress-importer/config/wordpress-importer.php`
 
+### Models
+
+- `WordPressImportedTaxonomy`
+- `WordPressImportedTerm`
+
 ### Extension contracts
 
 - `WordPressMediaHostResolver`
@@ -33,26 +38,32 @@ WordPress Importer is an **Available**, **No schema impact** Capell package in t
 
 - `CreateWordPressRedirectsForCompletingImport`
 - `ImportWordPressMediaForCompletingImport`
+- `MapWordPressTaxonomiesAndAuthorsForCompletingImport`
 
 ### Actions
 
 - `ApplyWordPressPreviewIdempotencyAction`
 - `BuildWordPressImportPreviewAction`
+- `ConvertWordPressGutenbergBlocksAction`
 - `CreateWordPressPermalinkRedirectsAction`
 - `ExecuteWordPressSpoolSessionAction`
 - `ExecuteWordPressWxrImportAction`
 - `ImportWordPressMediaForPagesAction`
+- `MapWordPressTaxonomiesAndAuthorsAction`
 - `ReadWordPressWxrAction`
 - `ReauthorizeWordPressWxrSessionAction`
+- `RecordWordPressImportBaselineAction`
 - `ResolveWordPressImportedPageIdsAction`
 - `ResolveWordPressParentPagesAction`
 - `SpoolWordPressWxrAction`
+- `UpdateExistingWordPressPagesAction`
 
 ### Data objects
 
-- `ResolvedWordPressMediaEndpointData`
+- `WordPressGutenbergConversionData`
 - `WordPressImportPreviewData`
 - `WordPressPermalinkRedirectReportData`
+- `WordPressTaxonomyAuthorReportData`
 - `WordPressWxrReadData`
 - `WordPressWxrSpoolData`
 

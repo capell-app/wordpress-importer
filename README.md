@@ -2,27 +2,27 @@
 
 <!-- prettier-ignore-start -->
 
-## What It Does
+Hand over a client's WordPress export file and the posts and pages in it arrive with their images as ordinary pages on the new site, built with Capell. An agency or developer runs the import from the command line.
 
-WordPress Importer reads WXR exports, builds an import preview, and imports WordPress content, authors, taxonomies, media references, and source metadata through Migration Assistant. It can also create old-permalink redirects when the URL Manager integration is available.
+The preview writes nothing and counts what would be created, skipped or rejected. Posts already imported anywhere on the site are skipped, so a repeat run of the same export won't create copies. If Redirects is installed too, each post's old address leads to its new page, and any post that can't get one is listed with the reason.
+
+Only posts WordPress had published keep their date. Everything else arrives unpublished, with its WordPress status noted. Comments and users stay behind, as do revisions and custom post types. Shortcodes are taken out. Text between a shortcode's opening and closing tags stays as plain text, and stand-alone ones such as galleries or forms disappear. Bracketed words such as [sic] or [note] standing alone go too. The original content stays in the page's details.
+
+Images come from public addresses only, and files over 50 MB are refused. If a download fails, retrying the import picks up where it stopped without duplicating anything. Each image that arrives is stored on the new site, and the page's text is updated to point at that copy.
 
 - **Price and availability:** Check current availability and price on the [Capell Marketplace listing](https://capell.app/extensions/wordpress-importer).
 - **Licence:** Check the licence terms on the [Capell Marketplace listing](https://capell.app/extensions/wordpress-importer).
 - **Requires:** `PHP ^8.4`, `capell-app/admin ^1.0`, `capell-app/core ^1.0.75`, `capell-app/migration-assistant ^1.0`, `illuminate/support ^11.0|^12.0|^13.0`, `spatie/laravel-package-tools ^1.15`.
 - **Install:** `composer require capell-app/wordpress-importer`.
 
-Operators can preview a WXR migration and run it from the package command, including supported media and permalink handling.
-
-## Who It Is For
-
-**For developers:** WXR parsing, preview construction, execution, media import, and redirect creation are separated into testable services and Actions.
-
-**For teams:** Migration teams can inspect the proposed move before execution and retain important source relationships and legacy URLs during the transition.
-
 ## Quick Start
 
 1. Install the package: `composer require capell-app/wordpress-importer`.
 2. Open the package admin surface at `/admin/migration-assistant/import-sessions` and confirm WordPress Importer is available.
+
+## For Developers
+
+WXR parsing, preview construction, execution, media import, and redirect creation are separated into testable services and Actions.
 
 ## Configure
 
@@ -84,6 +84,6 @@ Read [CHANGELOG.md](CHANGELOG.md) before upgrading.
 - [Capell content language plan](../../docs/CONTENT_LANGUAGE_PLAN.md)
 - [Capell documentation design system](../../docs/DESIGN_SYSTEM.md)
 - [Capell and package ERD notes](../../docs/erd/capell-and-package-erds.md)
-- Related packages: [Migration Assistant](../migration-assistant/README.md), [URL Manager](../url-manager/README.md), [SEO Suite](../seo-suite/README.md).
+- Related packages: [Migration Assistant](../migration-assistant/README.md), [Redirects](../url-manager/README.md), [SEO Checks](../seo-suite/README.md).
 
 <!-- prettier-ignore-end -->

@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Listeners;
 
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Page;
 use Capell\MigrationAssistant\Events\ImportCompleting;
 use Capell\WordPressImporter\Actions\ImportWordPressMediaForPagesAction;
+use Capell\WordPressImporter\Providers\WordPressImporterServiceProvider;
 
 final class ImportWordPressMediaForCompletingImport
 {
     public function handle(ImportCompleting $event): void
     {
+        if (! CapellCore::isPackageEnabled(WordPressImporterServiceProvider::$packageName)) {
+            return;
+        }
+
         $createdPageIds = $this->createdPageIds($event);
 
         if ($createdPageIds === []) {

@@ -5,9 +5,9 @@
         "default": {
             "source": {
                 "ref": "HEAD",
-                "commit": "adac26b4ce1e9e1de545f68a1ff272ff73111696",
+                "commit": "9190736907344f67e7e06d21d407d21d81536382",
                 "providers": {
-                    "Providers/WordPressImporterServiceProvider.php": "4053adcb20320a9de32ded3df800c3b4bced6e7a7eceeee469112d777fca4fca"
+                    "Providers/WordPressImporterServiceProvider.php": "457826dde90f3992c42fbe2b6ebf8f92a2f6e50a7e0f7b331a97d606d58b36db"
                 },
                 "configure": null
             },
@@ -59,7 +59,9 @@
                 "config-values": {
                     "app.providers": [
                         "Capell\\WordPressImporter\\Providers\\WordPressImporterServiceProvider"
-                    ]
+                    ],
+                    "migration-assistant.rollback_targets.wordpress_taxonomy": "Capell\\WordPressImporter\\Models\\WordPressImportedTaxonomy",
+                    "migration-assistant.rollback_targets.wordpress_term": "Capell\\WordPressImporter\\Models\\WordPressImportedTerm"
                 },
                 "listeners": {
                     "Capell\\MigrationAssistant\\Events\\ImportCompleting": [
@@ -69,6 +71,10 @@
                         ],
                         [
                             "Capell\\WordPressImporter\\Listeners\\CreateWordPressRedirectsForCompletingImport",
+                            "handle"
+                        ],
+                        [
+                            "Capell\\WordPressImporter\\Listeners\\MapWordPressTaxonomiesAndAuthorsForCompletingImport",
                             "handle"
                         ]
                     ]

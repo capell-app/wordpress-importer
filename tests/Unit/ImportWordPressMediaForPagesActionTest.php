@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
+use Capell\Core\Contracts\Security\ResolvesHostAddresses;
+use Capell\Core\Exceptions\OutboundRequestRefusedException;
 use Capell\Core\Models\Media;
 use Capell\Core\Models\Page;
 use Capell\WordPressImporter\Actions\ImportWordPressMediaForPagesAction;
-use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\Request;
@@ -19,7 +20,7 @@ it('does not request imported WordPress media from private hosts', function (): 
     Http::fake();
     Log::spy();
 
-    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([]));
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver([]));
 
     $page = Page::factory()->create([
         'meta' => [
@@ -40,9 +41,76 @@ it('does not request imported WordPress media from private hosts', function (): 
         ->with('WordPress media import attachment failed.', Mockery::on(
             fn (array $context): bool => ($context['url_host'] ?? null) === '127.0.0.1'
                 && ($context['url_path'] ?? null) === '/private.jpg'
-                && ($context['exception'] ?? null) === InvalidArgumentException::class,
+                && ($context['exception'] ?? null) === OutboundRequestRefusedException::class
+                && ($context['reason'] ?? null) === OutboundRequestRefusedException::REASON_ADDRESS,
         ));
 });
+
+it('refuses WordPress media whose host resolves to a loopback or metadata address before sending anything', function (string $address): void {
+    Http::fake();
+    Log::spy();
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver(['media.example.test' => [$address]]));
+    $page = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => ['https://media.example.test/image.jpg']]]]);
+
+    expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(0);
+
+    Http::assertNothingSent();
+    wordpressImporterLogger()->shouldHaveReceived('warning')
+        ->once()
+        ->with('WordPress media import attachment failed.', Mockery::on(
+            fn (array $context): bool => ($context['reason'] ?? null) === OutboundRequestRefusedException::REASON_ADDRESS,
+        ));
+})->with(['loopback' => '127.0.0.1', 'cloud metadata' => '169.254.169.254']);
+
+it('downloads WordPress media from a host that resolves to a public address', function (): void {
+    Storage::fake('public');
+    $url = 'https://media.example.test/image.png';
+    Http::fake([$url => Http::response(wordPressImportedPngBytes(), 200, ['Content-Type' => 'image/png'])]);
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver(['media.example.test' => ['93.184.216.34']]));
+    $page = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => [$url]]]]);
+
+    expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(1);
+
+    Http::assertSent(fn (Request $request): bool => $request->url() === $url);
+});
+
+it('refuses localhost media URLs by name before resolving or sending', function (): void {
+    Http::fake();
+    Log::spy();
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver(['localhost' => ['93.184.216.34']]));
+    $page = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => ['http://localhost/private.jpg']]]]);
+
+    expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(0);
+
+    Http::assertNothingSent();
+    wordpressImporterLogger()->shouldHaveReceived('warning')
+        ->once()
+        ->with('WordPress media import attachment failed.', Mockery::on(
+            fn (array $context): bool => ($context['exception'] ?? null) === InvalidArgumentException::class,
+        ));
+});
+
+it('does not request imported WordPress media from internal addresses that PHP treats as public', function (string $address): void {
+    Http::fake();
+
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver(['media.example.test' => [$address]]));
+
+    $page = Page::factory()->create([
+        'meta' => [
+            'content' => '<p><img src="https://media.example.test/internal.jpg"></p>',
+            'wordpress' => [
+                'media_urls' => ['https://media.example.test/internal.jpg'],
+            ],
+        ],
+    ]);
+
+    expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(0);
+
+    Http::assertNothingSent();
+})->with([
+    'carrier-grade NAT' => '100.64.0.10',
+    'benchmarking range' => '198.18.0.10',
+]);
 
 function wordpressImporterLogger(): MockInterface
 {
@@ -67,7 +135,7 @@ it('does not follow imported WordPress media redirects to unchecked targets', fu
         return Http::response('', 302, ['Location' => 'http://169.254.169.254/latest/meta-data']);
     });
 
-    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver([
         'media.example.test' => ['93.184.216.34'],
     ]));
 
@@ -105,7 +173,7 @@ it('rejects remote media larger than the configured byte cap', function (): void
             'Content-Length' => '5',
         ]),
     ]);
-    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver([
         'media.example.test' => ['93.184.216.34'],
     ]));
 
@@ -123,7 +191,8 @@ it('rejects remote media larger than the configured byte cap', function (): void
     wordpressImporterLogger()->shouldHaveReceived('warning')
         ->once()
         ->with('WordPress media import download exceeded the configured size limit.', Mockery::on(
-            fn (array $context): bool => ($context['bytes'] ?? null) === 5
+            fn (array $context): bool => array_key_exists('bytes', $context)
+                && $context['bytes'] === null
                 && ($context['max_bytes'] ?? null) === 4,
         ));
 });
@@ -132,20 +201,11 @@ it('aborts chunked media during transfer when content length is unavailable', fu
     config()->set('wordpress-importer.media.max_bytes', 4);
     Log::spy();
 
-    Http::fake(function (Request $request, array $options): PromiseInterface {
-        expect($request->url())->toBe('https://media.example.test/chunked.jpg')
-            ->and($options)->toHaveKey('sink')
-            ->toHaveKey('progress');
+    Http::fake([
+        'https://media.example.test/chunked.jpg' => Http::response('12345', 200, ['Transfer-Encoding' => 'chunked']),
+    ]);
 
-        $progress = $options['progress'];
-        throw_unless(is_callable($progress), RuntimeException::class, 'Expected a transfer progress callback.');
-        $progress(0, 3, 0, 0);
-        $progress(0, 5, 0, 0);
-
-        return Http::response('unreachable', 200, ['Transfer-Encoding' => 'chunked']);
-    });
-
-    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver([
         'media.example.test' => ['93.184.216.34'],
     ]));
 
@@ -162,7 +222,8 @@ it('aborts chunked media during transfer when content length is unavailable', fu
     wordpressImporterLogger()->shouldHaveReceived('warning')
         ->once()
         ->with('WordPress media import download exceeded the configured size limit.', Mockery::on(
-            fn (array $context): bool => ($context['bytes'] ?? null) === 5
+            fn (array $context): bool => array_key_exists('bytes', $context)
+                && $context['bytes'] === null
                 && ($context['max_bytes'] ?? null) === 4,
         ));
 });
@@ -172,7 +233,7 @@ it('rejects non-image bytes even when the response claims an image MIME type', f
     Http::fake([
         'https://media.example.test/fake.jpg' => Http::response('<html>not an image</html>', 200, ['Content-Type' => 'image/jpeg']),
     ]);
-    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver([
         'media.example.test' => ['93.184.216.34'],
     ]));
     $page = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => ['https://media.example.test/fake.jpg']]]]);
@@ -199,7 +260,7 @@ it('stores imported WordPress image bytes with a canonical extension', function 
     $url = 'https://media.example.test/image.' . $suffix;
     $bytes = wordPressImportedPngBytes();
     Http::fake([$url => Http::response($bytes, 200, ['Content-Type' => 'text/html'])]);
-    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver([
         'media.example.test' => ['93.184.216.34'],
     ]));
     $page = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => [$url]]]]);
@@ -224,7 +285,7 @@ it('refuses active WordPress media payloads before storing or attaching them', f
     };
     $url = 'https://media.example.test/image.png';
     Http::fake([$url => Http::response($bytes, 200, ['Content-Type' => 'image/png'])]);
-    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver([
         'media.example.test' => ['93.184.216.34'],
     ]));
     $page = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => [$url]]]]);
@@ -240,11 +301,30 @@ it('refuses a WordPress media destination in executable application paths', func
     config()->set('filesystems.disks.unsafe-wordpress', ['driver' => 'local', 'root' => public_path('wordpress-media')]);
     $url = 'https://media.example.test/image.png';
     Http::fake([$url => Http::response(wordPressImportedPngBytes(), 200)]);
-    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver([
         'media.example.test' => ['93.184.216.34'],
     ]));
     $page = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => [$url]]]]);
 
     expect(ImportWordPressMediaForPagesAction::run([$page]))->toBe(0)
         ->and(Media::query()->count())->toBe(0);
+});
+
+it('makes the featured image the page image even when the body uses the same file, and never replaces an image the page already has', function (): void {
+    Storage::fake('public');
+    $featuredUrl = 'https://media.example.test/featured.png';
+    $bodyUrl = 'https://media.example.test/body.png';
+    Http::fake(['media.example.test/*' => Http::response(wordPressImportedPngBytes(), 200, ['Content-Type' => 'image/png'])]);
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver(['media.example.test' => ['93.184.216.34']]));
+    $wordpress = ['media_urls' => [$bodyUrl], 'featured_media_url' => $featuredUrl, 'thumbnail_media_url' => $featuredUrl];
+    $imported = Page::factory()->create(['meta' => ['wordpress' => $wordpress]]);
+    $edited = Page::factory()->create(['meta' => ['wordpress' => $wordpress]]);
+    $editorImage = $edited->addMediaFromString(wordPressImportedPngBytes())->usingFileName('editor.png')->toMediaCollection('image');
+    $bodyOnly = Page::factory()->create(['meta' => ['wordpress' => ['media_urls' => [$bodyUrl], 'featured_media_url' => $bodyUrl]]]);
+
+    expect(ImportWordPressMediaForPagesAction::run([$imported, $edited, $bodyOnly]))->toBe(5)
+        ->and($imported->image()->sole()->getCustomProperty('checksum'))->toBe('sha256-' . hash('sha256', wordPressImportedPngBytes()))
+        ->and($imported->media()->where('collection_name', 'wordpress-import')->exists())->toBeTrue()
+        ->and($edited->image()->sole()->is($editorImage))->toBeTrue()
+        ->and($bodyOnly->image()->exists())->toBeFalse();
 });

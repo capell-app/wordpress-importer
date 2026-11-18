@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Services;
 
+use Capell\Core\Support\Security\PublicHtmlSanitizer;
 use Capell\MigrationAssistant\Contracts\PathAwareImportSourceReader;
 use Capell\MigrationAssistant\Data\ExternalImportReadResult;
 use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
+use Capell\WordPressImporter\Actions\ConvertWordPressGutenbergBlocksAction;
 use Capell\WordPressImporter\Support\WordPressAttachmentIndex;
 use Closure;
+use Illuminate\Support\Str;
+use Override;
 use RuntimeException;
 use SimpleXMLElement;
 use Throwable;
@@ -23,9 +27,12 @@ use XMLReader as NativeXmlReader;
  */
 final class WxrReader implements PathAwareImportSourceReader
 {
+    private const int MARKUP_COMMENT_STRIP_PASSES = 16;
+
     /** @var list<string> */
     private const array WXR_COLUMNS = [
         'source_identity',
+        'source_key',
         'post_id',
         'post_type',
         'post_title',
@@ -36,23 +43,32 @@ final class WxrReader implements PathAwareImportSourceReader
         'post_content_raw',
         'post_excerpt',
         'post_status',
+        'password_protected',
         'post_date',
         'parent_id',
         'author_login',
+        'author_email',
+        'author_name',
         'categories',
         'tags',
+        'term_slugs',
+        'unsupported_blocks',
+        'field_hashes',
         'attachments',
         'media_urls',
         'featured_media_url',
+        'thumbnail_media_url',
         'contains_gutenberg_blocks',
         'shortcodes',
     ];
 
+    #[Override]
     public function supports(string $extension): bool
     {
         return false;
     }
 
+    #[Override]
     public function supportsPath(string $path): bool
     {
         if (! is_readable($path) || is_dir($path)) {
@@ -62,6 +78,7 @@ final class WxrReader implements PathAwareImportSourceReader
         return $this->isWordPressExportPath($path);
     }
 
+    #[Override]
     public function read(string $path): ExternalImportReadResult
     {
         if (! is_readable($path)) {
@@ -90,6 +107,7 @@ final class WxrReader implements PathAwareImportSourceReader
             throw new RuntimeException(sprintf('WordPress export [%s] does not contain WXR metadata.', $path));
         }
 
+        $sourceKey = $this->sourceKey($path, $metadata['base_blog_url'] ?: $metadata['base_site_url']);
         $attachmentIndex = $this->streamAttachmentIndex($path);
         $itemErrors = [];
         $itemIndex = 0;
@@ -97,7 +115,7 @@ final class WxrReader implements PathAwareImportSourceReader
         $skippedItemCount = 0;
 
         try {
-            $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$itemErrors, &$itemIndex, &$rowIndex, &$skippedItemCount, $attachmentIndex, $onRow): void {
+            $this->withXmlReader($path, function (NativeXmlReader $reader) use (&$itemErrors, &$itemIndex, &$rowIndex, &$skippedItemCount, $attachmentIndex, $onRow, $sourceKey, $metadata): void {
                 while ($reader->read()) {
                     $this->rejectDoctype($reader);
 
@@ -118,6 +136,9 @@ final class WxrReader implements PathAwareImportSourceReader
                         $row = $this->rowFromItem(
                             $item,
                             $attachmentIndex->forParent(trim((string) $wp->post_id)),
+                            $sourceKey,
+                            $metadata['authors'],
+                            $attachmentIndex->urlForAttachment(...),
                         );
                     } catch (Throwable $throwable) {
                         $skippedItemCount++;
@@ -160,7 +181,17 @@ final class WxrReader implements PathAwareImportSourceReader
             throw new RuntimeException(sprintf('WordPress export [%s] does not contain WXR metadata.', $path));
         }
 
+        $source = $channel->children('wp', true);
+        $sourceKey = $this->sourceKey($path, trim((string) $source->base_blog_url) ?: trim((string) $source->base_site_url));
         $attachmentsByParent = $this->attachmentsByParent($channel);
+        $attachmentUrls = $this->attachmentUrlsById($channel);
+        $authors = [];
+        foreach ($source->author as $authorElement) {
+            $author = $this->authorFromElement($authorElement);
+            if ($author !== null) {
+                $authors[$author['login']] = $author;
+            }
+        }
         $rows = [];
         $itemErrors = [];
         $itemIndex = 0;
@@ -177,7 +208,13 @@ final class WxrReader implements PathAwareImportSourceReader
 
             try {
                 $postId = trim((string) $wp->post_id);
-                $rows[] = $this->rowFromItem($item, $attachmentsByParent[$postId] ?? []);
+                $rows[] = $this->rowFromItem(
+                    $item,
+                    $attachmentsByParent[$postId] ?? [],
+                    $sourceKey,
+                    $authors,
+                    static fn (string $attachmentId): ?string => $attachmentUrls[$attachmentId] ?? null,
+                );
             } catch (Throwable $throwable) {
                 $skippedItemCount++;
                 if (count($itemErrors) < $this->maximumStoredItemErrors()) {
@@ -293,13 +330,16 @@ final class WxrReader implements PathAwareImportSourceReader
     }
 
     /**
-     * @return array{site_title: string, wxr_version: string}
+     * @return array{site_title: string, wxr_version: string, base_blog_url: string, base_site_url: string, authors: array<string, array{login: string, email: string, name: string}>}
      */
     private function streamMetadata(string $path): array
     {
         $metadata = [
             'site_title' => '',
             'wxr_version' => '',
+            'base_blog_url' => '',
+            'base_site_url' => '',
+            'authors' => [],
         ];
         $insideChannel = false;
 
@@ -322,6 +362,22 @@ final class WxrReader implements PathAwareImportSourceReader
                 }
 
                 if ($reader->nodeType !== NativeXmlReader::ELEMENT) {
+                    continue;
+                }
+
+                if ($reader->depth === 2 && $reader->localName === 'author' && str_starts_with($reader->namespaceURI, 'http://wordpress.org/export/')) {
+                    $wrapper = SafeXmlLoader::loadString('<wrapper xmlns:wp="' . htmlspecialchars($reader->namespaceURI, ENT_QUOTES | ENT_XML1) . '">' . $reader->readOuterXml() . '</wrapper>', LIBXML_NOCDATA | LIBXML_NONET);
+                    $author = $this->authorFromElement($wrapper->children('wp', true)->author);
+                    if ($author !== null) {
+                        $metadata['authors'][$author['login']] = $author;
+                    }
+
+                    continue;
+                }
+
+                if ($reader->depth === 2 && in_array($reader->localName, ['base_blog_url', 'base_site_url'], true) && str_starts_with($reader->namespaceURI, 'http://wordpress.org/export/')) {
+                    $metadata[$reader->localName] = trim($reader->readString());
+
                     continue;
                 }
 
@@ -372,6 +428,12 @@ final class WxrReader implements PathAwareImportSourceReader
 
                     $parentId = trim((string) $wp->post_parent);
                     $url = trim((string) $wp->attachment_url);
+                    $attachmentId = trim((string) $wp->post_id);
+
+                    if ($attachmentId !== '' && $url !== '') {
+                        $index->addAttachmentUrl($attachmentId, $url);
+                    }
+
                     if ($parentId === '' || $parentId === '0' || $url === '') {
                         continue;
                     }
@@ -431,11 +493,46 @@ final class WxrReader implements PathAwareImportSourceReader
         }
     }
 
+    private function sanitiseRawContent(string $content, PublicHtmlSanitizer $sanitizer): string
+    {
+        $content = $this->stripUnsafeMarkupComments($content, keepBlockComments: true);
+        $comments = [];
+        $prefix = 'CAPELLWXR' . bin2hex(random_bytes(16));
+        $masked = preg_replace_callback('/<!--\s*\/?wp:[^<>]*-->/', static function (array $match) use (&$comments, $prefix): string {
+            $key = $prefix . count($comments) . 'END';
+            $comments[$key] = $match[0];
+
+            return $key;
+        }, $content);
+
+        // Only inert, well-formed block delimiters return to the metadata copy. Content remains sanitised.
+        return strtr($sanitizer->sanitize($masked ?? ''), $comments);
+    }
+
+    private function sourceKey(string $path, string $sourceUrl): string
+    {
+        $parts = parse_url($sourceUrl);
+        if (is_array($parts) && is_string($parts['host'] ?? null) && in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true)) {
+            $port = isset($parts['port']) && ! in_array($parts['port'], [80, 443], true) ? ':' . $parts['port'] : '';
+            $identity = strtolower($parts['host']) . $port . '/' . trim($parts['path'] ?? '', '/');
+
+            return hash('sha256', $identity);
+        }
+
+        // Old exports may omit the source URL. Only an exact repeat can then be recognised safely.
+        $hash = hash_file('sha256', $path);
+        throw_unless(is_string($hash), RuntimeException::class, 'Unable to identify WordPress source.');
+
+        return $hash;
+    }
+
     /**
      * @param  list<array{url: string, title: string}>  $parentAttachments
+     * @param  array<string, array{login: string, email: string, name: string}>  $authors
+     * @param  (Closure(string): ?string)|null  $attachmentUrl  finds an attachment's file by its post id
      * @return array<string, mixed>
      */
-    private function rowFromItem(SimpleXMLElement $item, array $parentAttachments): array
+    private function rowFromItem(SimpleXMLElement $item, array $parentAttachments, string $sourceKey, array $authors = [], ?Closure $attachmentUrl = null): array
     {
         $wp = $item->children('wp', true);
         $content = $item->children('content', true);
@@ -446,8 +543,18 @@ final class WxrReader implements PathAwareImportSourceReader
 
         $this->assertImportableItem($postId, $postTitle);
 
-        $postContentRaw = trim((string) $content->encoded);
-        $postContent = $this->normalizeContent($postContentRaw);
+        // Export HTML is untrusted: scripts, event handlers and unsafe URLs never reach stored page content.
+        $sanitizer = resolve(PublicHtmlSanitizer::class);
+        $exportedContent = trim((string) $content->encoded);
+        $postContentRaw = $this->sanitiseRawContent($exportedContent, $sanitizer);
+        $conversion = ConvertWordPressGutenbergBlocksAction::run($exportedContent);
+        $postContent = $sanitizer->sanitize($this->stripUnsafeMarkupComments($this->normalizeContent($conversion->html), keepBlockComments: false));
+        $postExcerpt = $sanitizer->sanitize($this->stripUnsafeMarkupComments(trim((string) $excerpt->encoded), keepBlockComments: false));
+        $authorLogin = trim((string) $dc->creator);
+        $author = $authors[$authorLogin] ?? null;
+        // A password-protected post is not public on the source site, so it never imports as published.
+        // The password itself is never read into the import.
+        $passwordProtected = trim((string) $wp->post_password) !== '';
         $attachments = array_values(array_merge(
             $this->inlineAttachments($wp, $postTitle),
             $parentAttachments,
@@ -456,9 +563,11 @@ final class WxrReader implements PathAwareImportSourceReader
             static fn (array $attachment): string => $attachment['url'],
             $attachments,
         )));
+        $thumbnailMediaUrl = $this->thumbnailMediaUrl($wp, $attachmentUrl);
 
         return [
             'source_identity' => 'wordpress:' . $postId,
+            'source_key' => $sourceKey,
             'post_id' => $postId,
             'post_type' => trim((string) $wp->post_type),
             'post_title' => $postTitle,
@@ -467,19 +576,77 @@ final class WxrReader implements PathAwareImportSourceReader
             'link' => trim((string) $item->link),
             'post_content' => $postContent,
             'post_content_raw' => $postContentRaw,
-            'post_excerpt' => trim((string) $excerpt->encoded),
-            'post_status' => trim((string) $wp->status),
+            'post_excerpt' => $postExcerpt,
+            'post_status' => $passwordProtected ? 'private' : trim((string) $wp->status),
+            'password_protected' => $passwordProtected,
             'post_date' => trim((string) $wp->post_date),
             'parent_id' => trim((string) $wp->post_parent),
-            'author_login' => trim((string) $dc->creator),
+            'author_login' => $authorLogin,
+            'author_email' => is_array($author) ? $author['email'] : '',
+            'author_name' => is_array($author) ? $author['name'] : '',
             'categories' => $this->terms($item, 'category'),
             'tags' => $this->terms($item, 'post_tag'),
+            'term_slugs' => [
+                'category' => $this->termDetails($item, 'category'),
+                'post_tag' => $this->termDetails($item, 'post_tag'),
+            ],
+            'unsupported_blocks' => $conversion->unsupportedBlocks,
+            // Hashes of the values as imported let a later re-import tell an editor's change from an unchanged field.
+            'field_hashes' => [
+                'title' => hash('sha256', $postTitle),
+                'content' => hash('sha256', $postContent),
+                'excerpt' => hash('sha256', $postExcerpt),
+            ],
             'attachments' => $attachments,
             'media_urls' => $mediaUrls,
-            'featured_media_url' => $mediaUrls[0] ?? null,
-            'contains_gutenberg_blocks' => str_contains($postContentRaw, '<!-- wp:'),
-            'shortcodes' => $this->shortcodes($postContentRaw),
+            'featured_media_url' => $thumbnailMediaUrl ?? $mediaUrls[0] ?? null,
+            'thumbnail_media_url' => $thumbnailMediaUrl,
+            'contains_gutenberg_blocks' => str_contains($exportedContent, '<!-- wp:'),
+            'shortcodes' => $this->shortcodes($exportedContent),
         ];
+    }
+
+    /**
+     * The file of the attachment a post names as its featured image. A post without one has none: the first image in
+     * its body is not a featured image.
+     *
+     * @param  (Closure(string): ?string)|null  $attachmentUrl
+     */
+    private function thumbnailMediaUrl(SimpleXMLElement $wp, ?Closure $attachmentUrl): ?string
+    {
+        if (! $attachmentUrl instanceof Closure) {
+            return null;
+        }
+
+        foreach ($wp->postmeta as $postmeta) {
+            if (trim((string) $postmeta->meta_key) !== '_thumbnail_id') {
+                continue;
+            }
+
+            $attachmentId = trim((string) $postmeta->meta_value);
+
+            return $attachmentId === '' ? null : $attachmentUrl($attachmentId);
+        }
+
+        return null;
+    }
+
+    /** @return array<string, string> */
+    private function attachmentUrlsById(SimpleXMLElement $channel): array
+    {
+        $urls = [];
+
+        foreach ($channel->item as $item) {
+            $wp = $item->children('wp', true);
+            $attachmentId = trim((string) $wp->post_id);
+            $url = trim((string) $wp->attachment_url);
+
+            if (trim((string) $wp->post_type) === 'attachment' && $attachmentId !== '' && $url !== '') {
+                $urls[$attachmentId] = $url;
+            }
+        }
+
+        return $urls;
     }
 
     private function assertImportableItem(string $postId, string $postTitle): void
@@ -498,6 +665,48 @@ final class WxrReader implements PathAwareImportSourceReader
         };
 
         return (string) __('capell-wordpress-importer::commands.import.item_omitted', ['item' => $itemIndex, 'reason' => $reason]);
+    }
+
+    /**
+     * @return array{login: string, email: string, name: string}|null
+     */
+    private function authorFromElement(SimpleXMLElement $element): ?array
+    {
+        $wp = $element->children('wp', true);
+        $login = trim((string) $wp->author_login);
+
+        if ($login === '') {
+            return null;
+        }
+
+        return [
+            'login' => $login,
+            'email' => mb_strtolower(trim((string) $wp->author_email)),
+            'name' => trim((string) $wp->author_display_name),
+        ];
+    }
+
+    /**
+     * @return list<array{name: string, slug: string}>
+     */
+    private function termDetails(SimpleXMLElement $item, string $domain): array
+    {
+        $terms = [];
+
+        foreach ($item->category as $category) {
+            $attributes = $category->attributes();
+            if ((string) ($attributes['domain'] ?? '') !== $domain) {
+                continue;
+            }
+
+            $name = trim((string) $category);
+            $slug = Str::slug(trim((string) ($attributes['nicename'] ?? '')) ?: $name);
+            if ($name !== '' && $slug !== '') {
+                $terms[] = ['name' => $name, 'slug' => $slug];
+            }
+        }
+
+        return $terms;
     }
 
     /**
@@ -576,6 +785,42 @@ final class WxrReader implements PathAwareImportSourceReader
         preg_match_all('/\[(?!\/)([a-zA-Z][a-zA-Z0-9_-]*)\b[^\]]*\]/', $content, $matches);
 
         return array_values(array_unique($matches[1]));
+    }
+
+    /**
+     * Comments, processing instructions and other declarations are removed before sanitising: parsers
+     * disagree about where malformed comments such as `<!-->` end, so a sanitiser can keep as a comment
+     * markup that a browser renders. Well-formed block delimiters are kept in the raw source copy.
+     * Removing one construct can join its neighbours into a new one, so passes repeat until nothing
+     * changes, and content that never settles is dropped.
+     */
+    private function stripUnsafeMarkupComments(string $html, bool $keepBlockComments): string
+    {
+        for ($pass = 0; $pass < self::MARKUP_COMMENT_STRIP_PASSES; $pass++) {
+            $stripped = preg_replace_callback(
+                '/<!--.*?(?:-->|\z)/s',
+                static fn (array $matches): string => $keepBlockComments && preg_match('/\A<!--\s*\/?wp:[^>]*-->\z/', $matches[0]) === 1 ? $matches[0] : '',
+                $html,
+            );
+            $stripped = is_string($stripped) ? preg_replace('/<\?.*?(?:>|\z)/s', '', $stripped) : null;
+            $stripped = is_string($stripped) ? preg_replace('/<!(?!--)[^>]*(?:>|\z)/', '', $stripped) : null;
+
+            if (! is_string($stripped)) {
+                // A PCRE failure (backtrack or JIT limit) drops the content rather than keep unsafe markup; the
+                // reason is logged so an empty imported body can be traced. The content itself is never logged.
+                logger()->warning('WordPress import dropped content whose markup comments could not be removed.', ['pcre_error' => preg_last_error_msg(), 'bytes' => strlen($html)]);
+
+                return '';
+            }
+
+            if ($stripped === $html) {
+                return $stripped;
+            }
+
+            $html = $stripped;
+        }
+
+        return '';
     }
 
     private function normalizeContent(string $content): string

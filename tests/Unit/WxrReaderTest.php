@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Capell\Core\Contracts\Security\ResolvesHostAddresses;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
@@ -14,11 +15,13 @@ use Capell\MigrationAssistant\Models\ImportRollbackReport;
 use Capell\MigrationAssistant\Services\Import\XmlReader;
 use Capell\MigrationAssistant\Support\ImportSourceRegistry;
 use Capell\MigrationAssistant\Support\Xml\SafeXmlLoader;
+use Capell\UrlManager\Actions\UpsertRedirectRuleAction;
+use Capell\UrlManager\Data\RedirectRuleData;
 use Capell\UrlManager\Models\RedirectRule;
 use Capell\WordPressImporter\Actions\BuildWordPressImportPreviewAction;
+use Capell\WordPressImporter\Actions\CreateWordPressPermalinkRedirectsAction;
 use Capell\WordPressImporter\Actions\ExecuteWordPressWxrImportAction;
 use Capell\WordPressImporter\Actions\ReadWordPressWxrAction;
-use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Services\WxrReader;
 use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -29,6 +32,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Permission;
 
 it('registers the WordPress WXR reader ahead of migration-assistant XML readers', function (): void {
     $readers = resolve(ImportSourceRegistry::class)->readers();
@@ -474,7 +478,7 @@ it('executes a WordPress WXR preview through migration-assistant into a page ses
     Http::fake([
         'https://example.test/uploads/executable.jpg' => Http::response(wordpressWxrImageBytes(), 200, ['Content-Type' => 'image/png']),
     ]);
-    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver([
         'example.test' => ['93.184.216.34'],
     ]));
 
@@ -524,7 +528,7 @@ it('executes a WordPress WXR preview through migration-assistant into a page ses
 </rss>
 XML);
 
-    // URL Manager intentionally rejects redirect writes inside a transaction.
+    // Redirects intentionally rejects redirect writes inside a transaction.
     // RefreshDatabase holds the test in one, so suspend it around this import.
     DB::commit();
 
@@ -560,6 +564,7 @@ XML);
         ->firstOrFail();
     $rollbackReport = ImportRollbackReport::query()
         ->where('import_session_id', $result->session->getKey())
+        ->latest('id')
         ->firstOrFail();
     $session = $result->session->refresh();
     $redirectReport = wxrArrayValue($session->result_summary ?? [], 'wordpress_permalink_redirects');
@@ -591,14 +596,17 @@ XML);
         ->and($firstRedirect['old_url'] ?? null)->toBe('https://example.test/legacy-executable-page/')
         ->and($firstRedirect['redirect_rule_id'] ?? null)->toBe($redirectRule->getKey())
         ->and($rollbackRedirectReport['created'] ?? null)->toBe(1)
-        ->and($rollbackCreatedModels)->not->toContain([
+        ->and($rollbackCreatedModels)->toContain([
             'class' => RedirectRule::class,
             'id' => $redirectRule->getKey(),
         ]);
 
-    ExecuteImportRollbackAction::run($rollbackReport->refresh());
+    $actor = $this->authenticatedUser();
+    $actor->givePermissionTo(Permission::findOrCreate('import-session.rollback', 'web'));
+    $rollback = ExecuteImportRollbackAction::run($rollbackReport->refresh(), actor: $actor);
 
-    expect(RedirectRule::query()->whereKey($redirectRule->getKey())->exists())->toBeTrue();
+    expect($rollback->rejected)->toBeFalse(json_encode($rollback->toArray(), JSON_THROW_ON_ERROR));
+    expect(RedirectRule::query()->whereKey($redirectRule->getKey())->exists())->toBeFalse();
 });
 
 it('rejects a WordPress WXR import target outside the actor site scope', function (): void {
@@ -687,3 +695,91 @@ function ensureWordPressImporterUrlManagerRedirectRulesTable(): void
 
     (require dirname(__DIR__, 3) . '/url-manager/database/migrations/2026_07_30_000001_add_normalized_scope_keys_to_url_manager_redirect_rules_table.php')->up();
 }
+
+it('preserves an existing editor redirect when importing a WordPress permalink', function (): void {
+    ensureWordPressImporterUrlManagerRedirectRulesTable();
+    $site = Site::factory()->create();
+    $page = Page::factory()->create([
+        'site_id' => $site->getKey(), 'meta' => ['wordpress' => ['old_permalink' => 'https://source.test/legacy-editor']],
+    ]);
+    $page->pageUrls()->create(['url' => '/import-destination', 'site_id' => $site->getKey(), 'language_id' => $site->language_id, 'status' => true]);
+    DB::commit();
+    try {
+        $editor = UpsertRedirectRuleAction::run(new RedirectRuleData(
+            sourceUrl: '/legacy-editor',
+            targetUrl: '/editor-destination',
+            siteId: (int) $site->getKey(),
+            languageId: (int) $site->language_id,
+            notes: 'Editorial decision',
+        ));
+        $report = CreateWordPressPermalinkRedirectsAction::run([$page]);
+    } finally {
+        DB::beginTransaction();
+    }
+
+    expect($editor->refresh()->target_url)->toBe('/editor-destination')
+        ->and($editor->notes)->toBe('Editorial decision')
+        ->and($report->updated)->toBe(0)->and($report->skipped)->toBe(1)
+        ->and($report->redirects[0]['reason'])->toBe('redirect_requires_review');
+});
+
+it('takes a featured image from the attachment a post names in _thumbnail_id, even when it is not attached to that post', function (string $readPath): void {
+    $path = tempnam(sys_get_temp_dir(), 'capell-wxr-thumbnail-');
+    file_put_contents($path, <<<'XML'
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Thumbnail site</title>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <item>
+            <title>With a featured image</title>
+            <content:encoded><![CDATA[<p>Body</p>]]></content:encoded>
+            <wp:post_id>70</wp:post_id>
+            <wp:post_name>with-featured</wp:post_name>
+            <wp:post_type>post</wp:post_type>
+            <wp:status>publish</wp:status>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_edit_last]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1]]></wp:meta_value>
+            </wp:postmeta>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[90]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Without a featured image</title>
+            <content:encoded><![CDATA[<p>Body</p>]]></content:encoded>
+            <wp:post_id>71</wp:post_id>
+            <wp:post_name>without-featured</wp:post_name>
+            <wp:post_type>post</wp:post_type>
+            <wp:status>publish</wp:status>
+        </item>
+        <item>
+            <title>Gallery photograph</title>
+            <wp:post_id>89</wp:post_id>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>71</wp:post_parent>
+            <wp:attachment_url>https://example.test/uploads/gallery.jpg</wp:attachment_url>
+        </item>
+        <item>
+            <title>Unattached featured image</title>
+            <wp:post_id>90</wp:post_id>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>0</wp:post_parent>
+            <wp:attachment_url>https://example.test/uploads/featured.jpg</wp:attachment_url>
+        </item>
+    </channel>
+</rss>
+XML);
+
+    $reader = new WxrReader;
+    $result = $readPath === 'streaming'
+        ? $reader->read($path)
+        : Closure::bind(fn (string $exportPath) => $this->readDom($exportPath), $reader, WxrReader::class)($path);
+
+    expect($result->rows[0]['thumbnail_media_url'])->toBe('https://example.test/uploads/featured.jpg')
+        ->and($result->rows[0]['featured_media_url'])->toBe('https://example.test/uploads/featured.jpg')
+        ->and($result->rows[1]['thumbnail_media_url'])->toBeNull()
+        ->and($result->rows[1]['featured_media_url'])->toBe('https://example.test/uploads/gallery.jpg');
+})->with(['streaming', 'dom']);

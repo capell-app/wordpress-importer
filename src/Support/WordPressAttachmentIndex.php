@@ -16,6 +16,8 @@ final class WordPressAttachmentIndex
 
     private int $bytes = 0;
 
+    private int $attachmentUrlCount = 0;
+
     public function __construct(
         private readonly int $maximumAttachments,
         private readonly int $maximumAttachmentsPerParent,
@@ -59,6 +61,41 @@ final class WordPressAttachmentIndex
 
         $this->count++;
         $this->bytes += $recordBytes;
+    }
+
+    /**
+     * Records where an attachment's file lives, whatever its parent, so a post's featured image can be found by the
+     * attachment id in its _thumbnail_id. WordPress often leaves a featured image unattached or attached elsewhere.
+     */
+    public function addAttachmentUrl(string $attachmentId, string $url): void
+    {
+        throw_if($this->attachmentUrlCount >= $this->maximumAttachments, RuntimeException::class, 'WordPress export exceeds the configured attachment index limit.');
+
+        $record = $url . "\n";
+        $recordBytes = strlen($record);
+
+        throw_if($this->bytes + $recordBytes > $this->maximumBytes, RuntimeException::class, 'WordPress export exceeds the configured attachment index byte limit.');
+
+        $written = file_put_contents($this->attachmentPath($attachmentId), $record, LOCK_EX);
+
+        throw_if($written === false, RuntimeException::class, 'WordPress attachment index could not be written.');
+
+        $this->attachmentUrlCount++;
+        $this->bytes += $recordBytes;
+    }
+
+    public function urlForAttachment(string $attachmentId): ?string
+    {
+        $path = $this->attachmentPath($attachmentId);
+
+        if (! is_file($path)) {
+            return null;
+        }
+
+        // capell-security-scan: local-stream reads the attachment index file in local storage, checked with is_file() above
+        $url = trim((string) file_get_contents($path));
+
+        return $url === '' ? null : $url;
     }
 
     /** @return list<array{url: string, title: string}> */
@@ -111,7 +148,7 @@ final class WordPressAttachmentIndex
             return;
         }
 
-        foreach (glob($this->directory . DIRECTORY_SEPARATOR . '*.jsonl') ?: [] as $path) {
+        foreach ([...glob($this->directory . DIRECTORY_SEPARATOR . '*.jsonl') ?: [], ...glob($this->directory . DIRECTORY_SEPARATOR . '*.url') ?: []] as $path) {
             @unlink($path);
         }
 
@@ -121,6 +158,11 @@ final class WordPressAttachmentIndex
     private function path(string $parentId): string
     {
         return $this->directory . DIRECTORY_SEPARATOR . hash('sha256', $parentId) . '.jsonl';
+    }
+
+    private function attachmentPath(string $attachmentId): string
+    {
+        return $this->directory . DIRECTORY_SEPARATOR . 'attachment-' . hash('sha256', $attachmentId) . '.url';
     }
 
     private function lineCount(string $path): int

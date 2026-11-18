@@ -34,7 +34,7 @@ importing. JSON output includes the count and bounded diagnostics in
 
 1. Open the **Results**.
 2. Confirm posts and pages came across, and spot-check a few on the site.
-3. Check that images appear; re-import any that were skipped.
+3. Check that images appear. For incomplete downloads in a retained session, give an authorised administrator the import reference and errors. They should repair reachability, the response at the stored media URL or the configured limits, then retry that same session. Retry uses stored URLs and checkpoints; it does not reload a changed export. A wrong source URL or corrected export needs a separate preview and recovery assessment.
 4. Open the import session that Migration Assistant created to review the full record of what was imported.
 
 ![An operator reviews the completed Migration Assistant import session and result summary created for a WordPress import.](screenshots/wordpress-import-session.png)
@@ -65,9 +65,15 @@ importing. JSON output includes the count and bounded diagnostics in
 
 ## Troubleshooting for editors
 
-| What you see                        | What it means                                            | What to do                                                     |
-| ----------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
-| WordPress isn't offered as a source | Migration Assistant or the importer isn't installed      | Install Migration Assistant first, then the WordPress Importer |
-| Categories need follow-up           | WordPress categories and tags were preserved as metadata | Review the imported content and organise it in Capell          |
-| Images are missing                  | Media wasn't included or mapped                          | Confirm media is part of the export and re-import              |
-| Some posts didn't import            | They were skipped due to errors                          | Review **Results** and re-import the affected posts            |
+| What you see                        | What it means                                       | What to do                                                     |
+| ----------------------------------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| WordPress isn't offered as a source | Migration Assistant or the importer isn't installed | Install Migration Assistant first, then the WordPress Importer |
+| Categories need follow-up           | Category hierarchy is not imported; terms are flat  | Arrange the imported terms in Capell                           |
+| Images are missing                  | Media wasn't included or mapped                     | Confirm media is part of the export and re-import              |
+| Some posts didn't import            | They were skipped due to errors                     | Review **Results** and re-import the affected posts            |
+
+## Preserved metadata and recovery
+
+Categories and tags become terms in a Categories and a Tags taxonomy on the target site, reusing any taxonomy or term that already exists. Each author is matched to an existing Capell user by the email in the export and recorded as the page's creator; an author with no matching user is listed in the import result and no account is ever created. Block-editor content is converted to plain HTML: block markers and layout wrappers go, embeds become a link to the original, and any block the importer cannot express is kept as its exported HTML and named in the page's WordPress details. The importer does not convert blocks into Layout Builder blocks. A re-import skips posts that already exist unless you ask for updates with `--update-fields=title,content,excerpt`. A requested field is updated only when the export changed it since the last import and nobody has edited it on the page since; a field an editor changed, and any page imported before the importer recorded what it stored, is left alone and listed in the result. The address and the publish state are never changed by a re-import. Each update is an ordinary page save, so the page's revision history holds the previous value.
+
+An ordinary editor can pass on the import reference and visible errors. A global administrator with `import-session.view` retrieves the session and its reports; rollback execution is an authorised command-line operation. Follow [Migration Assistant recovery](../../migration-assistant/docs/overview.md#roll-back-created-records) for report inspection, a dry run and unchanged-record/manual-recovery limits.

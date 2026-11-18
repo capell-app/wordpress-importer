@@ -12,6 +12,9 @@ use Capell\WordPressImporter\Console\Commands\ImportWordPressWxrCommand;
 use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Listeners\CreateWordPressRedirectsForCompletingImport;
 use Capell\WordPressImporter\Listeners\ImportWordPressMediaForCompletingImport;
+use Capell\WordPressImporter\Listeners\MapWordPressTaxonomiesAndAuthorsForCompletingImport;
+use Capell\WordPressImporter\Models\WordPressImportedTaxonomy;
+use Capell\WordPressImporter\Models\WordPressImportedTerm;
 use Capell\WordPressImporter\Services\WxrReader;
 use Capell\WordPressImporter\Support\DnsWordPressMediaHostResolver;
 use Capell\WordPressImporter\Support\WordPressWxrSessionExecutor;
@@ -60,5 +63,12 @@ final class WordPressImporterServiceProvider extends AbstractPackageServiceProvi
     {
         Event::listen(ImportCompleting::class, [ImportWordPressMediaForCompletingImport::class, 'handle']);
         Event::listen(ImportCompleting::class, [CreateWordPressRedirectsForCompletingImport::class, 'handle']);
+        Event::listen(ImportCompleting::class, [MapWordPressTaxonomiesAndAuthorsForCompletingImport::class, 'handle']);
+
+        // Taxonomies and terms this importer creates must be removable by the signed rollback report.
+        config([
+            'migration-assistant.rollback_targets.wordpress_taxonomy' => WordPressImportedTaxonomy::class,
+            'migration-assistant.rollback_targets.wordpress_term' => WordPressImportedTerm::class,
+        ]);
     }
 }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Tests\Fixtures;
 
-use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
+use Capell\Core\Contracts\Security\ResolvesHostAddresses;
 
-final readonly class StaticWordPressMediaHostResolver implements WordPressMediaHostResolver
+final readonly class StaticWordPressMediaHostResolver implements ResolvesHostAddresses
 {
     /**
      * @param  array<string, list<string>>  $addresses

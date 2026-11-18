@@ -1,0 +1,103 @@
+[
+    {
+        "claim": "Hand over a client's WordPress export file and the posts and pages in it arrive with their images as ordinary pages on the new site, built with Capell.",
+        "evidence": [
+            "src/Services/WxrReader.php",
+            "src/Console/Commands/ImportWordPressWxrCommand.php"
+        ]
+    },
+    {
+        "claim": "An agency or developer runs the import from the command line.",
+        "evidence": [
+            "src/Services/WxrReader.php",
+            "src/Console/Commands/ImportWordPressWxrCommand.php"
+        ]
+    },
+    {
+        "claim": "The preview writes nothing and counts what would be created, skipped or rejected.",
+        "evidence": [
+            "src/Actions/BuildWordPressImportPreviewAction.php",
+            "src/Console/Commands/ImportWordPressWxrCommand.php",
+            "tests/Unit/WxrReaderTest.php"
+        ]
+    },
+    {
+        "claim": "Posts already imported anywhere on the site are skipped, so a repeat run of the same export won't create copies.",
+        "evidence": [
+            "src/Actions/ApplyWordPressPreviewIdempotencyAction.php",
+            "tests/Feature/ScreenshotImportSessionTest.php"
+        ]
+    },
+    {
+        "claim": "If Redirects is installed too, each post's old address leads to its new page, and any post that can't get one is listed with the reason.",
+        "evidence": [
+            "src/Actions/CreateWordPressPermalinkRedirectsAction.php",
+            "src/Listeners/CreateWordPressRedirectsForCompletingImport.php",
+            "tests/Unit/ImportWordPressWxrCommandExecuteTest.php"
+        ]
+    },
+    {
+        "claim": "Only posts WordPress had published keep their date.",
+        "evidence": [
+            "src/Actions/BuildWordPressImportPreviewAction.php",
+            "tests/Unit/WxrReaderTest.php"
+        ]
+    },
+    {
+        "claim": "Everything else arrives unpublished, with its WordPress status noted.",
+        "evidence": [
+            "src/Actions/BuildWordPressImportPreviewAction.php",
+            "tests/Unit/WxrReaderTest.php"
+        ]
+    },
+    {
+        "claim": "Comments and users stay behind, as do revisions and custom post types.",
+        "evidence": ["src/Services/WxrReader.php"]
+    },
+    {
+        "claim": "Shortcodes are taken out.",
+        "evidence": [
+            "src/Actions/ImportWordPressMediaForPagesAction.php",
+            "tests/Unit/ImportWordPressMediaForPagesActionTest.php"
+        ]
+    },
+    {
+        "claim": "Text between a shortcode's opening and closing tags stays as plain text, and stand-alone ones such as galleries or forms disappear.",
+        "evidence": [
+            "src/Services/WxrReader.php",
+            "src/Actions/BuildWordPressImportPreviewAction.php",
+            "tests/Unit/WxrReaderTest.php"
+        ]
+    },
+    {
+        "claim": "Bracketed words such as [sic] or [note] standing alone go too.",
+        "evidence": [
+            "src/Services/WxrReader.php",
+            "tests/Unit/WxrReaderTest.php"
+        ]
+    },
+    {
+        "claim": "The original content stays in the page's details.",
+        "evidence": [
+            "src/Services/WxrReader.php",
+            "src/Actions/BuildWordPressImportPreviewAction.php",
+            "tests/Unit/WxrReaderTest.php"
+        ]
+    },
+    {
+        "claim": "Images come from public addresses only, and files over 50 MB are refused.",
+        "evidence": [
+            "config/wordpress-importer.php",
+            "src/Actions/ImportWordPressMediaForPagesAction.php",
+            "tests/Unit/ImportWordPressMediaForPagesActionTest.php"
+        ]
+    },
+    {
+        "claim": "If a download fails, retrying the import picks up where it stopped without duplicating anything.",
+        "evidence": ["tests/Unit/ImportWordPressWxrCommandExecuteTest.php"]
+    },
+    {
+        "claim": "Each image that arrives is stored on the new site, and the page's text is updated to point at that copy.",
+        "evidence": ["src/Actions/ImportWordPressMediaForPagesAction.php"]
+    }
+]

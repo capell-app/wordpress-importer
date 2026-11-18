@@ -4,16 +4,24 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Listeners;
 
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Page;
+use Capell\MigrationAssistant\Actions\AppendImportRollbackModelsAction;
 use Capell\MigrationAssistant\Events\ImportCompleting;
 use Capell\MigrationAssistant\Models\ImportRollbackReport;
 use Capell\WordPressImporter\Actions\CreateWordPressPermalinkRedirectsAction;
 use Capell\WordPressImporter\Data\WordPressPermalinkRedirectReportData;
+use Capell\WordPressImporter\Providers\WordPressImporterServiceProvider;
+use Illuminate\Database\Eloquent\Model;
 
 final class CreateWordPressRedirectsForCompletingImport
 {
     public function handle(ImportCompleting $event): void
     {
+        if (! CapellCore::isPackageEnabled(WordPressImporterServiceProvider::$packageName)) {
+            return;
+        }
+
         $createdPageIds = $this->createdPageIds($event);
 
         if ($createdPageIds === []) {
@@ -67,6 +75,19 @@ final class CreateWordPressRedirectsForCompletingImport
         if (! $rollbackReport instanceof ImportRollbackReport) {
             return;
         }
+
+        $models = [];
+        foreach ($report->createdModels() as $created) {
+            $modelClass = $created['class'];
+            if (! is_subclass_of($modelClass, Model::class)) {
+                continue;
+            }
+            $model = $modelClass::query()->find($created['id']);
+            if ($model instanceof Model) {
+                $models[] = $model;
+            }
+        }
+        $rollbackReport = AppendImportRollbackModelsAction::run($rollbackReport, $models);
 
         $rollbackSummary = is_array($rollbackReport->summary) ? $rollbackReport->summary : [];
         $rollbackSummary['wordpress_permalink_redirects'] = $reportPayload;

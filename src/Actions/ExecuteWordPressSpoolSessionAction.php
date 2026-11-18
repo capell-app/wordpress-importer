@@ -6,6 +6,7 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\MigrationAssistant\Actions\CreateImportRollbackReportAction;
 use Capell\MigrationAssistant\Actions\Imports\ExecuteExternalPageImportAction;
+use Capell\MigrationAssistant\Data\ExternalImportPreview;
 use Capell\MigrationAssistant\Data\ExternalImportReadResult;
 use Capell\MigrationAssistant\Enums\ImportSessionStatus;
 use Capell\MigrationAssistant\Events\ImportCompleted;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 use RuntimeException;
+use Throwable;
 
 /** @method static ImportExecutionReport run(ImportSession $session) */
 final class ExecuteWordPressSpoolSessionAction
@@ -40,8 +42,9 @@ final class ExecuteWordPressSpoolSessionAction
         $summary = is_array($session->result_summary) ? $session->result_summary : [];
         $checkpoint = is_array($summary['wordpress_checkpoint'] ?? null) ? $summary['wordpress_checkpoint'] : [];
         $nextChunkIndex = is_numeric($checkpoint['next_chunk_index'] ?? null) ? (int) $checkpoint['next_chunk_index'] : 0;
+        $counter = count($chunkPaths);
 
-        for ($chunkIndex = $nextChunkIndex; $chunkIndex < count($chunkPaths); $chunkIndex++) {
+        for ($chunkIndex = $nextChunkIndex; $chunkIndex < $counter; $chunkIndex++) {
             $rows = $this->readChunk($disk, $chunkPaths[$chunkIndex]);
             $summary = $this->markActiveChunk($session, $summary, $chunkIndex, count($chunkPaths));
             $readResult = new ExternalImportReadResult(
@@ -56,7 +59,28 @@ final class ExecuteWordPressSpoolSessionAction
                     $readResult,
                     BuildWordPressImportPreviewAction::fieldMapping(),
                 ),
+                $siteId,
             );
+            $previewRows = [];
+            foreach ($preview->rows as $row) {
+                data_set($row, 'attributes.meta.wordpress.import_session_uuid', $session->uuid);
+                $previewRows[] = $row;
+            }
+            /** @var list<array<string, mixed>> $previewRows */
+            $preview = new ExternalImportPreview(
+                target: $preview->target,
+                creates: $preview->creates,
+                skips: $preview->skips,
+                rows: $previewRows,
+                errors: $preview->errors,
+            );
+            $updateFields = $this->updateFields($manifest);
+            if ($updateFields !== [] && $siteId !== null) {
+                $summary = $this->mergeFieldUpdates(
+                    $summary,
+                    UpdateExistingWordPressPagesAction::run($rows, $siteId, $updateFields, $session),
+                );
+            }
             $chunkResult = ExecuteExternalPageImportAction::run(
                 preview: $preview,
                 defaultPageAttributes: $defaultPageAttributes,
@@ -102,13 +126,27 @@ final class ExecuteWordPressSpoolSessionAction
                 'status' => ImportSessionStatus::Failed,
                 'executed_at' => now(),
             ])->save();
+
+            // Pages created by earlier chunks stay in place when a later chunk fails, so their rollback
+            // provenance is recorded once the failure itself is safely stored.
+            try {
+                $this->recordRollbackProvenance($session, $report);
+            } catch (Throwable $throwable) {
+                report($throwable);
+            }
+
             event(new ImportFailed($session, $reason));
 
             return $report;
         }
 
-        if ($report->createdPageIds !== [] && ! $session->rollbackReports()->exists()) {
-            CreateImportRollbackReportAction::run($session, $report);
+        // The pages are committed, so a provenance failure must not turn this into a failed import that hides
+        // them from review. The session completes and records that its rollback report is missing.
+        try {
+            $this->recordRollbackProvenance($session, $report);
+        } catch (Throwable $throwable) {
+            report($throwable);
+            $session->forceFill(['result_summary' => [...(is_array($session->result_summary) ? $session->result_summary : []), 'rollback_report_missing' => true]])->save();
         }
 
         event(new ImportCompleting($session->refresh()));
@@ -121,6 +159,44 @@ final class ExecuteWordPressSpoolSessionAction
         event(new ImportCompleted($session));
 
         return $report;
+    }
+
+    /**
+     * @param  array<string, mixed>  $manifest
+     * @return list<string>
+     */
+    private function updateFields(array $manifest): array
+    {
+        $fields = $manifest['update_fields'] ?? [];
+
+        return is_array($fields) ? array_values(array_filter($fields, is_string(...))) : [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $summary
+     * @param  array{pages: list<array<string, mixed>>, updated_fields: int, edited_fields: int, unchanged_pages: int}  $updates
+     * @return array<string, mixed>
+     */
+    private function mergeFieldUpdates(array $summary, array $updates): array
+    {
+        $previous = is_array($summary['wordpress_field_updates'] ?? null) ? $summary['wordpress_field_updates'] : [];
+        $pages = is_array($previous['pages'] ?? null) ? $previous['pages'] : [];
+
+        $summary['wordpress_field_updates'] = [
+            'pages' => [...$pages, ...$updates['pages']],
+            'updated_fields' => (is_int($previous['updated_fields'] ?? null) ? $previous['updated_fields'] : 0) + $updates['updated_fields'],
+            'edited_fields' => (is_int($previous['edited_fields'] ?? null) ? $previous['edited_fields'] : 0) + $updates['edited_fields'],
+            'unchanged_pages' => (is_int($previous['unchanged_pages'] ?? null) ? $previous['unchanged_pages'] : 0) + $updates['unchanged_pages'],
+        ];
+
+        return $summary;
+    }
+
+    private function recordRollbackProvenance(ImportSession $session, ImportExecutionReport $report): void
+    {
+        if ($report->createdPageIds !== []) {
+            CreateImportRollbackReportAction::run($session, $report, merge: true);
+        }
     }
 
     /** @return array<string, mixed> */
@@ -171,6 +247,7 @@ final class ExecuteWordPressSpoolSessionAction
                     $normalized[$key] = $value;
                 }
             }
+
             $rows[] = $normalized;
         }
 

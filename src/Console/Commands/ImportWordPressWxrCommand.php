@@ -8,6 +8,7 @@ use Capell\Core\Models\Site;
 use Capell\MigrationAssistant\Data\ExternalPageImportTargetData;
 use Capell\WordPressImporter\Actions\BuildWordPressImportPreviewAction;
 use Capell\WordPressImporter\Actions\ExecuteWordPressWxrImportAction;
+use Capell\WordPressImporter\Support\WordPressImportedFields;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Override;
@@ -24,7 +25,8 @@ final class ImportWordPressWxrCommand extends Command
         {--layout-id= : Target layout id for imported pages (required with --execute)}
         {--type-id= : Target page type/blueprint id for imported pages (required with --execute)}
         {--actor-id= : Authorized Capell user id for the import (required with --execute)}
-        {--language-id= : Target language id (defaults to the target site language)}';
+        {--language-id= : Target language id (defaults to the target site language)}
+        {--update-fields= : Comma-separated fields (title, content, excerpt) to update on pages from an earlier import; edited fields are left alone}';
 
     protected $description = 'Read a WordPress WXR export and build a Migration Assistant preview.';
 
@@ -104,6 +106,7 @@ final class ImportWordPressWxrCommand extends Command
             $path,
             $target,
             $actor,
+            $this->updateFields(),
         );
 
         $isSuccess = $result->report->errors === [];
@@ -141,6 +144,27 @@ final class ImportWordPressWxrCommand extends Command
     private function stringableKey(mixed $key): string
     {
         return is_int($key) || is_string($key) ? (string) $key : '';
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function updateFields(): array
+    {
+        $option = $this->option('update-fields');
+        if (! is_string($option) || trim($option) === '') {
+            return [];
+        }
+
+        $fields = array_values(array_unique(array_map(trim(...), explode(',', mb_strtolower($option)))));
+        $invalid = array_values(array_diff($fields, WordPressImportedFields::FIELDS));
+
+        throw_if($invalid !== [], RuntimeException::class, (string) __('capell-wordpress-importer::commands.import.update_fields_invalid', [
+            'fields' => implode(', ', $invalid),
+            'allowed' => implode(', ', WordPressImportedFields::FIELDS),
+        ]));
+
+        return $fields;
     }
 
     private function requiredIntOption(string $option): int

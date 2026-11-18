@@ -6,7 +6,7 @@
     "kind": "package",
     "capellApiVersion": "^1.0",
     "version": "1.0.0",
-    "description": "Preview WordPress WXR posts and pages in Capell Migration Assistant with permalink, taxonomy, author, media-reference, Gutenberg, and shortcode metadata preserved.",
+    "description": "Brings posts, pages and images from a WordPress export file onto a site built with Capell, each one becoming an ordinary page.",
     "product": {
         "group": "Capell Operations",
         "tier": "free",
@@ -60,21 +60,7 @@
     },
     "settings": [],
     "permissions": [],
-    "capabilities": [
-        "wordpress-wxr-reader",
-        "wordpress-wxr-preview",
-        "wordpress-wxr-media-references",
-        "wordpress-permalink-metadata",
-        "wordpress-permalink-redirects",
-        "wordpress-permalink-redirect-reports",
-        "wordpress-idempotent-preview",
-        "wordpress-wxr-item-isolation",
-        "wordpress-gutenberg-detection",
-        "wordpress-shortcode-detection",
-        "wordpress-wxr-streaming-reader",
-        "wordpress-content-normalization",
-        "wordpress-headless-preview"
-    ],
+    "capabilities": [],
     "security": {
         "riskTier": "sensitive",
         "publicSurface": {
@@ -140,34 +126,42 @@
         "privateDocsRequested": true
     },
     "marketplace": {
-        "summary": "Preview WordPress WXR posts and pages in Capell with durable metadata ready for Migration Assistant mapping.",
-        "description": "WordPress Importer turns a standard WordPress WXR export into a Capell Migration Assistant source. It reads posts and pages, preserves source identity, old permalinks, taxonomy labels, author logins, media URLs, Gutenberg markers, and shortcode names, then builds a preview operators can inspect before execution. Completed imports can download referenced media, create URL Manager redirects for changed WordPress permalinks, and store redirect reports on the Migration Assistant session and rollback report for SEO review. A headless console command produces the same Migration Assistant preview as JSON for scripted migration audits.",
-        "problem": "Our team needs to assess a WordPress export before moving its content into Capell.",
-        "outcome": "Our team has a WXR import preview with source metadata available for mapping.",
+        "summary": "Move posts, pages and images from a WordPress export file onto your new site, with a preview that writes nothing first.",
+        "description": "Move a WordPress site's posts and pages into Capell from the export file WordPress gives you. A preview first shows what would be created, skipped or rejected, and writes nothing. Images are fetched from public addresses and files over 50 MB are refused. Comments, users, revisions and custom post types are not brought across. A developer or agency needs to run it from the command line.",
+        "problem": "Moving a long-running WordPress site by hand loses images and leaves old links pointing nowhere.",
+        "outcome": "Posts, pages and images arrive as ordinary pages on the new site, with a preview first and old addresses redirected where possible.",
         "faq": [
             {
-                "question": "What source file does the importer read?",
-                "answer": "The importer reads WordPress WXR exports."
+                "question": "What does the import need, and who runs it?",
+                "answer": "A WordPress export file. An agency or developer runs the import from the command line."
             },
             {
-                "question": "Can old WordPress permalinks become redirects?",
-                "answer": "The importer can create old-permalink redirects when the URL Manager integration is available."
+                "question": "Can I see what will happen before anything is written?",
+                "answer": "Yes. The preview writes nothing and counts what would be created, skipped or rejected."
             },
             {
-                "question": "Which content is included in an import?",
-                "answer": "The importer supports content, authors, taxonomies, media references and source metadata."
+                "question": "What does not come across from WordPress?",
+                "answer": "Comments, users, revisions and custom post types stay behind. Shortcodes are taken out, and any text a shortcode wraps is kept as plain text, so a gallery or form shortcode leaves nothing. A post keeps its original date only if WordPress had it published, and everything else arrives unpublished."
+            },
+            {
+                "question": "Will my old WordPress links redirect to the new pages?",
+                "answer": "They can. With Redirects installed too, each post's old address leads to its new page, and any post that cannot be given one is listed with the reason."
+            },
+            {
+                "question": "What if I run the same export twice?",
+                "answer": "Posts already imported anywhere on the site are skipped, so a repeat run creates no copies. If an image download fails, retrying picks up where it stopped."
             }
         ],
         "screenshots": [
             {
                 "path": "docs/assets/marketplace/extension-card.jpg",
-                "alt": "WordPress Importer extension preview image",
-                "caption": "WordPress Importer extension preview"
+                "alt": "Marketplace card for WordPress Importer showing import report screens and the steps Upload, Preview and Map",
+                "caption": "The card is the importer's picture on the Marketplace listing."
             },
             {
                 "path": "docs/screenshots/wordpress-import-session.png",
-                "alt": "Completed WordPress WXR import session in Migration Assistant",
-                "caption": "Review imported pages, URLs, validation, and session status"
+                "alt": "Import session page with a Completed status, a timeline of steps, a summary of two pages imported and a rollback report",
+                "caption": "A finished import is recorded as a session, with a summary of what it created."
             }
         ],
         "categories": ["admin", "console", "operations"]

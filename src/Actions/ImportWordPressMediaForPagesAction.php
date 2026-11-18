@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Capell\WordPressImporter\Actions;
 
 use Capell\Core\Contracts\Media\MediaContract;
+use Capell\Core\Enums\MediaCollectionEnum;
+use Capell\Core\Exceptions\OutboundRequestRefusedException;
+use Capell\Core\Models\Media;
 use Capell\Core\Models\Page;
+use Capell\Core\Support\Http\OutboundHttp;
+use Capell\Core\Support\Http\OutboundHttpPolicy;
 use Capell\MigrationAssistant\Actions\StoreImportedMediaAction;
 use Capell\MigrationAssistant\Models\ImportSession;
-use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
-use Capell\WordPressImporter\Data\ResolvedWordPressMediaEndpointData;
-use Capell\WordPressImporter\Exceptions\WordPressMediaSizeLimitExceeded;
-use Closure;
-use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -32,11 +32,6 @@ final class ImportWordPressMediaForPagesAction
     use AsObject;
 
     private const string COLLECTION = 'wordpress-import';
-
-    public function __construct(
-        private readonly ?HttpFactory $http = null,
-        private readonly ?WordPressMediaHostResolver $hostResolver = null,
-    ) {}
 
     /**
      * @param  iterable<array-key, mixed>  $pages
@@ -92,13 +87,20 @@ final class ImportWordPressMediaForPagesAction
                 continue;
             }
 
-            $media = $this->downloadAndAttach($page, $mediaUrl);
+            $collection = $this->collectionFor($page, $mediaUrl, $wordpress);
+            $media = $this->downloadAndAttach($page, $mediaUrl, $collection);
 
             if (! $media instanceof MediaContract) {
                 $failedUrls[] = $mediaUrl;
                 $this->recordMediaCheckpoint($session, $page, $mediaUrl, successful: false, newlyImported: false);
 
                 continue;
+            }
+
+            // The same file already imported from the post body is reused rather than stored twice, so it is copied
+            // into the page image instead of being moved out of the body it still illustrates.
+            if ($collection === MediaCollectionEnum::Image->value && $media instanceof Media && $media->collection_name !== $collection) {
+                $media->copy($page, $collection);
             }
 
             $localUrl = $media->getFullUrl();
@@ -133,6 +135,21 @@ final class ImportWordPressMediaForPagesAction
     }
 
     /**
+     * A post's featured image becomes the page's image, unless the page already has one an editor chose. Every
+     * other file stays with the import.
+     *
+     * @param  array<string, mixed>  $wordpress
+     */
+    private function collectionFor(Page $page, string $mediaUrl, array $wordpress): string
+    {
+        if (($wordpress['thumbnail_media_url'] ?? null) === $mediaUrl && ! $page->image()->exists()) {
+            return MediaCollectionEnum::Image->value;
+        }
+
+        return self::COLLECTION;
+    }
+
+    /**
      * @param  array<string, mixed>  $wordpress
      * @return list<string>
      */
@@ -144,28 +161,33 @@ final class ImportWordPressMediaForPagesAction
             $urls[] = $wordpress['featured_media_url'];
         }
 
+        if (is_string($wordpress['thumbnail_media_url'] ?? null)) {
+            $urls[] = $wordpress['thumbnail_media_url'];
+        }
+
         return array_values(array_unique(array_filter(
             $urls,
             static fn (mixed $url): bool => is_string($url) && filter_var($url, FILTER_VALIDATE_URL) !== false,
         )));
     }
 
-    private function downloadAndAttach(Page $page, string $mediaUrl): ?MediaContract
+    private function downloadAndAttach(Page $page, string $mediaUrl, string $collection): ?MediaContract
     {
         $temporaryPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'capell-wp-media-' . Str::random(32);
 
         try {
-            $endpoint = $this->endpoint($mediaUrl);
-            $response = ($this->http ?? resolve(HttpFactory::class))
-                ->timeout($this->timeoutSeconds())
-                ->withoutRedirecting()
-                ->withHeaders(['Host' => $endpoint->hostHeader()])
-                ->withOptions([
-                    ...$this->requestOptions($endpoint),
-                    'sink' => $temporaryPath,
-                    'progress' => $this->transferProgressGuard(),
-                ])
-                ->get($endpoint->url);
+            // The guarded client resolves the host once, refuses it unless every
+            // address is public, pins the connection to the checked address,
+            // refuses redirects and aborts the transfer past the byte limit.
+            $response = OutboundHttp::guarded(new OutboundHttpPolicy(
+                schemes: ['https', 'http'],
+                ports: [$this->validatedPort($mediaUrl)],
+                maxBytes: $this->maximumMediaBytes(),
+                connectTimeoutSeconds: min(10, $this->timeoutSeconds()),
+                timeoutSeconds: $this->timeoutSeconds(),
+            ))
+                ->withOptions(['sink' => $temporaryPath])
+                ->get($mediaUrl);
 
             if (! $response->successful()) {
                 Log::warning('WordPress media import download failed.', [
@@ -238,13 +260,23 @@ final class ImportWordPressMediaForPagesAction
                     'sha256-' . $checksum,
                     File::size($temporaryPath),
                     $page,
-                    self::COLLECTION,
+                    $collection,
                 );
             } finally {
                 fclose($stream);
             }
-        } catch (WordPressMediaSizeLimitExceeded $exception) {
-            $this->logOversizedMedia($mediaUrl, $exception->bytes);
+        } catch (OutboundRequestRefusedException $exception) {
+            if ($exception->reason === OutboundRequestRefusedException::REASON_SIZE) {
+                $this->logOversizedMedia($mediaUrl, null);
+
+                return null;
+            }
+
+            Log::warning('WordPress media import attachment failed.', [
+                ...$this->failureContext($mediaUrl),
+                'exception' => $exception::class,
+                'reason' => $exception->reason,
+            ]);
 
             return null;
         } catch (Throwable $throwable) {
@@ -312,7 +344,8 @@ final class ImportWordPressMediaForPagesAction
         $session->forceFill(['result_summary' => $summary])->save();
     }
 
-    private function logOversizedMedia(string $mediaUrl, int $bytes): void
+    /** @param int|null $bytes null when the transfer was stopped before its size was known */
+    private function logOversizedMedia(string $mediaUrl, ?int $bytes): void
     {
         Log::warning('WordPress media import download exceeded the configured size limit.', [
             ...$this->failureContext($mediaUrl),
@@ -335,26 +368,6 @@ final class ImportWordPressMediaForPagesAction
         return is_numeric($configured) ? max(1, (int) $configured) : 50 * 1024 * 1024;
     }
 
-    private function transferProgressGuard(): Closure
-    {
-        $maximumBytes = $this->maximumMediaBytes();
-
-        return static function (
-            int $downloadTotal,
-            int $downloadedBytes,
-            int $uploadTotal,
-            int $uploadedBytes,
-        ) use ($maximumBytes): void {
-            unset($uploadTotal, $uploadedBytes);
-
-            $observedBytes = max($downloadTotal, $downloadedBytes);
-
-            if ($observedBytes > $maximumBytes) {
-                throw new WordPressMediaSizeLimitExceeded($observedBytes);
-            }
-        };
-    }
-
     /**
      * @return array{url_host: string|null, url_path: string|null}
      */
@@ -368,7 +381,11 @@ final class ImportWordPressMediaForPagesAction
         ];
     }
 
-    private function endpoint(string $url): ResolvedWordPressMediaEndpointData
+    /**
+     * Validates the media URL and returns its port. Host-label refusal happens
+     * here because "localhost" may never be fetched, whatever a resolver answers.
+     */
+    private function validatedPort(string $url): int
     {
         $parts = parse_url($url);
 
@@ -378,40 +395,8 @@ final class ImportWordPressMediaForPagesAction
         $host = is_string($parts['host'] ?? null) ? strtolower($parts['host']) : null;
 
         throw_if(! in_array($scheme, ['https', 'http'], true) || $host === null || $host === '', InvalidArgumentException::class, 'WordPress media URL must be an absolute HTTP URL.');
+        throw_if($this->isPrivateHostLabel($host), InvalidArgumentException::class, 'WordPress media URL host is not allowed.');
 
-        $addresses = $this->resolvedHostAddresses($host);
-
-        throw_if($addresses === [], InvalidArgumentException::class, 'WordPress media URL host could not be resolved.');
-        throw_if($this->hasPrivateAddress($addresses), InvalidArgumentException::class, 'WordPress media URL host is not allowed.');
-
-        return new ResolvedWordPressMediaEndpointData(
-            url: $url,
-            scheme: $scheme,
-            host: $host,
-            port: $this->port($parts, $scheme),
-            address: $addresses[0],
-        );
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function requestOptions(ResolvedWordPressMediaEndpointData $endpoint): array
-    {
-        throw_unless(defined('CURLOPT_RESOLVE'), InvalidArgumentException::class, 'WordPress media imports require cURL host pinning support.');
-
-        return [
-            'curl' => [
-                CURLOPT_RESOLVE => [$endpoint->curlResolveEntry()],
-            ],
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $parts
-     */
-    private function port(array $parts, string $scheme): int
-    {
         $port = $parts['port'] ?? null;
 
         if (is_int($port) && $port > 0 && $port <= 65535) {
@@ -421,54 +406,9 @@ final class ImportWordPressMediaForPagesAction
         return $scheme === 'https' ? 443 : 80;
     }
 
-    /**
-     * @param  list<string>  $addresses
-     */
-    private function hasPrivateAddress(array $addresses): bool
-    {
-        foreach ($addresses as $address) {
-            if ($this->isPrivateAddress($address)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private function isPrivateHostLabel(string $host): bool
     {
         return in_array($host, ['localhost', 'localhost.localdomain'], true) || str_ends_with($host, '.localhost');
-    }
-
-    private function isPrivateAddress(string $address): bool
-    {
-        return filter_var(
-            $address,
-            FILTER_VALIDATE_IP,
-            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE,
-        ) === false;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function resolvedHostAddresses(string $host): array
-    {
-        if ($this->isPrivateHostLabel($host)) {
-            return ['127.0.0.1'];
-        }
-
-        if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
-            return [$host];
-        }
-
-        $addresses = ($this->hostResolver ?? resolve(WordPressMediaHostResolver::class))->resolve($host);
-
-        return array_values(collect($addresses)
-            ->filter(static fn (string $address): bool => filter_var($address, FILTER_VALIDATE_IP) !== false)
-            ->unique()
-            ->values()
-            ->all());
     }
 
     private function fileName(string $mediaUrl): string

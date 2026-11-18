@@ -56,12 +56,7 @@ it('declares the shipped wordpress importer manifest surfaces', function (): voi
         ->and(class_implements(WordPressImporterConsoleCommandContribution::class))->toContain(ExtensionContribution::class)
         ->and(class_implements(WordpressImporterHealthCheck::class))->toContain(ChecksExtensionHealth::class)
         ->and(class_implements(WxrReader::class))->toContain(ImportSourceReader::class)
-        ->and(data_get($manifest, 'capabilities', []))->toContain(
-            'wordpress-wxr-reader',
-            'wordpress-wxr-preview',
-            'wordpress-permalink-redirects',
-            'wordpress-headless-preview',
-        )
+        ->and(data_get($manifest, 'capabilities', []))->toBe([])
         ->and(data_get($manifest, 'contributionTraceability.deferredContributions'))->toBe([]);
 });
 

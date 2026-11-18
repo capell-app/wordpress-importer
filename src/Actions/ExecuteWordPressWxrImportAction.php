@@ -13,6 +13,7 @@ use Capell\MigrationAssistant\Enums\ImportSessionKind;
 use Capell\MigrationAssistant\Enums\ImportSessionStatus;
 use Capell\MigrationAssistant\Events\ImportFailed;
 use Capell\MigrationAssistant\Models\ImportSession;
+use Capell\WordPressImporter\Support\WordPressImportedFields;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Str;
 use Lorisleiva\Actions\Concerns\AsFake;
@@ -20,17 +21,19 @@ use Lorisleiva\Actions\Concerns\AsObject;
 use Throwable;
 
 /**
- * @method static ExternalPageImportExecutionResult run(string $path, ExternalPageImportTargetData $requestedTarget, ?Authenticatable $actor = null)
+ * @method static ExternalPageImportExecutionResult run(string $path, ExternalPageImportTargetData $requestedTarget, ?Authenticatable $actor = null, list<string> $updateFields = [])
  */
 final class ExecuteWordPressWxrImportAction
 {
     use AsFake;
     use AsObject;
 
+    /** @param list<string> $updateFields */
     public function handle(
         string $path,
         ExternalPageImportTargetData $requestedTarget,
         ?Authenticatable $actor = null,
+        array $updateFields = [],
     ): ExternalPageImportExecutionResult {
         $targetData = AuthorizeExternalPageImportTargetAction::run($requestedTarget, $actor);
         $spool = SpoolWordPressWxrAction::run($path);
@@ -64,6 +67,7 @@ final class ExecuteWordPressWxrImportAction
                     'chunk_paths' => $spool->chunkPaths,
                     'metadata' => $spool->metadata,
                     'default_page_attributes' => $defaultPageAttributes,
+                    'update_fields' => array_values(array_intersect(WordPressImportedFields::FIELDS, $updateFields)),
                 ],
             ],
             'resolution_map' => ['resolved' => [], 'unresolved' => []],

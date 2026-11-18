@@ -4,6 +4,7 @@ All notable changes to `capell-app/wordpress-importer` will be documented in thi
 
 ## Unreleased
 
+- Mapped WordPress categories and tags to taxonomy terms, matched authors to existing users by email without creating accounts, converted Gutenberg blocks to plain HTML while naming unsupported blocks, and added `--update-fields` to re-import title, content or excerpt onto pages an editor has not changed.
 - Normalized imported WordPress content by stripping Gutenberg block comments, replacing shortcodes with safe placeholders, and preserving raw WordPress content in `meta.wordpress.raw_content`.
 
 ### 2026-06-07

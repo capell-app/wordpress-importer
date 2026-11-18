@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Capell\Core\Contracts\Security\ResolvesHostAddresses;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
@@ -21,7 +22,6 @@ use Capell\MigrationAssistant\Support\ImportSessionExecutorRegistry;
 use Capell\Tests\Fixtures\Models\User;
 use Capell\UrlManager\Models\RedirectRule;
 use Capell\WordPressImporter\Actions\ExecuteWordPressWxrImportAction;
-use Capell\WordPressImporter\Contracts\WordPressMediaHostResolver;
 use Capell\WordPressImporter\Tests\Fixtures\StaticWordPressMediaHostResolver;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Support\Facades\Artisan;
@@ -51,7 +51,7 @@ beforeEach(function (): void {
     Http::fake([
         'https://example.test/uploads/executable.jpg' => Http::response(wordpressTestImageBytes(), 200, ['Content-Type' => 'image/png']),
     ]);
-    app()->instance(WordPressMediaHostResolver::class, new StaticWordPressMediaHostResolver([
+    app()->instance(ResolvesHostAddresses::class, new StaticWordPressMediaHostResolver([
         'example.test' => ['93.184.216.34'],
     ]));
 });
@@ -96,7 +96,7 @@ it('executes a WordPress WXR import through the console command into pages and r
 </rss>
 XML);
 
-    // URL Manager intentionally rejects redirect writes inside a transaction.
+    // Redirects intentionally rejects redirect writes inside a transaction.
     // RefreshDatabase holds the test in one, so suspend it around this command.
     DB::commit();
 

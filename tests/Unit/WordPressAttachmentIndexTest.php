@@ -32,3 +32,27 @@ it('caps the disk-backed attachment index by encoded bytes', function (): void {
         $index->close();
     }
 });
+
+it('finds an attachment file by its id, capped by count and bytes, and removes it on close', function (): void {
+    $index = new WordPressAttachmentIndex(maximumAttachments: 1, maximumAttachmentsPerParent: 1, maximumBytes: 1024);
+
+    $index->addAttachmentUrl('90', 'https://example.test/featured.jpg');
+
+    expect($index->urlForAttachment('90'))->toBe('https://example.test/featured.jpg')
+        ->and($index->urlForAttachment('91'))->toBeNull()
+        ->and(fn () => $index->addAttachmentUrl('91', 'https://example.test/other.jpg'))
+        ->toThrow(RuntimeException::class, 'attachment index limit');
+
+    $index->close();
+
+    expect($index->urlForAttachment('90'))->toBeNull();
+
+    $small = new WordPressAttachmentIndex(maximumAttachments: 10, maximumAttachmentsPerParent: 10, maximumBytes: 10);
+
+    try {
+        expect(fn () => $small->addAttachmentUrl('90', 'https://example.test/featured.jpg'))
+            ->toThrow(RuntimeException::class, 'attachment index byte limit');
+    } finally {
+        $small->close();
+    }
+});

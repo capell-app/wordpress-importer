@@ -13,6 +13,7 @@ use Capell\WordPressImporter\Data\WordPressPermalinkRedirectReportData;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 use RuntimeException;
@@ -76,7 +77,14 @@ final class CreateWordPressPermalinkRedirectsAction
                 continue;
             }
 
-            $redirectRule = $this->upsertRedirect($oldPermalink, $targetUrl, $page, $createdByUserId);
+            try {
+                $redirectRule = $this->upsertRedirect($oldPermalink, $targetUrl, $page, $createdByUserId);
+            } catch (ValidationException) {
+                $skipped++;
+                $redirects[] = $this->row($page, $oldPermalink, $targetUrl, 'skipped', 'redirect_requires_review');
+
+                continue;
+            }
             $redirectRuleId = $this->modelKey($redirectRule);
             $wasCreated = (bool) $redirectRule->wasRecentlyCreated;
 
@@ -168,9 +176,9 @@ final class CreateWordPressPermalinkRedirectsAction
             languageId: $this->languageId($page),
             notes: (string) __('capell-wordpress-importer::commands.import.redirect_note'),
             createdByUserId: $createdByUserId,
-        ));
+        ), replaceExisting: false);
 
-        throw_unless($redirectRule instanceof Model, RuntimeException::class, 'URL Manager redirect upsert did not return a model.');
+        throw_unless($redirectRule instanceof Model, RuntimeException::class, 'Redirect upsert did not return a model.');
 
         return $redirectRule;
     }

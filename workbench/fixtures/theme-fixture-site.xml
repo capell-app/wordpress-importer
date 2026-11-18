@@ -1,0 +1,1498 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+    xmlns:excerpt="http://wordpress.org/export/1.2/excerpt/"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:wp="http://wordpress.org/export/1.2/">
+    <channel>
+        <title>Fixture Site</title>
+        <link>https://fixture-site.example.test</link>
+        <description>Imported WordPress content that Capell themes are proved against</description>
+        <language>en-GB</language>
+        <wp:wxr_version>1.2</wp:wxr_version>
+        <wp:base_site_url>https://fixture-site.example.test</wp:base_site_url>
+        <wp:base_blog_url>https://fixture-site.example.test</wp:base_blog_url>
+        <wp:author>
+            <wp:author_login><![CDATA[amara]]></wp:author_login>
+            <wp:author_email><![CDATA[amara@fixture-site.example.test]]></wp:author_email>
+            <wp:author_display_name><![CDATA[Amara Okafor]]></wp:author_display_name>
+        </wp:author>
+        <wp:author>
+            <wp:author_login><![CDATA[tomas]]></wp:author_login>
+            <wp:author_email><![CDATA[tomas@fixture-site.example.test]]></wp:author_email>
+            <wp:author_display_name><![CDATA[Tomás Lindqvist]]></wp:author_display_name>
+        </wp:author>
+        <wp:author>
+            <wp:author_login><![CDATA[priya]]></wp:author_login>
+            <wp:author_email><![CDATA[priya@fixture-site.example.test]]></wp:author_email>
+            <wp:author_display_name><![CDATA[Priya Raman]]></wp:author_display_name>
+        </wp:author>
+        <wp:category>
+            <wp:category_nicename><![CDATA[field-notes]]></wp:category_nicename>
+            <wp:cat_name><![CDATA[Field notes]]></wp:cat_name>
+        </wp:category>
+        <wp:category>
+            <wp:category_nicename><![CDATA[case-studies]]></wp:category_nicename>
+            <wp:cat_name><![CDATA[Case studies]]></wp:cat_name>
+        </wp:category>
+        <wp:category>
+            <wp:category_nicename><![CDATA[guides]]></wp:category_nicename>
+            <wp:cat_name><![CDATA[Guides]]></wp:cat_name>
+        </wp:category>
+        <wp:category>
+            <wp:category_nicename><![CDATA[company-news]]></wp:category_nicename>
+            <wp:cat_name><![CDATA[Company news]]></wp:cat_name>
+        </wp:category>
+        <wp:category>
+            <wp:category_nicename><![CDATA[interviews]]></wp:category_nicename>
+            <wp:cat_name><![CDATA[Interviews]]></wp:cat_name>
+        </wp:category>
+        <wp:category>
+            <wp:category_nicename><![CDATA[opinion]]></wp:category_nicename>
+            <wp:cat_name><![CDATA[Opinion]]></wp:cat_name>
+        </wp:category>
+        <wp:tag>
+            <wp:tag_slug><![CDATA[sustainability]]></wp:tag_slug>
+            <wp:tag_name><![CDATA[Sustainability]]></wp:tag_name>
+        </wp:tag>
+        <wp:tag>
+            <wp:tag_slug><![CDATA[design]]></wp:tag_slug>
+            <wp:tag_name><![CDATA[Design]]></wp:tag_name>
+        </wp:tag>
+        <wp:tag>
+            <wp:tag_slug><![CDATA[operations]]></wp:tag_slug>
+            <wp:tag_name><![CDATA[Operations]]></wp:tag_name>
+        </wp:tag>
+        <wp:tag>
+            <wp:tag_slug><![CDATA[community]]></wp:tag_slug>
+            <wp:tag_name><![CDATA[Community]]></wp:tag_name>
+        </wp:tag>
+        <wp:tag>
+            <wp:tag_slug><![CDATA[research]]></wp:tag_slug>
+            <wp:tag_name><![CDATA[Research]]></wp:tag_name>
+        </wp:tag>
+        <wp:tag>
+            <wp:tag_slug><![CDATA[hiring]]></wp:tag_slug>
+            <wp:tag_name><![CDATA[Hiring]]></wp:tag_name>
+        </wp:tag>
+        <item>
+            <title>Rebuilding the harbour workshop</title>
+            <link>https://fixture-site.example.test/2026/01/rebuilding-the-harbour-workshop/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">The numbers</h3><!-- /wp:heading -->
+<!-- wp:table --><figure class="wp-block-table"><table><thead><tr><th>Quarter</th><th>Jobs</th><th>Repeat customers</th></tr></thead><tbody><tr><td>Q1</td><td>40</td><td>12</td></tr><tr><td>Q2</td><td>52</td><td>15</td></tr><tr><td>Q3</td><td>47</td><td>18</td></tr></tbody></table><figcaption class="wp-element-caption">Jobs completed per quarter</figcaption></figure><!-- /wp:table -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.]]></excerpt:encoded>
+            <category domain="category" nicename="field-notes"><![CDATA[Field notes]]></category>
+            <category domain="post_tag" nicename="sustainability"><![CDATA[Sustainability]]></category>
+            <category domain="post_tag" nicename="operations"><![CDATA[Operations]]></category>
+            <wp:post_id>1000</wp:post_id>
+            <wp:post_date>2026-01-01 09:00:00</wp:post_date>
+            <wp:post_name>rebuilding-the-harbour-workshop</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1001]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Rebuilding the harbour workshop</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1001.png</link>
+            <wp:post_id>1001</wp:post_id>
+            <wp:post_name>featured-1001.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1000</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1001.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>What a year of four-day weeks taught us</title>
+            <link>https://fixture-site.example.test/2026/01/what-a-year-of-four-day-weeks-taught-us/</link>
+            <dc:creator><![CDATA[tomas]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:gallery {"linkTo":"none"} --><figure class="wp-block-gallery has-nested-images columns-3"><!-- wp:image {"id":1012} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1012.png" alt="Workshop photograph 1012" class="wp-image-1012"/></figure><!-- /wp:image --><!-- wp:image {"id":1013} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1013.png" alt="Workshop photograph 1013" class="wp-image-1013"/></figure><!-- /wp:image --><!-- wp:image {"id":1014} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1014.png" alt="Workshop photograph 1014" class="wp-image-1014"/></figure><!-- /wp:image --></figure><!-- /wp:gallery -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.]]></excerpt:encoded>
+            <category domain="category" nicename="case-studies"><![CDATA[Case studies]]></category>
+            <category domain="post_tag" nicename="design"><![CDATA[Design]]></category>
+            <category domain="post_tag" nicename="community"><![CDATA[Community]]></category>
+            <wp:post_id>1010</wp:post_id>
+            <wp:post_date>2026-01-04 09:00:00</wp:post_date>
+            <wp:post_name>what-a-year-of-four-day-weeks-taught-us</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1011]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for What a year of four-day weeks taught us</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1011.png</link>
+            <wp:post_id>1011</wp:post_id>
+            <wp:post_name>featured-1011.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1010</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1011.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1012</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1012.png</link>
+            <wp:post_id>1012</wp:post_id>
+            <wp:post_name>gallery-1012.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1010</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1012.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1013</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1013.png</link>
+            <wp:post_id>1013</wp:post_id>
+            <wp:post_name>gallery-1013.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1010</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1013.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1014</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1014.png</link>
+            <wp:post_id>1014</wp:post_id>
+            <wp:post_name>gallery-1014.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1010</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1014.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Measuring the footprint of a print run</title>
+            <link>https://fixture-site.example.test/2026/01/measuring-the-footprint-of-a-print-run/</link>
+            <dc:creator><![CDATA[priya]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:quote --><blockquote class="wp-block-quote"><!-- wp:paragraph --><p>We would rather be on time with a smaller promise than late with a bigger one.</p><!-- /wp:paragraph --><cite>Site manager</cite></blockquote><!-- /wp:quote -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.]]></excerpt:encoded>
+            <category domain="category" nicename="guides"><![CDATA[Guides]]></category>
+            <category domain="post_tag" nicename="operations"><![CDATA[Operations]]></category>
+            <category domain="post_tag" nicename="research"><![CDATA[Research]]></category>
+            <wp:post_id>1020</wp:post_id>
+            <wp:post_date>2026-01-07 09:00:00</wp:post_date>
+            <wp:post_name>measuring-the-footprint-of-a-print-run</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1021]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Measuring the footprint of a print run</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1021.png</link>
+            <wp:post_id>1021</wp:post_id>
+            <wp:post_name>featured-1021.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1020</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1021.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>A field guide to quoting small jobs</title>
+            <link>https://fixture-site.example.test/2026/02/a-field-guide-to-quoting-small-jobs/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">The numbers</h3><!-- /wp:heading -->
+<!-- wp:table --><figure class="wp-block-table"><table><thead><tr><th>Quarter</th><th>Jobs</th><th>Repeat customers</th></tr></thead><tbody><tr><td>Q1</td><td>43</td><td>15</td></tr><tr><td>Q2</td><td>55</td><td>18</td></tr><tr><td>Q3</td><td>50</td><td>21</td></tr></tbody></table><figcaption class="wp-element-caption">Jobs completed per quarter</figcaption></figure><!-- /wp:table -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.]]></excerpt:encoded>
+            <category domain="category" nicename="company-news"><![CDATA[Company news]]></category>
+            <category domain="post_tag" nicename="community"><![CDATA[Community]]></category>
+            <category domain="post_tag" nicename="hiring"><![CDATA[Hiring]]></category>
+            <wp:post_id>1030</wp:post_id>
+            <wp:post_date>2026-02-10 09:00:00</wp:post_date>
+            <wp:post_name>a-field-guide-to-quoting-small-jobs</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1031]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for A field guide to quoting small jobs</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1031.png</link>
+            <wp:post_id>1031</wp:post_id>
+            <wp:post_name>featured-1031.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1030</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1031.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Inside the night shift at the depot</title>
+            <link>https://fixture-site.example.test/2026/02/inside-the-night-shift-at-the-depot/</link>
+            <dc:creator><![CDATA[tomas]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.]]></excerpt:encoded>
+            <category domain="category" nicename="interviews"><![CDATA[Interviews]]></category>
+            <category domain="post_tag" nicename="research"><![CDATA[Research]]></category>
+            <category domain="post_tag" nicename="sustainability"><![CDATA[Sustainability]]></category>
+            <wp:post_id>1040</wp:post_id>
+            <wp:post_date>2026-02-13 09:00:00</wp:post_date>
+            <wp:post_name>inside-the-night-shift-at-the-depot</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1041]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Inside the night shift at the depot</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1041.png</link>
+            <wp:post_id>1041</wp:post_id>
+            <wp:post_name>featured-1041.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1040</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1041.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Why we stopped chasing every lead</title>
+            <link>https://fixture-site.example.test/2026/02/why-we-stopped-chasing-every-lead/</link>
+            <dc:creator><![CDATA[priya]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:gallery {"linkTo":"none"} --><figure class="wp-block-gallery has-nested-images columns-3"><!-- wp:image {"id":1052} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1052.png" alt="Workshop photograph 1052" class="wp-image-1052"/></figure><!-- /wp:image --><!-- wp:image {"id":1053} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1053.png" alt="Workshop photograph 1053" class="wp-image-1053"/></figure><!-- /wp:image --><!-- wp:image {"id":1054} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1054.png" alt="Workshop photograph 1054" class="wp-image-1054"/></figure><!-- /wp:image --></figure><!-- /wp:gallery -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.]]></excerpt:encoded>
+            <category domain="category" nicename="opinion"><![CDATA[Opinion]]></category>
+            <category domain="post_tag" nicename="hiring"><![CDATA[Hiring]]></category>
+            <category domain="post_tag" nicename="design"><![CDATA[Design]]></category>
+            <wp:post_id>1050</wp:post_id>
+            <wp:post_date>2026-02-16 09:00:00</wp:post_date>
+            <wp:post_name>why-we-stopped-chasing-every-lead</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1051]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Why we stopped chasing every lead</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1051.png</link>
+            <wp:post_id>1051</wp:post_id>
+            <wp:post_name>featured-1051.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1050</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1051.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1052</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1052.png</link>
+            <wp:post_id>1052</wp:post_id>
+            <wp:post_name>gallery-1052.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1050</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1052.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1053</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1053.png</link>
+            <wp:post_id>1053</wp:post_id>
+            <wp:post_name>gallery-1053.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1050</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1053.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1054</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1054.png</link>
+            <wp:post_id>1054</wp:post_id>
+            <wp:post_name>gallery-1054.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1050</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1054.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Notes from the regional makers fair</title>
+            <link>https://fixture-site.example.test/2026/03/notes-from-the-regional-makers-fair/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">The numbers</h3><!-- /wp:heading -->
+<!-- wp:table --><figure class="wp-block-table"><table><thead><tr><th>Quarter</th><th>Jobs</th><th>Repeat customers</th></tr></thead><tbody><tr><td>Q1</td><td>46</td><td>18</td></tr><tr><td>Q2</td><td>58</td><td>16</td></tr><tr><td>Q3</td><td>53</td><td>20</td></tr></tbody></table><figcaption class="wp-element-caption">Jobs completed per quarter</figcaption></figure><!-- /wp:table -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.]]></excerpt:encoded>
+            <category domain="category" nicename="field-notes"><![CDATA[Field notes]]></category>
+            <category domain="post_tag" nicename="sustainability"><![CDATA[Sustainability]]></category>
+            <category domain="post_tag" nicename="operations"><![CDATA[Operations]]></category>
+            <wp:post_id>1060</wp:post_id>
+            <wp:post_date>2026-03-19 09:00:00</wp:post_date>
+            <wp:post_name>notes-from-the-regional-makers-fair</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1061]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Notes from the regional makers fair</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1061.png</link>
+            <wp:post_id>1061</wp:post_id>
+            <wp:post_name>featured-1061.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1060</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1061.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Designing forms people finish</title>
+            <link>https://fixture-site.example.test/2026/03/designing-forms-people-finish/</link>
+            <dc:creator><![CDATA[tomas]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:quote --><blockquote class="wp-block-quote"><!-- wp:paragraph --><p>We would rather be on time with a smaller promise than late with a bigger one.</p><!-- /wp:paragraph --><cite>Site manager</cite></blockquote><!-- /wp:quote -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.]]></excerpt:encoded>
+            <category domain="category" nicename="case-studies"><![CDATA[Case studies]]></category>
+            <category domain="post_tag" nicename="design"><![CDATA[Design]]></category>
+            <category domain="post_tag" nicename="community"><![CDATA[Community]]></category>
+            <wp:post_id>1070</wp:post_id>
+            <wp:post_date>2026-03-22 09:00:00</wp:post_date>
+            <wp:post_name>designing-forms-people-finish</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1071]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Designing forms people finish</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1071.png</link>
+            <wp:post_id>1071</wp:post_id>
+            <wp:post_name>featured-1071.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1070</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1071.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>The case for slower publishing</title>
+            <link>https://fixture-site.example.test/2026/03/the-case-for-slower-publishing/</link>
+            <dc:creator><![CDATA[priya]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.]]></excerpt:encoded>
+            <category domain="category" nicename="guides"><![CDATA[Guides]]></category>
+            <category domain="post_tag" nicename="operations"><![CDATA[Operations]]></category>
+            <category domain="post_tag" nicename="research"><![CDATA[Research]]></category>
+            <wp:post_id>1080</wp:post_id>
+            <wp:post_date>2026-03-25 09:00:00</wp:post_date>
+            <wp:post_name>the-case-for-slower-publishing</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1081]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for The case for slower publishing</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1081.png</link>
+            <wp:post_id>1081</wp:post_id>
+            <wp:post_name>featured-1081.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1080</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1081.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>How the archive team catalogues photographs</title>
+            <link>https://fixture-site.example.test/2026/04/how-the-archive-team-catalogues-photographs/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">The numbers</h3><!-- /wp:heading -->
+<!-- wp:table --><figure class="wp-block-table"><table><thead><tr><th>Quarter</th><th>Jobs</th><th>Repeat customers</th></tr></thead><tbody><tr><td>Q1</td><td>49</td><td>14</td></tr><tr><td>Q2</td><td>61</td><td>19</td></tr><tr><td>Q3</td><td>56</td><td>19</td></tr></tbody></table><figcaption class="wp-element-caption">Jobs completed per quarter</figcaption></figure><!-- /wp:table -->
+<!-- wp:gallery {"linkTo":"none"} --><figure class="wp-block-gallery has-nested-images columns-3"><!-- wp:image {"id":1092} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1092.png" alt="Workshop photograph 1092" class="wp-image-1092"/></figure><!-- /wp:image --><!-- wp:image {"id":1093} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1093.png" alt="Workshop photograph 1093" class="wp-image-1093"/></figure><!-- /wp:image --><!-- wp:image {"id":1094} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1094.png" alt="Workshop photograph 1094" class="wp-image-1094"/></figure><!-- /wp:image --></figure><!-- /wp:gallery -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.]]></excerpt:encoded>
+            <category domain="category" nicename="company-news"><![CDATA[Company news]]></category>
+            <category domain="post_tag" nicename="community"><![CDATA[Community]]></category>
+            <category domain="post_tag" nicename="hiring"><![CDATA[Hiring]]></category>
+            <wp:post_id>1090</wp:post_id>
+            <wp:post_date>2026-04-01 09:00:00</wp:post_date>
+            <wp:post_name>how-the-archive-team-catalogues-photographs</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1091]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for How the archive team catalogues photographs</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1091.png</link>
+            <wp:post_id>1091</wp:post_id>
+            <wp:post_name>featured-1091.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1090</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1091.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1092</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1092.png</link>
+            <wp:post_id>1092</wp:post_id>
+            <wp:post_name>gallery-1092.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1090</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1092.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1093</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1093.png</link>
+            <wp:post_id>1093</wp:post_id>
+            <wp:post_name>gallery-1093.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1090</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1093.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1094</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1094.png</link>
+            <wp:post_id>1094</wp:post_id>
+            <wp:post_name>gallery-1094.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1090</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1094.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Lessons from replacing a legacy booking system</title>
+            <link>https://fixture-site.example.test/2026/04/lessons-from-replacing-a-legacy-booking-system/</link>
+            <dc:creator><![CDATA[tomas]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.]]></excerpt:encoded>
+            <category domain="category" nicename="interviews"><![CDATA[Interviews]]></category>
+            <category domain="post_tag" nicename="research"><![CDATA[Research]]></category>
+            <category domain="post_tag" nicename="sustainability"><![CDATA[Sustainability]]></category>
+            <wp:post_id>1100</wp:post_id>
+            <wp:post_date>2026-04-04 09:00:00</wp:post_date>
+            <wp:post_name>lessons-from-replacing-a-legacy-booking-system</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1101]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Lessons from replacing a legacy booking system</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1101.png</link>
+            <wp:post_id>1101</wp:post_id>
+            <wp:post_name>featured-1101.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1100</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1101.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Pricing repairs honestly</title>
+            <link>https://fixture-site.example.test/2026/04/pricing-repairs-honestly/</link>
+            <dc:creator><![CDATA[priya]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.]]></excerpt:encoded>
+            <category domain="category" nicename="opinion"><![CDATA[Opinion]]></category>
+            <category domain="post_tag" nicename="hiring"><![CDATA[Hiring]]></category>
+            <category domain="post_tag" nicename="design"><![CDATA[Design]]></category>
+            <wp:post_id>1110</wp:post_id>
+            <wp:post_date>2026-04-07 09:00:00</wp:post_date>
+            <wp:post_name>pricing-repairs-honestly</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1111]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Pricing repairs honestly</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1111.png</link>
+            <wp:post_id>1111</wp:post_id>
+            <wp:post_name>featured-1111.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1110</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1111.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>An interview with our first apprentice</title>
+            <link>https://fixture-site.example.test/2026/05/an-interview-with-our-first-apprentice/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">The numbers</h3><!-- /wp:heading -->
+<!-- wp:table --><figure class="wp-block-table"><table><thead><tr><th>Quarter</th><th>Jobs</th><th>Repeat customers</th></tr></thead><tbody><tr><td>Q1</td><td>52</td><td>17</td></tr><tr><td>Q2</td><td>64</td><td>17</td></tr><tr><td>Q3</td><td>59</td><td>18</td></tr></tbody></table><figcaption class="wp-element-caption">Jobs completed per quarter</figcaption></figure><!-- /wp:table -->
+<!-- wp:quote --><blockquote class="wp-block-quote"><!-- wp:paragraph --><p>We would rather be on time with a smaller promise than late with a bigger one.</p><!-- /wp:paragraph --><cite>Site manager</cite></blockquote><!-- /wp:quote -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.]]></excerpt:encoded>
+            <category domain="category" nicename="field-notes"><![CDATA[Field notes]]></category>
+            <category domain="post_tag" nicename="sustainability"><![CDATA[Sustainability]]></category>
+            <category domain="post_tag" nicename="operations"><![CDATA[Operations]]></category>
+            <wp:post_id>1120</wp:post_id>
+            <wp:post_date>2026-05-10 09:00:00</wp:post_date>
+            <wp:post_name>an-interview-with-our-first-apprentice</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1121]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for An interview with our first apprentice</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1121.png</link>
+            <wp:post_id>1121</wp:post_id>
+            <wp:post_name>featured-1121.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1120</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1121.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Planning a site visit that runs on time</title>
+            <link>https://fixture-site.example.test/2026/05/planning-a-site-visit-that-runs-on-time/</link>
+            <dc:creator><![CDATA[tomas]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:gallery {"linkTo":"none"} --><figure class="wp-block-gallery has-nested-images columns-3"><!-- wp:image {"id":1132} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1132.png" alt="Workshop photograph 1132" class="wp-image-1132"/></figure><!-- /wp:image --><!-- wp:image {"id":1133} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1133.png" alt="Workshop photograph 1133" class="wp-image-1133"/></figure><!-- /wp:image --><!-- wp:image {"id":1134} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1134.png" alt="Workshop photograph 1134" class="wp-image-1134"/></figure><!-- /wp:image --></figure><!-- /wp:gallery -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.]]></excerpt:encoded>
+            <category domain="category" nicename="case-studies"><![CDATA[Case studies]]></category>
+            <category domain="post_tag" nicename="design"><![CDATA[Design]]></category>
+            <category domain="post_tag" nicename="community"><![CDATA[Community]]></category>
+            <wp:post_id>1130</wp:post_id>
+            <wp:post_date>2026-05-13 09:00:00</wp:post_date>
+            <wp:post_name>planning-a-site-visit-that-runs-on-time</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1131]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Planning a site visit that runs on time</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1131.png</link>
+            <wp:post_id>1131</wp:post_id>
+            <wp:post_name>featured-1131.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1130</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1131.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1132</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1132.png</link>
+            <wp:post_id>1132</wp:post_id>
+            <wp:post_name>gallery-1132.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1130</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1132.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1133</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1133.png</link>
+            <wp:post_id>1133</wp:post_id>
+            <wp:post_name>gallery-1133.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1130</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1133.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1134</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1134.png</link>
+            <wp:post_id>1134</wp:post_id>
+            <wp:post_name>gallery-1134.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1130</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1134.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Reading the data behind seasonal demand</title>
+            <link>https://fixture-site.example.test/2026/05/reading-the-data-behind-seasonal-demand/</link>
+            <dc:creator><![CDATA[priya]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.]]></excerpt:encoded>
+            <category domain="category" nicename="guides"><![CDATA[Guides]]></category>
+            <category domain="post_tag" nicename="operations"><![CDATA[Operations]]></category>
+            <category domain="post_tag" nicename="research"><![CDATA[Research]]></category>
+            <wp:post_id>1140</wp:post_id>
+            <wp:post_date>2026-05-16 09:00:00</wp:post_date>
+            <wp:post_name>reading-the-data-behind-seasonal-demand</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1141]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Reading the data behind seasonal demand</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1141.png</link>
+            <wp:post_id>1141</wp:post_id>
+            <wp:post_name>featured-1141.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1140</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1141.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>What customers ask before they call</title>
+            <link>https://fixture-site.example.test/2026/06/what-customers-ask-before-they-call/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">The numbers</h3><!-- /wp:heading -->
+<!-- wp:table --><figure class="wp-block-table"><table><thead><tr><th>Quarter</th><th>Jobs</th><th>Repeat customers</th></tr></thead><tbody><tr><td>Q1</td><td>55</td><td>13</td></tr><tr><td>Q2</td><td>67</td><td>15</td></tr><tr><td>Q3</td><td>62</td><td>21</td></tr></tbody></table><figcaption class="wp-element-caption">Jobs completed per quarter</figcaption></figure><!-- /wp:table -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.]]></excerpt:encoded>
+            <category domain="category" nicename="company-news"><![CDATA[Company news]]></category>
+            <category domain="post_tag" nicename="community"><![CDATA[Community]]></category>
+            <category domain="post_tag" nicename="hiring"><![CDATA[Hiring]]></category>
+            <wp:post_id>1150</wp:post_id>
+            <wp:post_date>2026-06-19 09:00:00</wp:post_date>
+            <wp:post_name>what-customers-ask-before-they-call</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1151]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for What customers ask before they call</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1151.png</link>
+            <wp:post_id>1151</wp:post_id>
+            <wp:post_name>featured-1151.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1150</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1151.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Keeping a supplier list that stays current</title>
+            <link>https://fixture-site.example.test/2026/06/keeping-a-supplier-list-that-stays-current/</link>
+            <dc:creator><![CDATA[tomas]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.]]></excerpt:encoded>
+            <category domain="category" nicename="interviews"><![CDATA[Interviews]]></category>
+            <category domain="post_tag" nicename="research"><![CDATA[Research]]></category>
+            <category domain="post_tag" nicename="sustainability"><![CDATA[Sustainability]]></category>
+            <wp:post_id>1160</wp:post_id>
+            <wp:post_date>2026-06-22 09:00:00</wp:post_date>
+            <wp:post_name>keeping-a-supplier-list-that-stays-current</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1161]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Keeping a supplier list that stays current</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1161.png</link>
+            <wp:post_id>1161</wp:post_id>
+            <wp:post_name>featured-1161.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1160</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1161.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>A short history of the old mill</title>
+            <link>https://fixture-site.example.test/2026/06/a-short-history-of-the-old-mill/</link>
+            <dc:creator><![CDATA[priya]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:gallery {"linkTo":"none"} --><figure class="wp-block-gallery has-nested-images columns-3"><!-- wp:image {"id":1172} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1172.png" alt="Workshop photograph 1172" class="wp-image-1172"/></figure><!-- /wp:image --><!-- wp:image {"id":1173} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1173.png" alt="Workshop photograph 1173" class="wp-image-1173"/></figure><!-- /wp:image --><!-- wp:image {"id":1174} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1174.png" alt="Workshop photograph 1174" class="wp-image-1174"/></figure><!-- /wp:image --></figure><!-- /wp:gallery -->
+<!-- wp:quote --><blockquote class="wp-block-quote"><!-- wp:paragraph --><p>We would rather be on time with a smaller promise than late with a bigger one.</p><!-- /wp:paragraph --><cite>Site manager</cite></blockquote><!-- /wp:quote -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.]]></excerpt:encoded>
+            <category domain="category" nicename="opinion"><![CDATA[Opinion]]></category>
+            <category domain="post_tag" nicename="hiring"><![CDATA[Hiring]]></category>
+            <category domain="post_tag" nicename="design"><![CDATA[Design]]></category>
+            <wp:post_id>1170</wp:post_id>
+            <wp:post_date>2026-06-25 09:00:00</wp:post_date>
+            <wp:post_name>a-short-history-of-the-old-mill</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1171]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for A short history of the old mill</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1171.png</link>
+            <wp:post_id>1171</wp:post_id>
+            <wp:post_name>featured-1171.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1170</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1171.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1172</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1172.png</link>
+            <wp:post_id>1172</wp:post_id>
+            <wp:post_name>gallery-1172.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1170</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1172.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1173</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1173.png</link>
+            <wp:post_id>1173</wp:post_id>
+            <wp:post_name>gallery-1173.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1170</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1173.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1174</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1174.png</link>
+            <wp:post_id>1174</wp:post_id>
+            <wp:post_name>gallery-1174.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1170</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1174.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Writing estimates customers understand</title>
+            <link>https://fixture-site.example.test/2026/07/writing-estimates-customers-understand/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">The numbers</h3><!-- /wp:heading -->
+<!-- wp:table --><figure class="wp-block-table"><table><thead><tr><th>Quarter</th><th>Jobs</th><th>Repeat customers</th></tr></thead><tbody><tr><td>Q1</td><td>58</td><td>16</td></tr><tr><td>Q2</td><td>70</td><td>18</td></tr><tr><td>Q3</td><td>65</td><td>20</td></tr></tbody></table><figcaption class="wp-element-caption">Jobs completed per quarter</figcaption></figure><!-- /wp:table -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.]]></excerpt:encoded>
+            <category domain="category" nicename="field-notes"><![CDATA[Field notes]]></category>
+            <category domain="post_tag" nicename="sustainability"><![CDATA[Sustainability]]></category>
+            <category domain="post_tag" nicename="operations"><![CDATA[Operations]]></category>
+            <wp:post_id>1180</wp:post_id>
+            <wp:post_date>2026-07-01 09:00:00</wp:post_date>
+            <wp:post_name>writing-estimates-customers-understand</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1181]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Writing estimates customers understand</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1181.png</link>
+            <wp:post_id>1181</wp:post_id>
+            <wp:post_name>featured-1181.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1180</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1181.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>The tools we retired this year</title>
+            <link>https://fixture-site.example.test/2026/07/the-tools-we-retired-this-year/</link>
+            <dc:creator><![CDATA[tomas]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.]]></excerpt:encoded>
+            <category domain="category" nicename="case-studies"><![CDATA[Case studies]]></category>
+            <category domain="post_tag" nicename="design"><![CDATA[Design]]></category>
+            <category domain="post_tag" nicename="community"><![CDATA[Community]]></category>
+            <wp:post_id>1190</wp:post_id>
+            <wp:post_date>2026-07-04 09:00:00</wp:post_date>
+            <wp:post_name>the-tools-we-retired-this-year</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1191]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for The tools we retired this year</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1191.png</link>
+            <wp:post_id>1191</wp:post_id>
+            <wp:post_name>featured-1191.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1190</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1191.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Hiring for judgement, not just skill</title>
+            <link>https://fixture-site.example.test/2026/07/hiring-for-judgement-not-just-skill/</link>
+            <dc:creator><![CDATA[priya]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.]]></excerpt:encoded>
+            <category domain="category" nicename="guides"><![CDATA[Guides]]></category>
+            <category domain="post_tag" nicename="operations"><![CDATA[Operations]]></category>
+            <category domain="post_tag" nicename="research"><![CDATA[Research]]></category>
+            <wp:post_id>1200</wp:post_id>
+            <wp:post_date>2026-07-07 09:00:00</wp:post_date>
+            <wp:post_name>hiring-for-judgement-not-just-skill</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1201]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Hiring for judgement, not just skill</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1201.png</link>
+            <wp:post_id>1201</wp:post_id>
+            <wp:post_name>featured-1201.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1200</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1201.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Running a community repair day</title>
+            <link>https://fixture-site.example.test/2026/08/running-a-community-repair-day/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">The numbers</h3><!-- /wp:heading -->
+<!-- wp:table --><figure class="wp-block-table"><table><thead><tr><th>Quarter</th><th>Jobs</th><th>Repeat customers</th></tr></thead><tbody><tr><td>Q1</td><td>61</td><td>12</td></tr><tr><td>Q2</td><td>73</td><td>16</td></tr><tr><td>Q3</td><td>68</td><td>19</td></tr></tbody></table><figcaption class="wp-element-caption">Jobs completed per quarter</figcaption></figure><!-- /wp:table -->
+<!-- wp:gallery {"linkTo":"none"} --><figure class="wp-block-gallery has-nested-images columns-3"><!-- wp:image {"id":1212} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1212.png" alt="Workshop photograph 1212" class="wp-image-1212"/></figure><!-- /wp:image --><!-- wp:image {"id":1213} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1213.png" alt="Workshop photograph 1213" class="wp-image-1213"/></figure><!-- /wp:image --><!-- wp:image {"id":1214} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1214.png" alt="Workshop photograph 1214" class="wp-image-1214"/></figure><!-- /wp:image --></figure><!-- /wp:gallery -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.]]></excerpt:encoded>
+            <category domain="category" nicename="company-news"><![CDATA[Company news]]></category>
+            <category domain="post_tag" nicename="community"><![CDATA[Community]]></category>
+            <category domain="post_tag" nicename="hiring"><![CDATA[Hiring]]></category>
+            <wp:post_id>1210</wp:post_id>
+            <wp:post_date>2026-08-10 09:00:00</wp:post_date>
+            <wp:post_name>running-a-community-repair-day</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1211]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Running a community repair day</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1211.png</link>
+            <wp:post_id>1211</wp:post_id>
+            <wp:post_name>featured-1211.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1210</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1211.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1212</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1212.png</link>
+            <wp:post_id>1212</wp:post_id>
+            <wp:post_name>gallery-1212.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1210</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1212.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1213</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1213.png</link>
+            <wp:post_id>1213</wp:post_id>
+            <wp:post_name>gallery-1213.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1210</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1213.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1214</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1214.png</link>
+            <wp:post_id>1214</wp:post_id>
+            <wp:post_name>gallery-1214.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1210</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1214.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Choosing materials that age well</title>
+            <link>https://fixture-site.example.test/2026/08/choosing-materials-that-age-well/</link>
+            <dc:creator><![CDATA[tomas]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:quote --><blockquote class="wp-block-quote"><!-- wp:paragraph --><p>We would rather be on time with a smaller promise than late with a bigger one.</p><!-- /wp:paragraph --><cite>Site manager</cite></blockquote><!-- /wp:quote -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.]]></excerpt:encoded>
+            <category domain="category" nicename="interviews"><![CDATA[Interviews]]></category>
+            <category domain="post_tag" nicename="research"><![CDATA[Research]]></category>
+            <category domain="post_tag" nicename="sustainability"><![CDATA[Sustainability]]></category>
+            <wp:post_id>1220</wp:post_id>
+            <wp:post_date>2026-08-13 09:00:00</wp:post_date>
+            <wp:post_name>choosing-materials-that-age-well</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1221]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Choosing materials that age well</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1221.png</link>
+            <wp:post_id>1221</wp:post_id>
+            <wp:post_name>featured-1221.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1220</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1221.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>What our complaints taught us</title>
+            <link>https://fixture-site.example.test/2026/08/what-our-complaints-taught-us/</link>
+            <dc:creator><![CDATA[priya]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.]]></excerpt:encoded>
+            <category domain="category" nicename="opinion"><![CDATA[Opinion]]></category>
+            <category domain="post_tag" nicename="hiring"><![CDATA[Hiring]]></category>
+            <category domain="post_tag" nicename="design"><![CDATA[Design]]></category>
+            <wp:post_id>1230</wp:post_id>
+            <wp:post_date>2026-08-16 09:00:00</wp:post_date>
+            <wp:post_name>what-our-complaints-taught-us</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1231]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for What our complaints taught us</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1231.png</link>
+            <wp:post_id>1231</wp:post_id>
+            <wp:post_name>featured-1231.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1230</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1231.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>A week with the surveying team</title>
+            <link>https://fixture-site.example.test/2026/09/a-week-with-the-surveying-team/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">The numbers</h3><!-- /wp:heading -->
+<!-- wp:table --><figure class="wp-block-table"><table><thead><tr><th>Quarter</th><th>Jobs</th><th>Repeat customers</th></tr></thead><tbody><tr><td>Q1</td><td>64</td><td>15</td></tr><tr><td>Q2</td><td>76</td><td>19</td></tr><tr><td>Q3</td><td>71</td><td>18</td></tr></tbody></table><figcaption class="wp-element-caption">Jobs completed per quarter</figcaption></figure><!-- /wp:table -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.]]></excerpt:encoded>
+            <category domain="category" nicename="field-notes"><![CDATA[Field notes]]></category>
+            <category domain="post_tag" nicename="sustainability"><![CDATA[Sustainability]]></category>
+            <category domain="post_tag" nicename="operations"><![CDATA[Operations]]></category>
+            <wp:post_id>1240</wp:post_id>
+            <wp:post_date>2026-09-19 09:00:00</wp:post_date>
+            <wp:post_name>a-week-with-the-surveying-team</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1241]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for A week with the surveying team</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1241.png</link>
+            <wp:post_id>1241</wp:post_id>
+            <wp:post_name>featured-1241.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1240</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1241.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Making accessibility part of every brief</title>
+            <link>https://fixture-site.example.test/2026/09/making-accessibility-part-of-every-brief/</link>
+            <dc:creator><![CDATA[tomas]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:gallery {"linkTo":"none"} --><figure class="wp-block-gallery has-nested-images columns-3"><!-- wp:image {"id":1252} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1252.png" alt="Workshop photograph 1252" class="wp-image-1252"/></figure><!-- /wp:image --><!-- wp:image {"id":1253} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1253.png" alt="Workshop photograph 1253" class="wp-image-1253"/></figure><!-- /wp:image --><!-- wp:image {"id":1254} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1254.png" alt="Workshop photograph 1254" class="wp-image-1254"/></figure><!-- /wp:image --></figure><!-- /wp:gallery -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.]]></excerpt:encoded>
+            <category domain="category" nicename="case-studies"><![CDATA[Case studies]]></category>
+            <category domain="post_tag" nicename="design"><![CDATA[Design]]></category>
+            <category domain="post_tag" nicename="community"><![CDATA[Community]]></category>
+            <wp:post_id>1250</wp:post_id>
+            <wp:post_date>2026-09-22 09:00:00</wp:post_date>
+            <wp:post_name>making-accessibility-part-of-every-brief</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1251]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Making accessibility part of every brief</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1251.png</link>
+            <wp:post_id>1251</wp:post_id>
+            <wp:post_name>featured-1251.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1250</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1251.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1252</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1252.png</link>
+            <wp:post_id>1252</wp:post_id>
+            <wp:post_name>gallery-1252.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1250</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1252.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1253</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1253.png</link>
+            <wp:post_id>1253</wp:post_id>
+            <wp:post_name>gallery-1253.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1250</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1253.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1254</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1254.png</link>
+            <wp:post_id>1254</wp:post_id>
+            <wp:post_name>gallery-1254.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1250</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1254.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>How we plan a newsletter issue</title>
+            <link>https://fixture-site.example.test/2026/09/how-we-plan-a-newsletter-issue/</link>
+            <dc:creator><![CDATA[priya]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.]]></excerpt:encoded>
+            <category domain="category" nicename="guides"><![CDATA[Guides]]></category>
+            <category domain="post_tag" nicename="operations"><![CDATA[Operations]]></category>
+            <category domain="post_tag" nicename="research"><![CDATA[Research]]></category>
+            <wp:post_id>1260</wp:post_id>
+            <wp:post_date>2026-09-25 09:00:00</wp:post_date>
+            <wp:post_name>how-we-plan-a-newsletter-issue</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1261]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for How we plan a newsletter issue</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1261.png</link>
+            <wp:post_id>1261</wp:post_id>
+            <wp:post_name>featured-1261.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1260</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1261.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Turning a quiet month into a project month</title>
+            <link>https://fixture-site.example.test/2026/10/turning-a-quiet-month-into-a-project-month/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">The numbers</h3><!-- /wp:heading -->
+<!-- wp:table --><figure class="wp-block-table"><table><thead><tr><th>Quarter</th><th>Jobs</th><th>Repeat customers</th></tr></thead><tbody><tr><td>Q1</td><td>67</td><td>18</td></tr><tr><td>Q2</td><td>79</td><td>17</td></tr><tr><td>Q3</td><td>74</td><td>21</td></tr></tbody></table><figcaption class="wp-element-caption">Jobs completed per quarter</figcaption></figure><!-- /wp:table -->
+<!-- wp:quote --><blockquote class="wp-block-quote"><!-- wp:paragraph --><p>We would rather be on time with a smaller promise than late with a bigger one.</p><!-- /wp:paragraph --><cite>Site manager</cite></blockquote><!-- /wp:quote -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.]]></excerpt:encoded>
+            <category domain="category" nicename="company-news"><![CDATA[Company news]]></category>
+            <category domain="post_tag" nicename="community"><![CDATA[Community]]></category>
+            <category domain="post_tag" nicename="hiring"><![CDATA[Hiring]]></category>
+            <wp:post_id>1270</wp:post_id>
+            <wp:post_date>2026-10-01 09:00:00</wp:post_date>
+            <wp:post_name>turning-a-quiet-month-into-a-project-month</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1271]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Turning a quiet month into a project month</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1271.png</link>
+            <wp:post_id>1271</wp:post_id>
+            <wp:post_name>featured-1271.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1270</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1271.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>The questions we ask at handover</title>
+            <link>https://fixture-site.example.test/2026/10/the-questions-we-ask-at-handover/</link>
+            <dc:creator><![CDATA[tomas]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.]]></excerpt:encoded>
+            <category domain="category" nicename="interviews"><![CDATA[Interviews]]></category>
+            <category domain="post_tag" nicename="research"><![CDATA[Research]]></category>
+            <category domain="post_tag" nicename="sustainability"><![CDATA[Sustainability]]></category>
+            <wp:post_id>1280</wp:post_id>
+            <wp:post_date>2026-10-04 09:00:00</wp:post_date>
+            <wp:post_name>the-questions-we-ask-at-handover</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1281]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for The questions we ask at handover</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1281.png</link>
+            <wp:post_id>1281</wp:post_id>
+            <wp:post_name>featured-1281.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1280</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1281.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Ten years at the same address</title>
+            <link>https://fixture-site.example.test/2026/10/ten-years-at-the-same-address/</link>
+            <dc:creator><![CDATA[priya]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we set out to do</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>A long article has to earn its length. Each section answers one question, and the headings let a busy reader skip straight to theirs.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>We test every change with the people who will live with it. Their objections usually point at a real problem we had not noticed.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Agree the scope in writing</li><!-- /wp:list-item --><!-- wp:list-item --><li>Check access and parking the day before</li><!-- /wp:list-item --><!-- wp:list-item --><li>Photograph the finished work</li><!-- /wp:list-item --></ul><!-- /wp:list -->
+<!-- wp:gallery {"linkTo":"none"} --><figure class="wp-block-gallery has-nested-images columns-3"><!-- wp:image {"id":1292} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1292.png" alt="Workshop photograph 1292" class="wp-image-1292"/></figure><!-- /wp:image --><!-- wp:image {"id":1293} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1293.png" alt="Workshop photograph 1293" class="wp-image-1293"/></figure><!-- /wp:image --><!-- wp:image {"id":1294} --><figure class="wp-block-image"><img src="https://fixture-site.example.test/wp-content/uploads/gallery-1294.png" alt="Workshop photograph 1294" class="wp-image-1294"/></figure><!-- /wp:image --></figure><!-- /wp:gallery -->
+<!-- wp:heading --><h2 class="wp-block-heading">What we would do differently</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Most of the work happens before anyone picks up a tool. We walk the site, write down what we see, and agree what done looks like with the person paying for it.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <excerpt:encoded><![CDATA[Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.]]></excerpt:encoded>
+            <category domain="category" nicename="opinion"><![CDATA[Opinion]]></category>
+            <category domain="post_tag" nicename="hiring"><![CDATA[Hiring]]></category>
+            <category domain="post_tag" nicename="design"><![CDATA[Design]]></category>
+            <wp:post_id>1290</wp:post_id>
+            <wp:post_date>2026-10-07 09:00:00</wp:post_date>
+            <wp:post_name>ten-years-at-the-same-address</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>post</wp:post_type>
+            <wp:postmeta>
+                <wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key>
+                <wp:meta_value><![CDATA[1291]]></wp:meta_value>
+            </wp:postmeta>
+        </item>
+        <item>
+            <title>Featured image for Ten years at the same address</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/featured-1291.png</link>
+            <wp:post_id>1291</wp:post_id>
+            <wp:post_name>featured-1291.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1290</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/featured-1291.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1292</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1292.png</link>
+            <wp:post_id>1292</wp:post_id>
+            <wp:post_name>gallery-1292.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1290</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1292.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1293</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1293.png</link>
+            <wp:post_id>1293</wp:post_id>
+            <wp:post_name>gallery-1293.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1290</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1293.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>Gallery photograph 1294</title>
+            <link>https://fixture-site.example.test/wp-content/uploads/gallery-1294.png</link>
+            <wp:post_id>1294</wp:post_id>
+            <wp:post_name>gallery-1294.png</wp:post_name>
+            <wp:post_type>attachment</wp:post_type>
+            <wp:post_parent>1290</wp:post_parent>
+            <wp:status>inherit</wp:status>
+            <wp:attachment_url>https://fixture-site.example.test/wp-content/uploads/gallery-1294.png</wp:attachment_url>
+        </item>
+        <item>
+            <title>About us</title>
+            <link>https://fixture-site.example.test/about-us/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>We are a small team that plans carefully, works tidily and writes everything down.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">How we work</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>The first draft of any plan is wrong in small ways. We budget a morning to find those small ways before they become expensive ones.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <wp:post_id>2000</wp:post_id>
+            <wp:post_date>2026-01-01 09:00:00</wp:post_date>
+            <wp:post_name>about-us</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>page</wp:post_type>
+        </item>
+        <item>
+            <title>Services</title>
+            <link>https://fixture-site.example.test/services/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>We take on repairs, refits and planned maintenance, and we quote every job in writing first.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">How we work</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Customers rarely remember the price a year later. They remember whether we turned up when we said we would and whether we left the place tidy.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <wp:post_id>2001</wp:post_id>
+            <wp:post_date>2026-01-01 09:00:00</wp:post_date>
+            <wp:post_name>services</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>page</wp:post_type>
+        </item>
+        <item>
+            <title>Contact</title>
+            <link>https://fixture-site.example.test/contact/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>Call the office on weekdays between nine and five, or send a message and we will reply within a day.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">How we work</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>We keep a shared notebook for every job. It records what changed, who agreed to it and why, so nobody has to rely on memory at the end.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <wp:post_id>2002</wp:post_id>
+            <wp:post_date>2026-01-01 09:00:00</wp:post_date>
+            <wp:post_name>contact</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>page</wp:post_type>
+        </item>
+        <item>
+            <title>Careers</title>
+            <link>https://fixture-site.example.test/careers/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>We hire people who explain their decisions and ask before they assume.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">How we work</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Numbers help, but only when they answer a question someone actually asked. We start with the question and work back to the measurement.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <wp:post_id>2003</wp:post_id>
+            <wp:post_date>2026-01-01 09:00:00</wp:post_date>
+            <wp:post_name>careers</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>page</wp:post_type>
+        </item>
+        <item>
+            <title>Privacy notice</title>
+            <link>https://fixture-site.example.test/privacy-notice/</link>
+            <dc:creator><![CDATA[amara]]></dc:creator>
+            <content:encoded><![CDATA[<!-- wp:paragraph --><p>We keep the details you send us only for as long as we need them to do the work you asked for.</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2 class="wp-block-heading">How we work</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Good handovers are boring. Everything is labelled, every warranty is in one folder, and the customer knows who to call if something goes wrong.</p><!-- /wp:paragraph -->]]></content:encoded>
+            <wp:post_id>2004</wp:post_id>
+            <wp:post_date>2026-01-01 09:00:00</wp:post_date>
+            <wp:post_name>privacy-notice</wp:post_name>
+            <wp:status>publish</wp:status>
+            <wp:post_type>page</wp:post_type>
+        </item>
+    </channel>
+</rss>

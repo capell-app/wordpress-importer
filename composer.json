@@ -1,6 +1,6 @@
 {
     "name": "capell-app/wordpress-importer",
-    "description": "Migrate your WordPress site into Capell with guided WXR import previews and rollback-safe Migration Assistant handoff.",
+    "description": "Imports a WordPress WXR export into Capell through Migration Assistant, with a preview, media download and Redirects rules for old post addresses.",
     "type": "library",
     "license": "proprietary",
     "require": {
