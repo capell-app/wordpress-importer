@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Data;
 
+use Capell\Core\Facades\CapellCore;
+
 final readonly class WordPressPermalinkRedirectReportData
 {
-    private const string REDIRECT_RULE_MODEL = 'Capell\\UrlManager\\Models\\RedirectRule';
-
     /**
      * @param  list<int|string>  $createdRedirectRuleIds
      * @param  list<array{page_id: int|string|null, old_url: string|null, target_url: string|null, status: string, reason: string|null, redirect_rule_id: int|string|null, site_id: int|null, language_id: int|null}>  $redirects
@@ -36,12 +36,12 @@ final readonly class WordPressPermalinkRedirectReportData
      */
     public function createdModels(): array
     {
-        if (! class_exists(self::REDIRECT_RULE_MODEL)) {
+        if (! CapellCore::isPackageAvailable('capell-app/url-manager')) {
             return [];
         }
 
         /** @var class-string $redirectRuleModel */
-        $redirectRuleModel = self::REDIRECT_RULE_MODEL;
+        $redirectRuleModel = 'Capell\\UrlManager\\Models\\RedirectRule';
 
         return array_map(
             static fn (int|string $id): array => [

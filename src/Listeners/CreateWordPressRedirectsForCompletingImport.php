@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Listeners;
 
-use Capell\Core\Facades\CapellCore;
+use Capell\Core\Actions\Extensions\RunUnderPackageAdmissionAction;
 use Capell\Core\Models\Page;
 use Capell\MigrationAssistant\Actions\AppendImportRollbackModelsAction;
 use Capell\MigrationAssistant\Events\ImportCompleting;
@@ -12,31 +12,48 @@ use Capell\MigrationAssistant\Models\ImportRollbackReport;
 use Capell\WordPressImporter\Actions\CreateWordPressPermalinkRedirectsAction;
 use Capell\WordPressImporter\Data\WordPressPermalinkRedirectReportData;
 use Capell\WordPressImporter\Providers\WordPressImporterServiceProvider;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 final class CreateWordPressRedirectsForCompletingImport
 {
     public function handle(ImportCompleting $event): void
     {
-        if (! CapellCore::isPackageEnabled(WordPressImporterServiceProvider::$packageName)) {
+        // URL Manager refuses redirect writes inside a transaction, because its graph lock
+        // must not be released before the write commits. Package admission runs its work
+        // inside a transaction, so the redirects are written between two admitted phases:
+        // one that reads the imported pages and one that records this package's report.
+        if ($this->createdPageIds($event) === []) {
             return;
         }
 
-        $createdPageIds = $this->createdPageIds($event);
+        $admission = RunUnderPackageAdmissionAction::run(
+            WordPressImporterServiceProvider::$packageName,
+            fn (): Collection => $this->createdPages($event),
+        );
 
-        if ($createdPageIds === []) {
+        if (! $admission->admitted || ! $admission->value instanceof Collection) {
             return;
         }
 
-        $pages = Page::query()
+        $report = CreateWordPressPermalinkRedirectsAction::run($admission->value, $event->session->user_id);
+
+        RunUnderPackageAdmissionAction::run(
+            WordPressImporterServiceProvider::$packageName,
+            fn () => $this->storeReport($event, $report),
+        );
+    }
+
+    /**
+     * @return Collection<int, Page>
+     */
+    private function createdPages(ImportCompleting $event): Collection
+    {
+        return Page::query()
             ->withoutGlobalScopes()
             ->with('pageUrls')
-            ->whereIn((new Page)->getKeyName(), $createdPageIds)
+            ->whereIn((new Page)->getKeyName(), $this->createdPageIds($event))
             ->get();
-
-        $report = CreateWordPressPermalinkRedirectsAction::run($pages, $event->session->user_id);
-
-        $this->storeReport($event, $report);
     }
 
     /**

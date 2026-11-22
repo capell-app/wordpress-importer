@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Capell\Core\Contracts\Security\ResolvesHostAddresses;
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
@@ -783,3 +784,26 @@ XML);
         ->and($result->rows[1]['thumbnail_media_url'])->toBeNull()
         ->and($result->rows[1]['featured_media_url'])->toBe('https://example.test/uploads/gallery.jpg');
 })->with(['streaming', 'dom']);
+
+// URL Manager's classes ship in this checkout, so only the installed-package check stops the
+// importer writing redirect rules for a site that has not installed URL Manager.
+it('creates no WordPress redirects when URL Manager is not installed', function (): void {
+    ensureWordPressImporterUrlManagerRedirectRulesTable();
+    CapellCore::partialMock()->shouldReceive('isPackageAvailable')->with('capell-app/url-manager')->andReturnFalse();
+    $site = Site::factory()->create();
+    $page = Page::factory()->create([
+        'site_id' => $site->getKey(), 'meta' => ['wordpress' => ['old_permalink' => 'https://source.test/legacy-unguarded']],
+    ]);
+    $page->pageUrls()->create(['url' => '/unguarded-destination', 'site_id' => $site->getKey(), 'language_id' => $site->language_id, 'status' => true]);
+
+    DB::commit();
+    try {
+        $report = CreateWordPressPermalinkRedirectsAction::run([$page]);
+    } finally {
+        DB::beginTransaction();
+    }
+
+    expect($report->created)->toBe(0)
+        ->and($report->redirects)->toBe([])
+        ->and(RedirectRule::query()->count())->toBe(0);
+});

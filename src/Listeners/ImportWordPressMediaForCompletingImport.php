@@ -14,6 +14,8 @@ final class ImportWordPressMediaForCompletingImport
 {
     public function handle(ImportCompleting $event): void
     {
+        // Kept on the cached check, not Core package admission: media import downloads over the
+        // network, and admission would hold the lifecycle lock (blocking disable) for every download.
         if (! CapellCore::isPackageEnabled(WordPressImporterServiceProvider::$packageName)) {
             return;
         }

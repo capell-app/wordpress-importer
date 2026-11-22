@@ -10,9 +10,9 @@ Only posts WordPress had published keep their date. Everything else arrives unpu
 
 Images come from public addresses only, and files over 50 MB are refused. If a download fails, retrying the import picks up where it stopped without duplicating anything. Each image that arrives is stored on the new site, and the page's text is updated to point at that copy.
 
-- **Price and availability:** Check current availability and price on the [Capell Marketplace listing](https://capell.app/extensions/wordpress-importer).
-- **Licence:** Check the licence terms on the [Capell Marketplace listing](https://capell.app/extensions/wordpress-importer).
-- **Requires:** `PHP ^8.4`, `capell-app/admin ^1.0`, `capell-app/core ^1.0.75`, `capell-app/migration-assistant ^1.0`, `illuminate/support ^11.0|^12.0|^13.0`, `spatie/laravel-package-tools ^1.15`.
+- **Price and availability:** Check current availability and price on the [Capell Marketplace listing](https://capell.app/marketplace/extensions/wordpress-importer).
+- **Licence:** Check the licence terms on the [Capell Marketplace listing](https://capell.app/marketplace/extensions/wordpress-importer).
+- **Requires:** `PHP ^8.4`, `capell-app/admin ^1.0`, `capell-app/core ^1.0.79`, `capell-app/migration-assistant ^1.0`, `illuminate/support ^11.0|^12.0|^13.0`, `spatie/laravel-package-tools ^1.15`.
 - **Install:** `composer require capell-app/wordpress-importer`.
 
 ## Quick Start
@@ -31,7 +31,7 @@ WXR parsing, preview construction, execution, media import, and redirect creatio
 
 ## Limits And Pitfalls
 
-- Install the required Capell packages at the versions in `composer.json`: `capell-app/admin ^1.0`, `capell-app/core ^1.0.75`, `capell-app/migration-assistant ^1.0`.
+- Install the required Capell packages at the versions in `composer.json`: `capell-app/admin ^1.0`, `capell-app/core ^1.0.79`, `capell-app/migration-assistant ^1.0`.
 
 ## Screens And Workflow
 

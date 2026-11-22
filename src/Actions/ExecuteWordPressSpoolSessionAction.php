@@ -6,6 +6,7 @@ namespace Capell\WordPressImporter\Actions;
 
 use Capell\MigrationAssistant\Actions\CreateImportRollbackReportAction;
 use Capell\MigrationAssistant\Actions\Imports\ExecuteExternalPageImportAction;
+use Capell\MigrationAssistant\Actions\SealImportRollbackProvenanceAction;
 use Capell\MigrationAssistant\Data\ExternalImportPreview;
 use Capell\MigrationAssistant\Data\ExternalImportReadResult;
 use Capell\MigrationAssistant\Enums\ImportSessionStatus;
@@ -135,6 +136,9 @@ final class ExecuteWordPressSpoolSessionAction
                 report($throwable);
             }
 
+            // Earlier chunks recorded their pages before parent linking wrote them again.
+            $this->sealRollbackProvenance($session);
+
             event(new ImportFailed($session, $reason));
 
             return $report;
@@ -150,6 +154,10 @@ final class ExecuteWordPressSpoolSessionAction
         }
 
         event(new ImportCompleting($session->refresh()));
+
+        // The completing listeners and parent linking above write the imported pages again, so provenance is
+        // brought up to their final state before the session is marked complete.
+        $this->sealRollbackProvenance($session);
 
         $session->forceFill([
             'status' => ImportSessionStatus::Completed,
@@ -196,6 +204,16 @@ final class ExecuteWordPressSpoolSessionAction
     {
         if ($report->createdPageIds !== []) {
             CreateImportRollbackReportAction::run($session, $report, merge: true);
+        }
+    }
+
+    /** The pages are committed, so a sealing failure is reported rather than turned into a failed import. */
+    private function sealRollbackProvenance(ImportSession $session): void
+    {
+        try {
+            SealImportRollbackProvenanceAction::run($session);
+        } catch (Throwable $throwable) {
+            report($throwable);
         }
     }
 

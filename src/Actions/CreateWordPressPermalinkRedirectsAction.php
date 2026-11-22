@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\WordPressImporter\Actions;
 
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Support\TableName;
@@ -26,20 +27,16 @@ final class CreateWordPressPermalinkRedirectsAction
     use AsFake;
     use AsObject;
 
-    private const string REDIRECT_RULE_DATA = RedirectRuleData::class;
-
-    private const string UPSERT_REDIRECT_RULE_ACTION = UpsertRedirectRuleAction::class;
-
     /**
      * @param  iterable<array-key, mixed>  $pages
      */
     public function handle(iterable $pages, ?int $createdByUserId = null): WordPressPermalinkRedirectReportData
     {
-        if (
-            ! class_exists(self::REDIRECT_RULE_DATA)
-            || ! class_exists(self::UPSERT_REDIRECT_RULE_ACTION)
-            || ! Schema::hasTable(TableName::resolve('url_manager_redirect_rules'))
-        ) {
+        if (! CapellCore::isPackageAvailable('capell-app/url-manager')) {
+            return WordPressPermalinkRedirectReportData::empty();
+        }
+
+        if (! Schema::hasTable(TableName::resolve('url_manager_redirect_rules'))) {
             return WordPressPermalinkRedirectReportData::empty();
         }
 
@@ -166,10 +163,11 @@ final class CreateWordPressPermalinkRedirectsAction
 
     private function upsertRedirect(string $oldPermalink, string $targetUrl, Page $page, ?int $createdByUserId): Model
     {
-        $dataClass = self::REDIRECT_RULE_DATA;
-        $actionClass = self::UPSERT_REDIRECT_RULE_ACTION;
+        if (! CapellCore::isPackageAvailable('capell-app/url-manager')) {
+            throw new RuntimeException('URL Manager must be installed before creating WordPress redirects.');
+        }
 
-        $redirectRule = $actionClass::run(new $dataClass(
+        $redirectRule = UpsertRedirectRuleAction::run(new RedirectRuleData(
             sourceUrl: $oldPermalink,
             targetUrl: $targetUrl,
             siteId: is_numeric($page->getAttribute('site_id')) ? (int) $page->getAttribute('site_id') : null,
@@ -177,8 +175,6 @@ final class CreateWordPressPermalinkRedirectsAction
             notes: (string) __('capell-wordpress-importer::commands.import.redirect_note'),
             createdByUserId: $createdByUserId,
         ), replaceExisting: false);
-
-        throw_unless($redirectRule instanceof Model, RuntimeException::class, 'Redirect upsert did not return a model.');
 
         return $redirectRule;
     }

@@ -5,7 +5,7 @@
         "default": {
             "source": {
                 "ref": "HEAD",
-                "commit": "9190736907344f67e7e06d21d407d21d81536382",
+                "commit": "6191a1c9756a59a9efc540eed44d79e12df37c3d",
                 "providers": {
                     "Providers/WordPressImporterServiceProvider.php": "457826dde90f3992c42fbe2b6ebf8f92a2f6e50a7e0f7b331a97d606d58b36db"
                 },

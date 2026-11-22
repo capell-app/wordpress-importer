@@ -19,6 +19,7 @@ use Capell\WordPressImporter\Actions\ConvertWordPressGutenbergBlocksAction;
 use Capell\WordPressImporter\Actions\ExecuteWordPressWxrImportAction;
 use Capell\WordPressImporter\Actions\ReadWordPressWxrAction;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -325,4 +326,36 @@ it('creates one address per imported page and a rollback leaves no imported page
         ->and(DB::table('page_urls')->whereIn('pageable_id', $pageIds)->where('pageable_type', 'page')->whereNull('deleted_at')->count())->toBe(0)
         ->and($resolves('/fidelity-page'))->toBeFalse()
         ->and($resolves('/ghost-authored'))->toBeFalse();
+});
+
+it('keeps an import rollbackable when its own later writes land in a later second than the recorded provenance', function (): void {
+    // Every rollback report write moves the clock on, so any import-owned page save that follows provenance
+    // recording (parent links, media, authors, baselines) gets a newer updated_at than the provenance holds.
+    Carbon::setTestNow(now()->startOfSecond());
+    ImportRollbackReport::created(static function (): void {
+        Carbon::setTestNow(now()->addSeconds(2));
+    });
+
+    $session = wordpressFidelityImport(wordpressFidelityExport(), $this->site, $this->layout, $this->type);
+    $pageIds = Page::query()->withoutGlobalScopes()->where('meta->wordpress->import_session_uuid', $session->uuid)->pluck('id')->all();
+
+    $rollback = wordpressFidelityRollback($session, $this->authenticatedUser());
+
+    expect($pageIds)->toHaveCount(2)
+        ->and($rollback->rejected)->toBeFalse()
+        ->and($rollback->skipped)->toBe([])
+        ->and(Page::query()->whereIn('id', $pageIds)->count())->toBe(0);
+});
+
+it('still refuses to roll back an imported page edited after the import completed', function (): void {
+    $session = wordpressFidelityImport(wordpressFidelityExport(), $this->site, $this->layout, $this->type);
+    $page = wordpressFidelityPage('Fidelity page');
+
+    Carbon::setTestNow(now()->addMinute());
+    $page->forceFill(['name' => 'Edited by an editor'])->save();
+
+    $rollback = wordpressFidelityRollback($session, $this->authenticatedUser());
+
+    expect(collect($rollback->skipped)->where('type', 'page')->pluck('reason')->all())->toContain('edited_after_import')
+        ->and(Page::query()->withoutGlobalScopes()->whereKey($page->getKey())->exists())->toBeTrue();
 });
