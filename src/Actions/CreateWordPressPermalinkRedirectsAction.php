@@ -8,8 +8,7 @@ use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Support\TableName;
-use Capell\UrlManager\Actions\UpsertRedirectRuleAction;
-use Capell\UrlManager\Data\RedirectRuleData;
+use Capell\WordPressImporter\Bridges\UrlManager\WordPressUrlManagerRedirectBridge;
 use Capell\WordPressImporter\Data\WordPressPermalinkRedirectReportData;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +16,6 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
-use RuntimeException;
 
 /**
  * @method static WordPressPermalinkRedirectReportData run(iterable<array-key, mixed> $pages, ?int $createdByUserId = null)
@@ -163,20 +161,14 @@ final class CreateWordPressPermalinkRedirectsAction
 
     private function upsertRedirect(string $oldPermalink, string $targetUrl, Page $page, ?int $createdByUserId): Model
     {
-        if (! CapellCore::isPackageAvailable('capell-app/url-manager')) {
-            throw new RuntimeException('URL Manager must be installed before creating WordPress redirects.');
-        }
-
-        $redirectRule = UpsertRedirectRuleAction::run(new RedirectRuleData(
-            sourceUrl: $oldPermalink,
-            targetUrl: $targetUrl,
-            siteId: is_numeric($page->getAttribute('site_id')) ? (int) $page->getAttribute('site_id') : null,
-            languageId: $this->languageId($page),
-            notes: (string) __('capell-wordpress-importer::commands.import.redirect_note'),
-            createdByUserId: $createdByUserId,
-        ), replaceExisting: false);
-
-        return $redirectRule;
+        return WordPressUrlManagerRedirectBridge::upsert(
+            $oldPermalink,
+            $targetUrl,
+            is_numeric($page->getAttribute('site_id')) ? (int) $page->getAttribute('site_id') : null,
+            $this->languageId($page),
+            (string) __('capell-wordpress-importer::commands.import.redirect_note'),
+            $createdByUserId,
+        );
     }
 
     private function languageId(Page $page): ?int

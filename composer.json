@@ -12,6 +12,10 @@
         "illuminate/support": "^11.0|^12.0|^13.0",
         "spatie/laravel-package-tools": "^1.15"
     },
+    "suggest": {
+        "capell-app/seo-suite": "Lets you run SEO Checks on the pages an import creates.",
+        "capell-app/url-manager": "Creates a redirect from each imported post's old WordPress address."
+    },
     "autoload": {
         "psr-4": {
             "Capell\\WordPressImporter\\": "src"
