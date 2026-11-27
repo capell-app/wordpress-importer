@@ -6,6 +6,7 @@
     "kind": "package",
     "capellApiVersion": "^1.0",
     "version": "1.0.0",
+    "launchStatus": "preview",
     "description": "Brings posts, pages and images from a WordPress export file onto a site built with Capell, each one becoming an ordinary page.",
     "product": {
         "group": "Capell Operations",
